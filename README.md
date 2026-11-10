@@ -1,0 +1,49 @@
+# Ochiq Hisob — provodkadan hisobotgacha
+
+Bepul web ilova: buxgalter faqat provodkalarni kiritadi, ilova esa bir vaqtda quyidagilarni tuzadi:
+
+- **Buxgalteriya balansi (1-shakl)**
+- **Moliyaviy natijalar to‘g‘risida hisobot (2-shakl)**
+- **Foyda solig‘i hisob-kitobi** (asosiy shakl, 1-ilova, 2-ilova)
+
+…va ularning o‘zaro mosligini tekshiradi (aktiv = passiv, sof foyda → 450-satr, foyda solig‘i 150 = 2-shakl 250, sof tushum 2-shakl 010 = 1-ilova 020).
+
+## Imkoniyatlar
+
+- Yil boshidagi qoldiqlar, provodkalar jurnali (jonli izoh: hisobvaraq nomi va hisobotdagi joyi)
+- Har bir provodka uchun foyda solig‘i satri avtomatik tanlanadi, “chegirilmaydi” belgisi (jarima, xayriya…)
+- Subschyotlar (6010.05), kontragent STIR, solishtirish dalolatnomasi (Excel)
+- Aylanma-saldo qaydnomasi, satrni bosib manbasini ko‘rish
+- Takroriy provodkalar, namuna ma’lumotlar, yil yakuni yopish va keyingi yilga o‘tish
+- Excel: 3 ta rasmiy shakl, barcha hisobotlar kitobi, jurnal/qoldiqlarni import qilish
+- Lotin / Кирилл, ming so‘m / so‘m, Ctrl+Z / Ctrl+Y / Ctrl+S
+- Server yo‘q: ma’lumotlar faqat brauzerda va foydalanuvchining `.ohisob` faylida. Birinchi ochilgandan keyin internetsiz ishlaydi.
+
+## Ishga tushirish
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm test         # hisob mantiqi testlari
+npm run build    # dist/ — statik sayt
+```
+
+## Hammaga chiqarish (bepul hosting)
+
+`dist/` papkasi oddiy statik sayt, istalgan statik hostingga qo‘yiladi:
+
+- **GitHub Pages:** repozitoriyani GitHub’ga yuklang, *Settings → Pages → Source: GitHub Actions* ni tanlang. `.github/workflows/deploy.yml` har bir `main` push’da saytni yangilaydi.
+- **Netlify / Cloudflare Pages:** build buyrug‘i `npm run build`, chiqish papkasi `dist`.
+
+## Muhim cheklovlar
+
+- Ilova hisob-kitobni avtomatlashtiradi, lekin buxgalter tekshiruvining o‘rnini bosmaydi.
+- Foyda solig‘i: asosiy shakl (010–150) to‘liq; 1-ilova va 2-ilovaning I bo‘limi provodkalardan to‘ldiriladi. 2-ilova II bo‘limi (0101–0137) va 3–11-ilovalar hozircha qo‘lda to‘ldiriladi. “shakl bilan solishtiring” belgili satrlarni amaldagi rasmiy shakl bilan tekshiring.
+- Excel fayllari rasmiy shakllar tuzilishida yaratiladi (satr kodlari bilan), lekin davlat shablonining aynan nusxasi emas.
+
+## Tuzilishi
+
+- `src/engine` — hisob mantiqi (sof TypeScript, testlar bilan): hisobvaraqlar rejasi, bosh daftar, balans, 2-shakl, foyda solig‘i, tekshiruvlar, yil yopish
+- `src/excel` — Excel import/eksport (ExcelJS, kerak bo‘lganda yuklanadi)
+- `src/store` — holat, undo/redo, avtosaqlash, fayl
+- `src/ui` — sahifalar va komponentlar
