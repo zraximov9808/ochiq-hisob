@@ -24,3 +24,17 @@ test('tutuq belgisi becomes ъ and digits stay', () => {
 test('yo, yu, ya become single letters', () => {
   expect(toCyrillic('Yangi yozuv')).toBe('Янги ёзув');
 });
+
+test('loanword suffixes -tsiya/-tsion use ц', () => {
+  expect(toCyrillic('amortizatsiya')).toBe('амортизация');
+  expect(toCyrillic('Investitsiyalar')).toBe('Инвестициялар');
+  expect(toCyrillic('operatsion')).toBe('операцион');
+  expect(toCyrillic('ketsa')).toBe('кетса');
+});
+
+test('keeps Roman numerals, shortcuts and product names', () => {
+  expect(toCyrillic('I chorak')).toBe('I чорак');
+  expect(toCyrillic('II boʻlim')).toBe('II бўлим');
+  expect(toCyrillic('Orqaga (Ctrl+Z)')).toBe('Орқага (Ctrl+Z)');
+  expect(toCyrillic('Exceldan import')).toBe('Excelдан импорт');
+});

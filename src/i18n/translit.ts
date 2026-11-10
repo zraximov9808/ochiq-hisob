@@ -6,7 +6,8 @@ const LETTERS: Record<string, string> = {
   y: 'й', z: 'з',
 };
 const Y_PAIRS: Record<string, string> = { o: 'ё', u: 'ю', a: 'я', e: 'е' };
-const PROTECTED = /(\b(?:Excel|xlsx|Ctrl|JSON|PDF|ohisob)\b)/;
+/** Left as is: product names, file types, key shortcuts and Roman numerals (I chorak, II bo‘lim). */
+const PROTECTED = /(Excel|xlsx|JSON|PDF|ohisob|\bCtrl\+[A-Z]\b|\b(?:I|II|III|IV)\b)/;
 const isLetter = (ch: string) => /[A-Za-zА-яЁёЎўҚқҒғҲҳ]/.test(ch) || APOS.has(ch);
 
 function convert(s: string): string {
@@ -27,6 +28,10 @@ function convert(s: string): string {
       i++;
     } else if (lc === 'c' && next === 'h') {
       emit('ч');
+      i++;
+    } else if (lc === 't' && next === 's' && /^i[yo]/i.test(s.slice(i + 2, i + 4))) {
+      // Loanwords: -tsiya, -tsion → -ция, -цион (investitsiya, operatsion).
+      emit('ц');
       i++;
     } else if (lc === 'y' && next in Y_PAIRS && !(next === 'o' && APOS.has(s[i + 2] ?? ''))) {
       emit(Y_PAIRS[next]);
