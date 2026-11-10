@@ -3,6 +3,7 @@ import { accountName } from '../engine/accounts';
 import type { Report } from '../engine/checks';
 import { toMing } from '../engine/money';
 import { formatDate, type Quarter } from '../engine/period';
+import { roundBalance, roundIncome } from '../engine/rounding';
 import type { Reconciliation } from '../engine/reconciliation';
 import { TAX_LINES, TAX_MAIN_LINES } from '../engine/taxLines';
 import { buildTrialBalance } from '../engine/trialBalance';
@@ -69,14 +70,15 @@ function addBalance(wb: ExcelJS.Workbook, doc: Doc, r: Report, tr: Tr) {
     [tr('O‘lchov birligi'), tr('ming so‘m')],
   ], 4);
   tableHead(ws, n++, [tr('Ko‘rsatkich nomi'), tr('Satr kodi'), tr('Hisobot davri boshiga'), tr('Hisobot davri oxiriga')]);
+  const rounded = roundBalance(r.balance);
   for (const l of r.balance.lines) {
     const row = ws.getRow(n++);
     row.getCell(1).value = tr(l.label);
     if (l.code) {
       row.getCell(2).value = l.code;
       if (!l.manual) {
-        row.getCell(3).value = toMing(l.start ?? 0);
-        row.getCell(4).value = toMing(l.end ?? 0);
+        row.getCell(3).value = toMing(rounded[l.code].start);
+        row.getCell(4).value = toMing(rounded[l.code].end);
       }
     }
     row.getCell(3).numFmt = MING;
@@ -105,6 +107,7 @@ function addIncome(wb: ExcelJS.Workbook, doc: Doc, r: Report, tr: Tr) {
     tr('O‘tgan yilning shu davrida: daromadlar (foyda)'), tr('O‘tgan yilning shu davrida: xarajatlar (zararlar)'),
     tr('Hisobot davrida: daromadlar (foyda)'), tr('Hisobot davrida: xarajatlar (zararlar)'),
   ]);
+  const rounded = roundIncome(r.income);
   const put = (v: number | undefined, col: 'inc' | 'exp' | 'res', want: 'inc' | 'exp'): ExcelJS.CellValue => {
     if (col !== 'res' && col !== want) return 'x';
     if (v === undefined) return null;
@@ -117,10 +120,10 @@ function addIncome(wb: ExcelJS.Workbook, doc: Doc, r: Report, tr: Tr) {
     const row = ws.getRow(n++);
     row.getCell(1).value = tr(l.label);
     row.getCell(2).value = l.code;
-    row.getCell(3).value = put(r.income.prev[l.code], l.col, 'inc');
-    row.getCell(4).value = put(r.income.prev[l.code], l.col, 'exp');
-    row.getCell(5).value = put(r.income.byCode[l.code], l.col, 'inc');
-    row.getCell(6).value = put(r.income.byCode[l.code], l.col, 'exp');
+    row.getCell(3).value = put(rounded.prev[l.code], l.col, 'inc');
+    row.getCell(4).value = put(rounded.prev[l.code], l.col, 'exp');
+    row.getCell(5).value = put(rounded.cur[l.code], l.col, 'inc');
+    row.getCell(6).value = put(rounded.cur[l.code], l.col, 'exp');
     for (let i = 1; i <= 6; i++) {
       const c = row.getCell(i);
       c.border = border;

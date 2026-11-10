@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { accountName } from '../../engine/accounts';
 import { formatAmount } from '../../engine/money';
 import { formatDate } from '../../engine/period';
+import { roundBalance, roundIncome } from '../../engine/rounding';
 import { TAX_LINES, TAX_MAIN_LINES } from '../../engine/taxLines';
 import { taxSign } from '../../engine/taxSuggest';
 import { buildTrialBalance } from '../../engine/trialBalance';
@@ -98,6 +99,8 @@ export function BalancePage() {
   const r = useReport();
   const [drill, setDrill] = useState<Drill>(null);
   const f = r.balance;
+  /** In ming so‘m totals are summed from rounded lines, as on the filed form. */
+  const shown = ui.unit === 'ming' ? roundBalance(f) : f.byCode;
   return (
     <div className="page">
       <PageHead title="Buxgalteriya balansi (1-shakl)">
@@ -134,8 +137,8 @@ export function BalancePage() {
                 <tr key={i} className={`${l.kind === 'total' ? 'total' : ''} ${click ? 'clickable' : ''}`} onClick={click}>
                   <td>{t(l.label)}</td>
                   <td className="c code">{l.code}</td>
-                  <td className="r">{l.manual ? '' : <Num v={l.start} blankZero={l.kind !== 'total'} />}</td>
-                  <td className="r">{l.manual ? '' : <Num v={l.end} blankZero={l.kind !== 'total'} />}</td>
+                  <td className="r">{l.manual ? '' : <Num v={shown[l.code].start} blankZero={l.kind !== 'total'} />}</td>
+                  <td className="r">{l.manual ? '' : <Num v={shown[l.code].end} blankZero={l.kind !== 'total'} />}</td>
                 </tr>
               );
             })}
@@ -153,6 +156,7 @@ export function IncomePage() {
   const r = useReport();
   const [drill, setDrill] = useState<Drill>(null);
   const f = r.income;
+  const shown = ui.unit === 'ming' ? roundIncome(f) : { cur: f.byCode, prev: f.prev };
   /** Income/expense lines use one column ('x' in the other); results go to profit or loss by sign. */
   const cell = (v: number | undefined, col: 'inc' | 'exp' | 'res', want: 'inc' | 'exp') => {
     if (col !== 'res' && col !== want) return 'x';
@@ -193,10 +197,10 @@ export function IncomePage() {
                 <tr key={l.code} className={`${l.total ? 'total' : ''} ${click ? 'clickable' : ''}`} onClick={click}>
                   <td>{t(l.label)}</td>
                   <td className="c code">{l.code}</td>
-                  <td className="r">{cell(f.prev[l.code], l.col, 'inc')}</td>
-                  <td className="r">{cell(f.prev[l.code], l.col, 'exp')}</td>
-                  <td className="r">{cell(f.byCode[l.code], l.col, 'inc')}</td>
-                  <td className="r">{cell(f.byCode[l.code], l.col, 'exp')}</td>
+                  <td className="r">{cell(shown.prev[l.code], l.col, 'inc')}</td>
+                  <td className="r">{cell(shown.prev[l.code], l.col, 'exp')}</td>
+                  <td className="r">{cell(shown.cur[l.code], l.col, 'inc')}</td>
+                  <td className="r">{cell(shown.cur[l.code], l.col, 'exp')}</td>
                 </tr>
               );
             })}

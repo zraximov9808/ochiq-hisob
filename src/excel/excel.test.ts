@@ -63,3 +63,15 @@ describe('buildFormWorkbook', () => {
     expect(found).toEqual([250000, 250000]);
   });
 });
+
+test('excel balance totals add up from rounded lines', async () => {
+  const doc = referenceDoc();
+  doc.opening.push({ account: '5010', debit: 60000, credit: 0 }, { account: '5210', debit: 60000, credit: 0 }, { account: '8410', debit: 0, credit: 120000 });
+  const wb = await buildFormWorkbook('balance', doc, 1, runChecks(doc, 1), (s) => s);
+  const v: Record<string, unknown> = {};
+  wb.worksheets[0].eachRow((row) => {
+    v[String(row.getCell(2).value)] = row.getCell(3).value;
+  });
+  expect(v['320']).toBe(60002);
+  expect(v['400']).toBe(250002);
+});
