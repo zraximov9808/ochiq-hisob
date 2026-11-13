@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { runChecks } from './engine/checks';
 import { formatDate } from './engine/period';
 import type { Opening } from './engine/types';
@@ -15,6 +15,8 @@ import { OpeningPage } from './ui/pages/OpeningPage';
 import { HelpPage, SettingsPage } from './ui/pages/OtherPages';
 import { BalancePage, IncomePage, TaxPage, TrialBalancePage } from './ui/pages/ReportPages';
 import { SubaccountsPage } from './ui/pages/SubaccountsPage';
+
+const BankPage = lazy(() => import('./ui/bank/BankPage'));
 
 type ImportResult =
   | { kind: 'journal'; entries: ParsedEntry[]; errors: string[]; file: string }
@@ -108,6 +110,12 @@ export default function App() {
         return <TaxPage />;
       case 'trial':
         return <TrialBalancePage />;
+      case 'bank':
+        return (
+          <Suspense fallback={<div className="empty">{t('Yuklanmoqda…')}</div>}>
+            <BankPage />
+          </Suspense>
+        );
       case 'settings':
         return <SettingsPage />;
       default:
@@ -121,10 +129,10 @@ export default function App() {
       <div className="app">
         <SideNav />
         <div className="main">
-          <TopBar onExcel={onExcel} />
-          <div className="content">
+          {ui.page !== 'bank' && <TopBar onExcel={onExcel} />}
+          <div className={ui.page === 'bank' ? 'content full' : 'content'}>
             {page}
-            <ChecksPanel />
+            {ui.page !== 'bank' && <ChecksPanel />}
           </div>
         </div>
       </div>

@@ -19,6 +19,28 @@ Bepul web ilova: buxgalter faqat provodkalarni kiritadi, ilova esa bir vaqtda qu
 - Lotin / Кирилл, ming so‘m / so‘m, Ctrl+Z / Ctrl+Y / Ctrl+S
 - Server yo‘q: ma’lumotlar faqat brauzerda va foydalanuvchining `.ohisob` faylida. Birinchi ochilgandan keyin internetsiz ishlaydi.
 
+## Bank vipiska bo‘limi
+
+Bir yoki bir nechta bank vipiskasini (.xlsx) tashlang. Bo‘lim quyidagilarni qiladi:
+
+- hisoblar va operatsiyalarni o‘qiydi, bir hisob bir nechta faylda bo‘lsa birlashtiradi va dublikatlarni olib tashlaydi;
+- har bir operatsiyaga guruh (Kirim / Chiqim / Soliqlar) va tur beradi — qoidalar `src/bank/rules/default-rules.json` da, ilovadagi “Qoidalar” muharririda o‘zgartiriladi;
+- qoldiqni tekshiradi (boshlang‘ich − debet + kredit = bankdagi yakuniy qoldiq, “Итоговый оборот” bilan solishtirish);
+- ekranlar: Svod, Hisoblar (filtr, qoldiq grafigi, turni qo‘lda o‘zgartirish), Turlar, Korrespondentlar, Oylar, Valyuta (konvertatsiya kurslari), Diqqat (avtomatik belgilar), Qoidalar;
+- formulali Excel hisobot: Svod, Turlar svodi, har bir hisob va korrespondentlar varaqlari, Batafsil, Diqqat.
+
+Vipiskalar faqat brauzerda (IndexedDB) saqlanadi; “Hammasini o‘chirish” tugmasi bor.
+
+### Yangi bank formatini qo‘shish
+
+1. `src/bank/parsers/` ga yangi fayl: `isFormatX(rows)` (sarlavha matnidan tanish) va `parseFormatX(rows, file): ParsedStatement`.
+2. `src/bank/parsers/detect.ts` dagi `parseStatements` ga ulang.
+3. `src/bank/parsers/parsers.test.ts` ga sun’iy namuna bilan test yozing.
+
+Hozir qo‘llab-quvvatlanadi: **Format A** — “Сведения о работе счета” (bank-klient eksporti). **Format B** — 1C “Выписка лицевых счетов” parseri spec bo‘yicha yozilgan, lekin **haqiqiy namuna kerak**: namuna bo‘lmagani uchun u hali sinovdan o‘tmagan.
+
+Haqiqiy vipiskalar va ular bo‘yicha qabul testlari `samples/` papkasida saqlanadi va git’ga qo‘shilmaydi (`.gitignore`).
+
 ## Ishga tushirish
 
 ```bash

@@ -3,3 +3,6 @@ dist/
 .superpowers/
 *.local
 *.tsbuildinfo
+
+# Real bank statements: never commit
+samples/

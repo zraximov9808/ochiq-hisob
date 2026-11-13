@@ -17,6 +17,7 @@ const NAV: Array<{ group?: string; id: PageId; num?: string; label: string }> = 
   { id: 'income', num: '4', label: 'Moliyaviy natijalar (2-shakl)' },
   { id: 'tax', num: '5', label: 'Foyda solig‘i' },
   { id: 'trial', num: 'A', label: 'Aylanma-saldo' },
+  { group: 'Bank', id: 'bank', num: 'B', label: 'Bank vipiska' },
   { group: 'Boshqa', id: 'settings', num: '⚙', label: 'Sozlamalar' },
   { id: 'help', num: '?', label: 'Yo‘riqnoma' },
 ];

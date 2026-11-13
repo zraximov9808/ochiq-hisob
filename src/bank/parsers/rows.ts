@@ -1,0 +1,50 @@
+import ExcelJS from 'exceljs';
+import type { Cell } from '../model';
+
+/** ExcelJS cell values can be rich text, formulas or hyperlinks; reduce them to plain values. */
+export function plainCell(v: unknown): Cell {
+  if (v && typeof v === 'object' && !(v instanceof Date)) {
+    const o = v as { result?: unknown; richText?: Array<{ text: string }>; text?: string; error?: string };
+    if ('result' in o) return o.result as Cell;
+    if (o.richText) return o.richText.map((r) => r.text).join('');
+    if (typeof o.text === 'string') return o.text;
+    if (o.error) return null;
+  }
+  return v as Cell;
+}
+
+/** All worksheets of an .xlsx file as arrays of rows (row 1 → index 0). */
+export async function readWorkbookRows(data: ArrayBuffer): Promise<Cell[][][]> {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(data);
+  return wb.worksheets.map((ws) => {
+    const rows: Cell[][] = [];
+    ws.eachRow({ includeEmpty: true }, (row, n) => {
+      rows[n - 1] = (row.values as unknown[]).slice(1).map(plainCell);
+    });
+    for (let i = 0; i < rows.length; i++) rows[i] ??= [];
+    return rows;
+  });
+}
+
+export const cellText = (v: Cell): string => (v === null || v === undefined ? '' : v instanceof Date ? v.toISOString() : String(v)).trim();
+
+/** Bank amounts: numbers, or text with spaces/nbsp and '.' or ',' as decimal separator → tiyin. */
+export function moneyCell(v: Cell): number | null {
+  if (v === null || v === undefined || v === '') return 0;
+  if (typeof v === 'number') return Math.round(v * 100);
+  const t = String(v).replace(/[\s  ]/g, '').replace(',', '.');
+  if (t === '' || t === '-') return 0;
+  if (!/^-?\d+(\.\d+)?$/.test(t)) return null;
+  return Math.round(Number(t) * 100);
+}
+
+/** 'dd.mm.yyyy[ HH:MM[:SS]]' → ISO; Date objects and Excel serials also accepted. */
+export function dateTimeCell(v: Cell): string | null {
+  if (v instanceof Date && !isNaN(v.getTime())) return v.toISOString().slice(0, 19);
+  if (typeof v === 'number' && v > 20000 && v < 80000) return new Date(Date.UTC(1899, 11, 30) + Math.round(v * 86400) * 1000).toISOString().slice(0, 19);
+  const m = /^(\d{1,2})[./](\d{1,2})[./](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(cellText(v));
+  if (!m) return null;
+  const p = (s: string | undefined, n = 2) => (s ?? '0').padStart(n, '0');
+  return `${m[3]}-${p(m[2])}-${p(m[1])}T${p(m[4])}:${p(m[5])}:${p(m[6])}`;
+}
