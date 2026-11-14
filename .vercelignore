@@ -1,0 +1,7 @@
+# Never upload real bank statements or local working files to Vercel
+samples/
+.superpowers/
+.claude/
+node_modules/
+dist/
+*.tsbuildinfo
