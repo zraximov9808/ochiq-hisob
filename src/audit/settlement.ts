@@ -12,6 +12,13 @@ export interface AuditOptions {
 
 export type MovementKind = 'moneyIn' | 'moneyOut' | 'invIn' | 'invOut';
 
+export const KIND_LABEL: Record<MovementKind, string> = {
+  moneyIn: 'Kirgan pul',
+  moneyOut: 'Chiqqan pul',
+  invIn: 'Kirgan faktura',
+  invOut: 'Chiqqan faktura',
+};
+
 export interface Movement {
   date: string;
   kind: MovementKind;

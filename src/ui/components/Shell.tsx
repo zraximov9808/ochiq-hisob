@@ -18,6 +18,7 @@ const NAV: Array<{ group?: string; id: PageId; num?: string; label: string }> = 
   { id: 'tax', num: '5', label: 'Foyda solig‘i' },
   { id: 'trial', num: 'A', label: 'Aylanma-saldo' },
   { group: 'Bank', id: 'bank', num: 'B', label: 'Bank vipiska' },
+  { id: 'audit', num: 'E', label: 'Ekspres audit' },
   { group: 'Boshqa', id: 'settings', num: '⚙', label: 'Sozlamalar' },
   { id: 'help', num: '?', label: 'Yo‘riqnoma' },
 ];

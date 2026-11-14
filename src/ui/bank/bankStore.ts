@@ -1,6 +1,7 @@
 import { createStore, del, get, set } from 'idb-keyval';
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_SETTINGS, type Override, type Settings } from '../../bank/analyze';
+import type { Invoice } from '../../audit/invoices';
 import type { Rule } from '../../bank/classify';
 import type { ParsedStatement } from '../../bank/model';
 import { DEFAULT_RULES } from '../../bank/rules/defaultRules';
@@ -22,12 +23,16 @@ export interface BankState {
   /** "<operation id>:<flag code>" of flags marked as reviewed. */
   reviewed: string[];
   settings: Settings;
+  /** Ekspres audit: e-invoices and the files they came from. */
+  invoices: Invoice[];
+  invoiceFiles: Array<{ file: string; ok: boolean; error?: string; count: number }>;
 }
 
 const db = typeof indexedDB === 'undefined' ? undefined : createStore('ochiq-hisob-bank', 'kv');
-const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings'] as const;
+const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings', 'invoices', 'invoiceFiles'] as const;
 
-let state: BankState = { loaded: false, statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS };
+const EMPTY: Omit<BankState, 'loaded'> = { statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS, invoices: [], invoiceFiles: [] };
+let state: BankState = { loaded: false, ...EMPTY };
 const listeners = new Set<() => void>();
 
 function emit(next: BankState, persist: Array<(typeof KEYS)[number]> = []) {
@@ -52,6 +57,8 @@ export function loadBank(): Promise<void> {
       overrides: (v.overrides as Record<string, Override>) ?? {},
       reviewed: (v.reviewed as string[]) ?? [],
       settings: { ...DEFAULT_SETTINGS, ...((v.settings as Settings) ?? {}) },
+      invoices: (v.invoices as Invoice[]) ?? [],
+      invoiceFiles: (v.invoiceFiles as BankState['invoiceFiles']) ?? [],
     });
   });
   return loading;
@@ -63,6 +70,14 @@ export const bankActions = {
   },
   newAnalysis() {
     emit({ ...state, statements: [], files: [], overrides: {}, reviewed: [] }, ['statements', 'files', 'overrides', 'reviewed']);
+  },
+  addInvoices(invoices: Invoice[], files: BankState['invoiceFiles']) {
+    const seen = new Set(state.invoices.map((i) => i.id));
+    const fresh = invoices.filter((i) => !seen.has(i.id));
+    emit({ ...state, invoices: [...state.invoices, ...fresh], invoiceFiles: [...state.invoiceFiles, ...files] }, ['invoices', 'invoiceFiles']);
+  },
+  clearInvoices() {
+    emit({ ...state, invoices: [], invoiceFiles: [] }, ['invoices', 'invoiceFiles']);
   },
   setRules(rules: Rule[] | null) {
     emit({ ...state, rules }, ['rules']);
@@ -83,7 +98,7 @@ export const bankActions = {
   /** Deletes everything this section stored in the browser. */
   async wipe() {
     if (db) await Promise.all(KEYS.map((k) => del(k, db)));
-    emit({ loaded: true, statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS });
+    emit({ loaded: true, ...EMPTY });
   },
 };
 

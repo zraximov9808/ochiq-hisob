@@ -17,6 +17,7 @@ import { BalancePage, IncomePage, TaxPage, TrialBalancePage } from './ui/pages/R
 import { SubaccountsPage } from './ui/pages/SubaccountsPage';
 
 const BankPage = lazy(() => import('./ui/bank/BankPage'));
+const AuditPage = lazy(() => import('./ui/audit/AuditPage'));
 
 type ImportResult =
   | { kind: 'journal'; entries: ParsedEntry[]; errors: string[]; file: string }
@@ -116,6 +117,12 @@ export default function App() {
             <BankPage />
           </Suspense>
         );
+      case 'audit':
+        return (
+          <Suspense fallback={<div className="empty">{t('Yuklanmoqda…')}</div>}>
+            <AuditPage />
+          </Suspense>
+        );
       case 'settings':
         return <SettingsPage />;
       default:
@@ -123,16 +130,17 @@ export default function App() {
     }
   })();
 
+  const fullWidth = ui.page === 'bank' || ui.page === 'audit';
   const count = imported ? (imported.kind === 'journal' ? imported.entries.length : imported.opening.length) : 0;
   return (
     <ReportContext.Provider value={report}>
       <div className="app">
         <SideNav />
         <div className="main">
-          {ui.page !== 'bank' && <TopBar onExcel={onExcel} />}
-          <div className={ui.page === 'bank' ? 'content full' : 'content'}>
+          {!fullWidth && <TopBar onExcel={onExcel} />}
+          <div className={fullWidth ? 'content full' : 'content'}>
             {page}
-            {ui.page !== 'bank' && <ChecksPanel />}
+            {!fullWidth && <ChecksPanel />}
           </div>
         </div>
       </div>

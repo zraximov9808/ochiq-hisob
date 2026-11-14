@@ -31,6 +31,16 @@ Bir yoki bir nechta bank vipiskasini (.xlsx) tashlang. Bo‘lim quyidagilarni qi
 
 Vipiskalar faqat brauzerda (IndexedDB) saqlanadi; “Hammasini o‘chirish” tugmasi bor.
 
+## Ekspres audit bo‘limi
+
+Bank vipiskalari va hisob-faktura reyestrlarini (my.soliq / Didox eksporti, .xlsx — kirim va chiqim) birga yuklang. Har bir korxona (STIR bo‘yicha) uchun:
+
+- **Kirgan pul** (bankka tushgan) va **Chiqqan pul** (to‘langan),
+- **Kirgan faktura** (bizga yozilgan) va **Chiqqan faktura** (biz yozgan),
+- **Saldo** = chiqqan faktura + chiqqan pul − kirgan pul − kirgan faktura: musbat — **debitor** (bizga qarz), manfiy — **kreditor** (bizning qarzimiz).
+
+Fakturaning yo‘nalishi korxona STIR’idan aniqlanadi; hisobga faqat “Подписан” fakturalar olinadi (“Ожидает” — ixtiyoriy, “Отменен”/“Отказ” — yo‘q). Soliqlar, bank komissiyalari, ichki o‘tkazmalar, valyuta konvertatsiyasi, ta’sischi ustav puli va ish haqi alohida “hisobga olinmagan” ro‘yxatda ko‘rsatiladi. STIR’i yo‘q (yoki “000000000”) bank qatorlari kontragentga nomi bo‘yicha bog‘lanadi. Har bir kontragent uchun solishtirish dalolatnomasi va umumiy Excel hisobot yuklab olinadi. Boshlang‘ich qoldiq (oldingi davr qarzlari) hozircha hisobga olinmaydi.
+
 ### Yangi bank formatini qo‘shish
 
 1. `src/bank/parsers/` ga yangi fayl: `isFormatX(rows)` (sarlavha matnidan tanish) va `parseFormatX(rows, file): ParsedStatement`.

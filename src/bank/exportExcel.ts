@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import { correspondents, fxSummary, monthly, typeSummary, GROUPS } from './aggregates';
 import type { Analysis } from './analyze';
+import { companySlug } from './names';
 import { FLAG_TEXT } from './flagsText';
 import type { BankAccount, Operation } from './model';
 import { DEFAULT_RULES } from './rules/defaultRules';
@@ -20,14 +21,7 @@ const ref = (sheet: string, cell: string) => `'${sheet.replace(/'/g, "''")}'!${c
 
 /** "ООО "NAMUNA SAVDO"" → "NAMUNA_SAVDO_bank_2026.xlsx". */
 export function bankFileName(a: Analysis): string {
-  const name =
-    a.company.name
-      .replace(/(?<!\p{L})(ООО|OOO|МЧЖ|MCHJ|MChJ|XK|ХК|АЖ|AJ|АО|ЧП|СП|SP|QK|ҚК|YATT|ЯТТ)(?!\p{L})/giu, ' ')
-      .replace(/["«»“”'`]/g, ' ')
-      .trim()
-      .replace(/[^\p{L}\p{N}]+/gu, '_')
-      .replace(/^_+|_+$/g, '') || 'kompaniya';
-  return `${name}_bank_${(a.company.periodTo || new Date().toISOString()).slice(0, 4)}.xlsx`;
+  return `${companySlug(a.company.name)}_bank_${(a.company.periodTo || new Date().toISOString()).slice(0, 4)}.xlsx`;
 }
 
 function headerRow(ws: ExcelJS.Worksheet, rowNo: number, titles: string[]) {
