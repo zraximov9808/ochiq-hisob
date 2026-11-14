@@ -5,3 +5,5 @@ samples/
 node_modules/
 dist/
 *.tsbuildinfo
+.vercel/
+.env*
