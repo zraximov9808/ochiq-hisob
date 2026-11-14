@@ -73,3 +73,11 @@ describe('detect and read', () => {
     expect(s.operations[0].korrAccount).toBe('10111000600000000001');
   });
 });
+
+test('rows with empty leading cells come back dense (no array holes)', async () => {
+  const wb = new ExcelJS.Workbook();
+  wb.addWorksheet('S').getCell('C2').value = 'x';
+  const [rows] = await readWorkbookRows((await wb.xlsx.writeBuffer()) as ArrayBuffer);
+  expect(Object.keys(rows[1])).toEqual(['0', '1', '2']);
+  expect(rows[1].findIndex((c) => c === 'x')).toBe(2);
+});

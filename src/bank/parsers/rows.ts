@@ -20,7 +20,8 @@ export async function readWorkbookRows(data: ArrayBuffer): Promise<Cell[][][]> {
   return wb.worksheets.map((ws) => {
     const rows: Cell[][] = [];
     ws.eachRow({ includeEmpty: true }, (row, n) => {
-      rows[n - 1] = (row.values as unknown[]).slice(1).map(plainCell);
+      // row.values is sparse when leading cells are empty; Array.from fills the holes so .map/.findIndex see every column.
+      rows[n - 1] = Array.from(row.values as unknown[]).slice(1).map(plainCell);
     });
     for (let i = 0; i < rows.length; i++) rows[i] ??= [];
     return rows;
