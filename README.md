@@ -45,6 +45,7 @@ Fakturaning yo‘nalishi korxona STIR’idan aniqlanadi; hisobga faqat “Под
 
 GTD hisobotini (“Отчет о таможенном оформлении товаров” Excel shabloni) va kirim/chiqim hisob-faktura reyestrlarini yuklang. Har bir tovar uchun **Kirim soni**, **Chiqim soni** va **Qoldiq** chiqadi; sana bo‘yicha filtr (davr boshiga qoldiq + davrdagi harakat) bor.
 
+- **Excel shablon yuklab olish** tugmasi bo‘sh GTD shablonini (`GTD_shablon.xlsx`: kerakli ustunlar, rejim ro‘yxati, yo‘riqnoma varag‘i) beradi — GTD hisobotingiz bo‘lmasa, import tovarlarni shu shablonga yozib yuklang.
 - Kirim: GTD (import rejimlari) va bizga yozilgan fakturalardagi tovar qatorlari; chiqim: biz yozgan fakturalar (eksport GTD — “ЭК” ham chiqim).
 - Tovarlar nomi bo‘yicha bog‘lanadi: GTD tavsifining ruscha qismi olinadi (“кол.”, “Изг.:”, “вес:” izohlarisiz), 1–2 harflik xatolar bitta tovar hisoblanadi.
 - GTD’da soni ko‘rsatilmagan qatorlar (faqat joylar soni) alohida ro‘yxatda — sonini qo‘lda kiritish, keyin o‘zgartirish yoki × bilan o‘chirish mumkin; harakatlarda “qo‘lda” deb belgilanadi.

@@ -48,6 +48,12 @@ export default function OmborPage() {
   const negatives = stock.rows.filter((r) => r.negative).length;
   const hasData = bank.gtd.length > 0 || bank.invoices.length > 0;
 
+  const downloadTemplate = async () => {
+    const { buildGtdTemplate } = await import('../../stock/template');
+    const buf = await (await buildGtdTemplate()).xlsx.writeBuffer();
+    downloadBlob(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'GTD_shablon.xlsx');
+  };
+
   const exportXlsx = async () => {
     const { buildStockWorkbook } = await import('../../stock/exportStock');
     const buf = await (await buildStockWorkbook({ ...stock, rows }, { from, to, company: companyName })).xlsx.writeBuffer();
@@ -62,6 +68,9 @@ export default function OmborPage() {
           <p className="muted">{t('Tovarlar kirim-chiqimi nazorati: import (GTD) va kirim fakturalari — kirim, chiqim fakturalari — chiqim. Qoldiq = kirim − chiqim.')}</p>
         </div>
         <div className="toolbar">
+          <button className="btn" onClick={downloadTemplate} title={t('Import tovarlar (GTD) uchun bo‘sh Excel shablon va yo‘riqnoma')}>
+            {t('Excel shablon yuklab olish')}
+          </button>
           <button className="btn primary" disabled={!rows.length} onClick={exportXlsx}>
             {t('Excel yuklab olish')}
           </button>
@@ -198,14 +207,16 @@ function Upload() {
       try {
         if (!/\.xlsx$/i.test(f.name)) throw new Error('Faqat .xlsx fayllar o‘qiladi.');
         const sheets = await readWorkbookRows(await f.arrayBuffer());
-        const g = sheets.filter(isGtdSheet).flatMap((s) => parseGtd(s, f.name));
-        const inv = sheets.filter(isInvoiceSheet).flatMap((s) => parseInvoices(s, f.name));
-        if (!g.length && !inv.length) throw new Error('Bu fayl GTD hisoboti ham, hisob-faktura reyestri ham emas.');
-        if (g.length) {
+        const gSheets = sheets.filter(isGtdSheet);
+        const invSheets = sheets.filter(isInvoiceSheet);
+        if (!gSheets.length && !invSheets.length) throw new Error('Bu fayl GTD hisoboti ham, hisob-faktura reyestri ham emas.');
+        const g = gSheets.flatMap((s) => parseGtd(s, f.name));
+        const inv = invSheets.flatMap((s) => parseInvoices(s, f.name));
+        if (gSheets.length) {
           gtd.push(...g);
           gtdFiles.push({ file: f.name, ok: true, count: g.length });
         }
-        if (inv.length) {
+        if (invSheets.length) {
           invoices.push(...inv);
           invFiles.push({ file: f.name, ok: true, count: inv.length });
         }
@@ -220,7 +231,7 @@ function Upload() {
   };
 
   const files = [
-    ...bank.gtdFiles.map((f) => ({ ...f, what: f.ok ? `GTD: ${f.count} ta tovar` : f.error ?? '' })),
+    ...bank.gtdFiles.map((f) => ({ ...f, what: f.ok ? (f.count ? `GTD: ${f.count} ta tovar` : 'GTD shabloni bo‘sh — tovar qatorlari yo‘q') : f.error ?? '' })),
     ...bank.invoiceFiles.map((f) => ({ ...f, what: f.ok ? `${t('hisob-fakturalar')}: ${f.count}` : f.error ?? '' })),
   ];
   return (
@@ -244,7 +255,7 @@ function Upload() {
       >
         <input ref={input} type="file" accept=".xlsx" multiple hidden onChange={(e) => void handle(e.target.files)} />
         <div className="dz-title">{busy ? t('O‘qilmoqda…') : t('GTD hisoboti (Excel shablon) va kirim/chiqim faktura reyestrlarini shu yerga tashlang')}</div>
-        <div className="muted">{t('Fayl turi avtomatik aniqlanadi. Ekspres auditda yuklangan fakturalar shu yerda ham ishlatiladi.')}</div>
+        <div className="muted">{t('Fayl turi avtomatik aniqlanadi. Ekspres auditda yuklangan fakturalar shu yerda ham ishlatiladi. GTD hisobotingiz bo‘lmasa, “Excel shablon yuklab olish” orqali bo‘sh shablonni to‘ldiring.')}</div>
         <div className="dz-safe">🔒 {t('Fayllar faqat sizning brauzeringizda qayta ishlanadi — hech qayerga yuborilmaydi.')}</div>
       </div>
       {files.length > 0 && (

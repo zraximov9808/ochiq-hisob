@@ -72,6 +72,9 @@ export function loadBank(): Promise<void> {
   return loading;
 }
 
+/** A file uploaded again replaces its earlier entry in the list of loaded files. */
+const replaceByName = <T extends { file: string }>(old: T[], added: T[]) => [...old.filter((f) => !added.some((a) => a.file === f.file)), ...added];
+
 export const bankActions = {
   addStatements(statements: ParsedStatement[], files: FileResult[]) {
     emit({ ...state, statements: [...state.statements, ...statements], files: [...state.files, ...files] }, ['statements', 'files']);
@@ -82,11 +85,11 @@ export const bankActions = {
   addInvoices(invoices: Invoice[], files: BankState['invoiceFiles']) {
     // A newer upload of the same invoice replaces the stored one (older versions kept no goods lines).
     const fresh = new Set(invoices.map((i) => i.id));
-    emit({ ...state, invoices: [...state.invoices.filter((i) => !fresh.has(i.id)), ...invoices], invoiceFiles: [...state.invoiceFiles, ...files] }, ['invoices', 'invoiceFiles']);
+    emit({ ...state, invoices: [...state.invoices.filter((i) => !fresh.has(i.id)), ...invoices], invoiceFiles: replaceByName(state.invoiceFiles, files) }, ['invoices', 'invoiceFiles']);
   },
   addGtd(items: GtdItem[], files: BankState['gtdFiles']) {
     const fresh = new Set(items.map((g) => g.id));
-    emit({ ...state, gtd: [...state.gtd.filter((g) => !fresh.has(g.id)), ...items], gtdFiles: [...state.gtdFiles, ...files] }, ['gtd', 'gtdFiles']);
+    emit({ ...state, gtd: [...state.gtd.filter((g) => !fresh.has(g.id)), ...items], gtdFiles: replaceByName(state.gtdFiles, files) }, ['gtd', 'gtdFiles']);
   },
   clearGtd() {
     emit({ ...state, gtd: [], gtdFiles: [], stockQty: {} }, ['gtd', 'gtdFiles', 'stockQty']);
