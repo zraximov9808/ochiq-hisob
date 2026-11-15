@@ -13,6 +13,8 @@ export interface StockMove {
   source: 'gtd' | 'invoice';
   doc: string;
   party: string;
+  /** Quantity typed in by hand for a GTD line that does not state one. */
+  manual?: boolean;
 }
 
 export interface StockRow {
@@ -83,6 +85,7 @@ export function gtdMoves(items: GtdItem[], overrides: Record<string, number>): S
     name: productDisplay(g.name),
     dir: /^\s*ЭК/i.test(g.regime) ? 'out' : 'in',
     qty: overrides[g.id] ?? g.qty,
+    manual: g.id in overrides ? true : undefined,
     unit: g.unit,
     source: 'gtd',
     doc: `GTD № ${g.gtdNo}, ${g.itemNo}-tovar`,

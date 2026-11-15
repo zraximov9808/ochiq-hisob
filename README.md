@@ -47,7 +47,7 @@ GTD hisobotini (“Отчет о таможенном оформлении то�
 
 - Kirim: GTD (import rejimlari) va bizga yozilgan fakturalardagi tovar qatorlari; chiqim: biz yozgan fakturalar (eksport GTD — “ЭК” ham chiqim).
 - Tovarlar nomi bo‘yicha bog‘lanadi: GTD tavsifining ruscha qismi olinadi (“кол.”, “Изг.:”, “вес:” izohlarisiz), 1–2 harflik xatolar bitta tovar hisoblanadi.
-- GTD’da soni ko‘rsatilmagan qatorlar (faqat joylar soni) alohida ro‘yxatda — sonini qo‘lda kiritish mumkin.
+- GTD’da soni ko‘rsatilmagan qatorlar (faqat joylar soni) alohida ro‘yxatda — sonini qo‘lda kiritish, keyin o‘zgartirish yoki × bilan o‘chirish mumkin; harakatlarda “qo‘lda” deb belgilanadi.
 - Xizmatlar (ijara, sertifikatlash va h.k.) va “Подписан”dan boshqa holatdagi fakturalar omborga kirmaydi.
 
 ### Yangi bank formatini qo‘shish

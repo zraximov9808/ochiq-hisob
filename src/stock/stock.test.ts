@@ -124,3 +124,14 @@ test('lines on the same day keep their document order', () => {
   const s = buildStock([], gtd, { companyInn: '999000111', includePending: false, qtyOverrides: {} });
   expect(s.unknownQty.map((m) => m.id)).toEqual(['gtd:0000303:1', 'gtd:0000303:2', 'gtd:0000303:3']);
 });
+
+test('hand-typed GTD quantities are marked as manual and can be changed', () => {
+  const gtd = parseGtd(gtdRows(), 'gtd.xlsx');
+  const id = gtd[3].id;
+  const first = buildStock([], gtd, { companyInn: '999000111', includePending: false, qtyOverrides: { [id]: 200 } });
+  const move = first.rows.flatMap((r) => r.moves).find((m) => m.id === id)!;
+  expect(move).toMatchObject({ qty: 200, manual: true });
+  expect(first.rows.flatMap((r) => r.moves).find((m) => m.id === gtd[0].id)!.manual).toBeFalsy();
+  const changed = buildStock([], gtd, { companyInn: '999000111', includePending: false, qtyOverrides: { [id]: 180 } });
+  expect(changed.rows.find((r) => r.key.startsWith('скрытый сливной бачок'))!.qtyIn).toBe(180);
+});

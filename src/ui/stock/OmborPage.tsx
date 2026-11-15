@@ -3,6 +3,7 @@ import { companyInnOf, isInvoiceSheet, parseInvoices, type Invoice } from '../..
 import { companySlug } from '../../bank/names';
 import { readWorkbookRows } from '../../bank/parsers/rows';
 import { isGtdSheet, parseGtd, type GtdItem } from '../../stock/gtd';
+import { productDisplay } from '../../stock/names';
 import { buildStock, type StockRow } from '../../stock/stock';
 import { useT } from '../../i18n/useT';
 import { downloadBlob } from '../../store/fileIO';
@@ -112,7 +113,7 @@ export default function OmborPage() {
             </div>
           </div>
 
-          {stock.unknownQty.length > 0 && <UnknownQty moves={stock.unknownQty} gtd={bank.gtd} />}
+          {bank.gtd.some((g) => g.qty === null) && <ManualQty gtd={bank.gtd} overrides={bank.stockQty} />}
 
           <div className="toolbar">
             <input className="input" style={{ maxWidth: 320 }} placeholder={t('Qidirish: tovar nomi')} value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -264,15 +265,34 @@ function Upload() {
   );
 }
 
-function UnknownQty({ moves, gtd }: { moves: Array<{ id: string; name: string; date: string }>; gtd: GtdItem[] }) {
+/**
+ * GTD lines that state no quantity. Every such line stays listed so a hand-typed quantity can be
+ * changed later or removed (×); the table folds away once all of them are filled.
+ */
+function ManualQty({ gtd, overrides }: { gtd: GtdItem[]; overrides: Record<string, number> }) {
   const t = useT();
-  const byId = new Map(gtd.map((g) => [g.id, g]));
+  const lines = gtd
+    .filter((g) => g.qty === null)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.gtdNo.localeCompare(b.gtdNo) || Number(a.itemNo) - Number(b.itemNo));
+  const missing = lines.filter((g) => !(g.id in overrides)).length;
+  const save = (id: string, text: string) => {
+    if (!text.trim()) return bankActions.setStockQty(id, null);
+    const v = Number(text.replace(/\s/g, '').replace(',', '.'));
+    if (!isNaN(v) && v >= 0) bankActions.setStockQty(id, v);
+    else toast('Son noto‘g‘ri kiritildi');
+  };
   return (
-    <div className="card table-wrap">
-      <div className="card-pad">
-        <b>{t('GTD’da soni ko‘rsatilmagan tovarlar')}</b>
-        <div className="muted small">{t('Bu qatorlarda faqat joylar soni va og‘irlik bor. Haqiqiy sonini (invoys yoki yuk xatidan) kiriting — qoldiq shunga qarab hisoblanadi.')}</div>
-      </div>
+    <details className="card table-wrap" open={missing > 0}>
+      <summary className="card-pad" style={{ cursor: 'pointer' }}>
+        <b>{t('GTD’da soni ko‘rsatilmagan tovarlar')}</b>{' '}
+        <span className={missing ? 'tag warn' : 'tag'}>
+          {missing ? `${missing} ${t('ta to‘ldirilmagan')}` : t('hammasi to‘ldirilgan')}
+        </span>{' '}
+        <span className="muted small">
+          ({lines.length - missing} {t('tasi qo‘lda kiritilgan — o‘zgartirish mumkin')})
+        </span>
+        <div className="muted small">{t('Bu qatorlarda faqat joylar soni va og‘irlik bor. Haqiqiy sonini (invoys yoki yuk xatidan) kiriting — qoldiq shunga qarab hisoblanadi. Sonni o‘zgartirib Enter bosing yoki × bilan o‘chiring.')}</div>
+      </summary>
       <table className="grid">
         <thead>
           <tr>
@@ -280,40 +300,59 @@ function UnknownQty({ moves, gtd }: { moves: Array<{ id: string; name: string; d
             <th>GTD</th>
             <th>{t('Tovar')}</th>
             <th className="r">{t('Joylar soni')}</th>
-            <th className="r" style={{ width: 140 }}>
+            <th className="r" style={{ width: 150 }}>
               {t('Soni')}
             </th>
+            <th style={{ width: 40 }} />
           </tr>
         </thead>
         <tbody>
-          {moves.map((m) => {
-            const g = byId.get(m.id);
+          {lines.map((g) => {
+            const value = overrides[g.id];
+            const filled = value !== undefined;
             return (
-              <tr key={m.id}>
-                <td>{fmtDay(m.date)}</td>
+              <tr key={g.id}>
+                <td>{fmtDay(g.date)}</td>
                 <td className="code">
-                  {g?.gtdNo} / {g?.itemNo}
+                  {g.gtdNo} / {g.itemNo}
                 </td>
-                <td className="small">{m.name}</td>
-                <td className="r muted">{g?.places ?? '—'}</td>
+                <td className="small">{productDisplay(g.name)}</td>
+                <td className="r muted">{g.places ?? '—'}</td>
                 <td>
                   <input
-                    className="input num"
+                    key={`${g.id}:${value ?? ''}`}
+                    className={`input num ${filled ? '' : 'bad'}`}
                     inputMode="decimal"
+                    aria-label={t('Soni')}
                     placeholder={t('kiriting')}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                    defaultValue={filled ? String(value) : ''}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                      if (e.key === 'Escape') {
+                        (e.target as HTMLInputElement).value = filled ? String(value) : '';
+                        (e.target as HTMLInputElement).blur();
+                      }
+                    }}
                     onBlur={(e) => {
-                      const v = Number(e.target.value.replace(/\s/g, '').replace(',', '.'));
-                      if (e.target.value.trim() && !isNaN(v) && v >= 0) bankActions.setStockQty(m.id, v);
+                      const text = e.target.value;
+                      if (text.trim() === (filled ? String(value) : '')) return;
+                      save(g.id, text);
                     }}
                   />
+                </td>
+                <td>
+                  {filled && (
+                    <button className="icon-btn" aria-label={t('Qo‘lda kiritilgan sonni o‘chirish')} title={t('Qo‘lda kiritilgan sonni o‘chirish')} onClick={() => bankActions.setStockQty(g.id, null)}>
+                      ×
+                    </button>
+                  )}
                 </td>
               </tr>
             );
           })}
         </tbody>
       </table>
-    </div>
+    </details>
   );
 }
 
@@ -350,7 +389,10 @@ function MovesModal({ row, onClose }: { row: StockRow; onClose: () => void }) {
               <td>{fmtDay(m.date)}</td>
               <td className="small">{m.doc}</td>
               <td className="small">{m.party}</td>
-              <td className="r ok-text">{m.dir === 'in' ? (m.qty === null ? t('noma’lum') : fmtQty(m.qty)) : ''}</td>
+              <td className="r ok-text">
+                {m.dir === 'in' ? (m.qty === null ? t('noma’lum') : fmtQty(m.qty)) : ''}
+                {m.manual && <div className="tag">{t('qo‘lda')}</div>}
+              </td>
               <td className="r kt-code">{m.dir === 'out' ? fmtQty(m.qty ?? 0) : ''}</td>
               <td className="r">
                 <Qty v={m.balance} />
