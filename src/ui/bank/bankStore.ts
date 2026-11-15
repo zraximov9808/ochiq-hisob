@@ -2,6 +2,7 @@ import { createStore, del, get, set } from 'idb-keyval';
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_SETTINGS, type Override, type Settings } from '../../bank/analyze';
 import type { Invoice } from '../../audit/invoices';
+import type { GtdItem } from '../../stock/gtd';
 import type { Rule } from '../../bank/classify';
 import type { ParsedStatement } from '../../bank/model';
 import { DEFAULT_RULES } from '../../bank/rules/defaultRules';
@@ -26,12 +27,16 @@ export interface BankState {
   /** Ekspres audit: e-invoices and the files they came from. */
   invoices: Invoice[];
   invoiceFiles: Array<{ file: string; ok: boolean; error?: string; count: number }>;
+  /** Ombor: customs declaration lines, their files, and quantities typed in by hand. */
+  gtd: GtdItem[];
+  gtdFiles: Array<{ file: string; ok: boolean; error?: string; count: number }>;
+  stockQty: Record<string, number>;
 }
 
 const db = typeof indexedDB === 'undefined' ? undefined : createStore('ochiq-hisob-bank', 'kv');
-const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings', 'invoices', 'invoiceFiles'] as const;
+const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings', 'invoices', 'invoiceFiles', 'gtd', 'gtdFiles', 'stockQty'] as const;
 
-const EMPTY: Omit<BankState, 'loaded'> = { statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS, invoices: [], invoiceFiles: [] };
+const EMPTY: Omit<BankState, 'loaded'> = { statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS, invoices: [], invoiceFiles: [], gtd: [], gtdFiles: [], stockQty: {} };
 let state: BankState = { loaded: false, ...EMPTY };
 const listeners = new Set<() => void>();
 
@@ -59,6 +64,9 @@ export function loadBank(): Promise<void> {
       settings: { ...DEFAULT_SETTINGS, ...((v.settings as Settings) ?? {}) },
       invoices: (v.invoices as Invoice[]) ?? [],
       invoiceFiles: (v.invoiceFiles as BankState['invoiceFiles']) ?? [],
+      gtd: (v.gtd as GtdItem[]) ?? [],
+      gtdFiles: (v.gtdFiles as BankState['gtdFiles']) ?? [],
+      stockQty: (v.stockQty as Record<string, number>) ?? {},
     });
   });
   return loading;
@@ -72,9 +80,22 @@ export const bankActions = {
     emit({ ...state, statements: [], files: [], overrides: {}, reviewed: [] }, ['statements', 'files', 'overrides', 'reviewed']);
   },
   addInvoices(invoices: Invoice[], files: BankState['invoiceFiles']) {
-    const seen = new Set(state.invoices.map((i) => i.id));
-    const fresh = invoices.filter((i) => !seen.has(i.id));
-    emit({ ...state, invoices: [...state.invoices, ...fresh], invoiceFiles: [...state.invoiceFiles, ...files] }, ['invoices', 'invoiceFiles']);
+    // A newer upload of the same invoice replaces the stored one (older versions kept no goods lines).
+    const fresh = new Set(invoices.map((i) => i.id));
+    emit({ ...state, invoices: [...state.invoices.filter((i) => !fresh.has(i.id)), ...invoices], invoiceFiles: [...state.invoiceFiles, ...files] }, ['invoices', 'invoiceFiles']);
+  },
+  addGtd(items: GtdItem[], files: BankState['gtdFiles']) {
+    const fresh = new Set(items.map((g) => g.id));
+    emit({ ...state, gtd: [...state.gtd.filter((g) => !fresh.has(g.id)), ...items], gtdFiles: [...state.gtdFiles, ...files] }, ['gtd', 'gtdFiles']);
+  },
+  clearGtd() {
+    emit({ ...state, gtd: [], gtdFiles: [], stockQty: {} }, ['gtd', 'gtdFiles', 'stockQty']);
+  },
+  setStockQty(id: string, qty: number | null) {
+    const stockQty = { ...state.stockQty };
+    if (qty === null) delete stockQty[id];
+    else stockQty[id] = qty;
+    emit({ ...state, stockQty }, ['stockQty']);
   },
   clearInvoices() {
     emit({ ...state, invoices: [], invoiceFiles: [] }, ['invoices', 'invoiceFiles']);

@@ -19,7 +19,22 @@ export interface Invoice {
   vat: number;
   total: number;
   lines: number;
+  /** Goods and services on the invoice (absent in data saved by older versions). */
+  items: InvoiceItem[];
   file: string;
+}
+
+export interface InvoiceItem {
+  name: string;
+  /** ИКПУ (national catalogue) code. */
+  code: string;
+  unit: string;
+  qty: number | null;
+  amount: number;
+  vat: number;
+  total: number;
+  /** "Перепродажа", "Оказание услуг", "Собственное производство"… */
+  origin: string;
 }
 
 const norm = (s: string) => s.toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
@@ -67,6 +82,26 @@ export function parseInvoices(rows: Cell[][], file: string): Invoice[] {
     total: starts('Стоимость поставки с учетом НДС') >= 0 ? starts('Стоимость поставки с учетом НДС') : starts('Стоимость поставки с учётом НДС'),
   };
   const lineNoCol = head.findIndex((x, i) => i > C.id && x === '№');
+  const I = {
+    name: starts('Примечание к товару'),
+    code: starts('Идентификационный код'),
+    unit: col('Единица измерения'),
+    qty: col('Количество'),
+    origin: col('Происхождение товара'),
+  };
+  const item = (row: Cell[]): InvoiceItem => {
+    const q = I.qty < 0 ? null : Number(String(cellText(row[I.qty])).replace(/\s/g, '').replace(',', '.'));
+    return {
+      name: I.name < 0 ? '' : cellText(row[I.name]),
+      code: I.code < 0 ? '' : cellText(row[I.code]).split(/\s/)[0],
+      unit: I.unit < 0 ? '' : cellText(row[I.unit]),
+      qty: q === null || isNaN(q) ? null : q,
+      amount: C.amount < 0 ? 0 : moneyCell(row[C.amount]) ?? 0,
+      vat: C.vat < 0 ? 0 : moneyCell(row[C.vat]) ?? 0,
+      total: moneyCell(row[C.total]) ?? 0,
+      origin: I.origin < 0 ? '' : cellText(row[I.origin]),
+    };
+  };
   if (C.id < 0 || C.total < 0 || C.no < 0) throw new Error(`${file}: hisob-faktura ustunlari to‘liq emas (ID, raqam yoki jami summa topilmadi).`);
 
   const out: Invoice[] = [];
@@ -74,7 +109,11 @@ export function parseInvoices(rows: Cell[][], file: string): Invoice[] {
     const row = rows[r] ?? [];
     const id = cellText(row[C.id]);
     if (!id) {
-      if (out.length && row.some((c) => cellText(c) !== '')) out[out.length - 1].lines++;
+      const last = out[out.length - 1];
+      if (last && row.some((c) => cellText(c) !== '')) {
+        last.items.push(item(row));
+        last.lines++;
+      }
       continue;
     }
     const money = (i: number) => (i < 0 ? 0 : moneyCell(row[i]) ?? 0);
@@ -98,6 +137,7 @@ export function parseInvoices(rows: Cell[][], file: string): Invoice[] {
       vat: money(C.vat),
       total: money(C.total),
       lines: firstLine,
+      items: firstLine ? [item(row)] : [],
       file,
     });
   }

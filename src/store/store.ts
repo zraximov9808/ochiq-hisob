@@ -6,7 +6,7 @@ import { emptyDoc, type Doc } from '../engine/types';
 import { parseDocFile, serializeDoc } from './docFile';
 import * as H from './history';
 
-export type PageId = 'opening' | 'journal' | 'subaccounts' | 'balance' | 'income' | 'tax' | 'trial' | 'settings' | 'help' | 'bank' | 'audit';
+export type PageId = 'opening' | 'journal' | 'subaccounts' | 'balance' | 'income' | 'tax' | 'trial' | 'settings' | 'help' | 'bank' | 'audit' | 'ombor';
 
 export interface Ui {
   page: PageId;

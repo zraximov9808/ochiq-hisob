@@ -18,6 +18,7 @@ import { SubaccountsPage } from './ui/pages/SubaccountsPage';
 
 const BankPage = lazy(() => import('./ui/bank/BankPage'));
 const AuditPage = lazy(() => import('./ui/audit/AuditPage'));
+const OmborPage = lazy(() => import('./ui/stock/OmborPage'));
 
 type ImportResult =
   | { kind: 'journal'; entries: ParsedEntry[]; errors: string[]; file: string }
@@ -123,6 +124,12 @@ export default function App() {
             <AuditPage />
           </Suspense>
         );
+      case 'ombor':
+        return (
+          <Suspense fallback={<div className="empty">{t('Yuklanmoqda…')}</div>}>
+            <OmborPage />
+          </Suspense>
+        );
       case 'settings':
         return <SettingsPage />;
       default:
@@ -130,7 +137,7 @@ export default function App() {
     }
   })();
 
-  const fullWidth = ui.page === 'bank' || ui.page === 'audit';
+  const fullWidth = ui.page === 'bank' || ui.page === 'audit' || ui.page === 'ombor';
   const count = imported ? (imported.kind === 'journal' ? imported.entries.length : imported.opening.length) : 0;
   return (
     <ReportContext.Provider value={report}>
