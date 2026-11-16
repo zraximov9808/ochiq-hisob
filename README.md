@@ -33,7 +33,7 @@ Vipiskalar faqat brauzerda (IndexedDB) saqlanadi; “Hammasini o‘chirish” tu
 
 ## Ekspres audit bo‘limi
 
-Bank vipiskalari va hisob-faktura reyestrlarini (my.soliq / Didox eksporti, .xlsx — kirim va chiqim) birga yuklang. Har bir korxona (STIR bo‘yicha) uchun:
+Bank vipiskalari va hisob-faktura reyestrlarini (my.soliq / Didox eksporti .xlsx yoki soliq.uz CSV — kirim va chiqim) birga yuklang. Har bir korxona (STIR bo‘yicha) uchun:
 
 - **Kirgan pul** (bankka tushgan) va **Chiqqan pul** (to‘langan),
 - **Kirgan faktura** (bizga yozilgan) va **Chiqqan faktura** (biz yozgan),
@@ -50,6 +50,19 @@ GTD hisobotini (“Отчет о таможенном оформлении то�
 - Tovarlar nomi bo‘yicha bog‘lanadi: GTD tavsifining ruscha qismi olinadi (“кол.”, “Изг.:”, “вес:” izohlarisiz), 1–2 harflik xatolar bitta tovar hisoblanadi.
 - GTD’da soni ko‘rsatilmagan qatorlar (faqat joylar soni) alohida ro‘yxatda — sonini qo‘lda kiritish, keyin o‘zgartirish yoki × bilan o‘chirish mumkin; harakatlarda “qo‘lda” deb belgilanadi.
 - Xizmatlar (ijara, sertifikatlash va h.k.) va “Подписан”dan boshqa holatdagi fakturalar omborga kirmaydi.
+- **Tovar nomi** filtri (Exceldagi avtofiltr kabi: qidiruv, “Hammasi”, belgilash) — jadval va Excel eksport tanlangan tovarlar bo‘yicha.
+- Sotilgan, lekin kirimi (GTD yoki kirim fakturasi) topilmagan tovarlar “GTD kerak” deb belgilanadi va GTD shablonini yuklash taklif qilinadi.
+
+## Hujjatlardan provodka bo‘limi
+
+Bank vipiskalari, kirim/chiqim hisob-faktura reyestrlari (Didox / my.soliq .xlsx yoki soliq.uz CSV) va GTD hisobotini bitta joyga tashlang — provodkalar jurnalga “avto” belgisi bilan tushadi, balans, 2-shakl va foyda solig‘i shulardan avtomatik to‘ladi.
+
+- Bank: tushum Dt 5110 Kt 4010 (kontragent subschyoti), to‘lov Dt 6010 Kt 5110, komissiya 9690, bojxona bo‘naki 4410, soliqlar 6410/6520, ustav fondi 4610 (+ e’lon Dt 4610 Kt 8330), ichki o‘tkazmalar 5710/5720 orqali. Har bir operatsiya turi va bank hisobi uchun hisobvaraqni o‘zgartirish mumkin.
+- Fakturalar: sotuv Dt 4010 Kt 9020/9030 + QQS 6410; tannarx Dt 9120 Kt 2910 (o‘rtacha tortilgan narx); xarid Dt 2910 / xizmat 9420 Kt 6010 + QQS 4410. Bir faktura ikki reyestrda bo‘lsa — bir marta (tarkibli nusxa ustun). Tarkibsiz (CSV) fakturada QQS va tovar/xizmat ulushi taxminiy — “Diqqat”da ko‘rsatiladi.
+- GTD: tovar qiymati (гр.42 × kurs) Dt 2910 Kt 6010 (xorijiy yetkazib beruvchilar), boj va yig‘im tannarxga, import QQS 4410 ga.
+- Valyuta: Markaziy bank kursi (cbu.uz’dan avtomatik, faqat valyuta kodi va sana yuboriladi; qo‘lda kiritish mumkin), oy oxirida qayta baholash 9540/9620; har oy QQS zachyoti.
+- Qo‘lda tuzatilgan avto-provodka keyingi yuklashda o‘zgarmaydi, o‘chirilgani qaytmaydi; “Avto-provodkalarni tiklash” hammasini qayta yozadi.
+- Ish haqi hisoblash fayllardan chiqmaydi — ogohlantirish beriladi, qo‘lda kiritiladi.
 
 ### Yangi bank formatini qo‘shish
 
