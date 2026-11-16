@@ -3,7 +3,7 @@ import { parseInvoices } from '../audit/invoices';
 import { invoiceRows } from '../audit/testkit';
 import { isGtdSheet, parseGtd } from './gtd';
 import { productKey } from './names';
-import { buildStock, invoiceMoves } from './stock';
+import { buildStock, invoiceMoves, needsGtd, type StockRow } from './stock';
 
 const GTD_HEAD = [
   'гр.1 Tип pежима', 'гр.7 Дата регистрации ГТД', 'гр.7 Справочный номер ГТД', 'гр.7 Код таможенного органа', 'гр.2 Отправитель', 'гр.8 Получатель',
@@ -134,4 +134,14 @@ test('hand-typed GTD quantities are marked as manual and can be changed', () => 
   expect(first.rows.flatMap((r) => r.moves).find((m) => m.id === gtd[0].id)!.manual).toBeFalsy();
   const changed = buildStock([], gtd, { companyInn: '999000111', includePending: false, qtyOverrides: { [id]: 180 } });
   expect(changed.rows.find((r) => r.key.startsWith('скрытый сливной бачок'))!.qtyIn).toBe(180);
+});
+
+describe('needsGtd', () => {
+  const row = (opening: number, qtyIn: number, qtyOut: number): StockRow => ({
+    key: 'k', name: 'n', unit: 'dona', opening, qtyIn, qtyOut, balance: opening + qtyIn - qtyOut, negative: opening + qtyIn - qtyOut < 0, moves: [],
+  });
+  test('sold but never received → GTD needed', () => expect(needsGtd(row(0, 0, 5))).toBe(true));
+  test('received more than sold → fine', () => expect(needsGtd(row(0, 10, 5))).toBe(false));
+  test('sold more than received → GTD needed', () => expect(needsGtd(row(0, 3, 5))).toBe(true));
+  test('only receipts → fine', () => expect(needsGtd(row(0, 3, 0))).toBe(false));
 });

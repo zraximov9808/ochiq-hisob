@@ -46,6 +46,11 @@ export interface StockResult {
   unknownQty: StockMove[];
 }
 
+/** Goods that were sold but whose receipt (customs declaration or purchase invoice) is missing in whole or in part. */
+export function needsGtd(row: StockRow): boolean {
+  return row.qtyOut > 0 && (row.opening + row.qtyIn === 0 || row.negative);
+}
+
 /** Goods lines of signed invoices: sales are outgoing, purchases incoming; services are skipped. */
 export function invoiceMoves(invoices: Invoice[], companyInn: string, includePending: boolean): StockMove[] {
   const allowed = new Set(['Подписан', ...(includePending ? ['Ожидает'] : [])]);

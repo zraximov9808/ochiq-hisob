@@ -4,12 +4,13 @@ import { companySlug } from '../../bank/names';
 import { readWorkbookRows } from '../../bank/parsers/rows';
 import { isGtdSheet, parseGtd, type GtdItem } from '../../stock/gtd';
 import { productDisplay } from '../../stock/names';
-import { buildStock, type StockRow } from '../../stock/stock';
+import { buildStock, needsGtd, type StockRow } from '../../stock/stock';
 import { useT } from '../../i18n/useT';
 import { downloadBlob } from '../../store/fileIO';
 import { Modal, toast } from '../components/common';
 import { bankActions, loadBank, useBank } from '../bank/bankStore';
 import { fmtDay } from '../bank/format';
+import { ProductFilter } from './ProductFilter';
 
 const fmtQty = (v: number) => (v === 0 ? '–' : v.toLocaleString('ru-RU', { maximumFractionDigits: 3 }).replace(/ /g, ' '));
 
@@ -24,7 +25,7 @@ export default function OmborPage() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [includePending, setIncludePending] = useState(false);
-  const [query, setQuery] = useState('');
+  const [picked, setPicked] = useState<Set<string> | null>(null);
   const [onlyNegative, setOnlyNegative] = useState(false);
   const [open, setOpen] = useState<StockRow | null>(null);
 
@@ -43,9 +44,10 @@ export default function OmborPage() {
     [bank.invoices, bank.gtd, bank.stockQty, companyInn, includePending, from, to],
   );
   const oldInvoices = bank.invoices.length > 0 && bank.invoices.every((i) => !i.items);
-  const q = query.trim().toLowerCase();
-  const rows = stock.rows.filter((r) => (!q || r.name.toLowerCase().includes(q)) && (!onlyNegative || r.negative));
+  const rows = stock.rows.filter((r) => (!picked || picked.has(r.key)) && (!onlyNegative || r.negative));
   const negatives = stock.rows.filter((r) => r.negative).length;
+  const gtdNeeded = stock.rows.filter(needsGtd).length;
+  const briefInvoices = bank.invoices.filter((i) => i.brief).length;
   const hasData = bank.gtd.length > 0 || bank.invoices.length > 0;
 
   const downloadTemplate = async () => {
@@ -122,10 +124,26 @@ export default function OmborPage() {
             </div>
           </div>
 
+          {gtdNeeded > 0 && (
+            <div className="banner warn toolbar" style={{ justifyContent: 'space-between' }}>
+              <span>
+                {gtdNeeded} {t('ta tovarning kirimi topilmadi yoki yetarli emas (sotilgan, lekin GTD yoki kirim fakturasi yo‘q). Import tovar bo‘lsa, GTD hisobotini shablon bo‘yicha to‘ldirib yuklang.')}
+              </span>
+              <button className="btn small" onClick={() => void downloadTemplate()}>
+                {t('Excel shablon yuklab olish')}
+              </button>
+            </div>
+          )}
+          {briefInvoices > 0 && (
+            <p className="muted small">
+              {briefInvoices} {t('ta faktura tarkibisiz (soliq.uz CSV) — tovar qatorlari yo‘q, omborga kirmaydi. Batafsil reyestrni (Didox / my.soliq .xlsx) yuklang.')}
+            </p>
+          )}
+
           {bank.gtd.some((g) => g.qty === null) && <ManualQty gtd={bank.gtd} overrides={bank.stockQty} />}
 
           <div className="toolbar">
-            <input className="input" style={{ maxWidth: 320 }} placeholder={t('Qidirish: tovar nomi')} value={query} onChange={(e) => setQuery(e.target.value)} />
+            <ProductFilter options={stock.rows.map((r) => ({ key: r.key, name: r.name }))} selected={picked} onChange={setPicked} />
             <label className="small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
               <input type="checkbox" checked={onlyNegative} onChange={(e) => setOnlyNegative(e.target.checked)} />
               {t('Faqat qoldig‘i manfiylar')}
@@ -152,6 +170,12 @@ export default function OmborPage() {
                   <tr key={r.key} className="clickable" onClick={() => setOpen(r)}>
                     <td>
                       {r.name}
+                      {needsGtd(r) && (
+                        <>
+                          {' '}
+                          <span className="tag warn">{t('GTD kerak')}</span>
+                        </>
+                      )}
                       {r.negative && <div className="err-text small">⚠ {t('chiqim kirimdan ko‘p — kirim hujjati yetishmaydi yoki soni kiritilmagan')}</div>}
                     </td>
                     <td className="muted small">{r.unit}</td>

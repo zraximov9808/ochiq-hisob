@@ -230,3 +230,8 @@ table.grid { width: 100%; border-collapse: collapse; font-variant-numeric: tabul
 .kpi.brand { border-left-color: var(--brand-2); }
 .kpi.warn { border-left-color: var(--warn); }
 .kpi-value { font-size: 19px; font-weight: 750; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.pfilter { position: relative; }
+.pfilter-pop { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; width: min(480px, 90vw); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.pfilter-list { max-height: 320px; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
+.pfilter-item { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; padding: 3px 4px; border-radius: 6px; cursor: pointer; }
+.pfilter-item:hover { background: var(--surface-2); }
