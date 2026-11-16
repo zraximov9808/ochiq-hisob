@@ -1,9 +1,9 @@
 import type { Analysis } from '../bank/analyze';
 import type { BankAccount } from '../bank/model';
 import {
-  DEFAULT_TYPE_ACCOUNTS, FOREIGN_BASE, FOREIGN_POOL, INTERNAL_FX, INTERNAL_UZS, NON_DEDUCTIBLE_TYPES, PAIRED_TRANSITS,
+  DEFAULT_TYPE_ACCOUNTS, FOREIGN_BASE, FOREIGN_POOL, INTERNAL_FX, INTERNAL_UZS, NON_DEDUCTIBLE_TYPES, PAIRED_TRANSITS, VAT_OUT,
 } from './defaults';
-import { rateOn, toTiyin } from './rates';
+import { rateInfo, toTiyin } from './rates';
 import type { AccountRef, AutoDraft, AutoSettings, AutoWarning, Gen, RateBook, RateNeed } from './types';
 
 const CAPITAL_TYPE = "Ustav fondiga hissa (ta'sischidan)";
@@ -20,11 +20,22 @@ export function defaultAccountExpr(acc: BankAccount, all: BankAccount[]): string
 
 const realInn = (inn: string) => /^\d{9}$|^\d{14}$/.test(inn.trim()) && !/^0+$/.test(inn.trim());
 
+const COMBINED_TAX = "QQS / Foyda solig'i / Mol-mulk solig'i";
+
+/** Which tax a combined "QQS / foyda / mol-mulk" payment is, from its purpose text. */
+function taxByPurpose(purpose: string): string | undefined {
+  if (/ндс|добавленн|qqs|ққс|қўшилган/i.test(purpose)) return VAT_OUT;
+  if (/прибыл|foyda|фойда/i.test(purpose)) return '6410[Foyda solig‘i]';
+  if (/имуществ|mol-mulk|мол-мулк/i.test(purpose)) return '6410[Mol-mulk solig‘i]';
+  return undefined;
+}
+
 /** Pairs the so‘m and currency legs of each paired transit and closes the difference to 9430 (loss) / 9390 (gain). */
-function pairTransits(drafts: AutoDraft[]): AutoDraft[] {
+function pairTransits(drafts: AutoDraft[], blocked: Set<string>): AutoDraft[] {
   const out: AutoDraft[] = [];
   const byDate = (a: AutoDraft, b: AutoDraft) => a.date.localeCompare(b.date) || a.src.localeCompare(b.src);
   for (const t of PAIRED_TRANSITS) {
+    if (blocked.has(t)) continue;
     const dr = drafts.filter((d) => d.debit.expr === t).sort(byDate);
     const cr = drafts.filter((d) => d.credit.expr === t).sort(byDate);
     for (let i = 0; i < Math.min(dr.length, cr.length); i++) {
@@ -52,6 +63,9 @@ export function bankEntries(a: Analysis, s: AutoSettings, rates: RateBook): Gen 
   let unclassified = 0;
   let unclassifiedSum = 0;
   let capital = 0;
+  const missing = new Set<string>();
+  const blocked = new Set<string>();
+  const approx = new Map<string, number>();
 
   for (const o of a.operations) {
     const acc = accounts.get(o.account);
@@ -63,16 +77,21 @@ export function bankEntries(a: Analysis, s: AutoSettings, rates: RateBook): Gen 
     const fxAcc = acc.currency !== 'UZS';
     let amount = minor;
     if (fxAcc) {
-      const rate = rateOn(rates, acc.currency, date);
-      if (rate === null) {
-        const key = `${acc.currency}:${date}`;
-        if (!need.has(key)) {
-          need.set(key, { ccy: acc.currency, date });
+      const r = rateInfo(rates, acc.currency, date);
+      const key = `${acc.currency}:${date}`;
+      if (!r || !r.exact) need.set(key, { ccy: acc.currency, date });
+      if (!r) {
+        if (!missing.has(key)) {
+          missing.add(key);
           warnings.push({ kind: 'rate-missing', text: `${acc.currency} kursi ${date} uchun topilmadi — valyuta operatsiyasi provodkasiz qoldi`, ref: key });
         }
+        // A skipped leg would shift the pairing of the other legs: leave that transit unpaired.
+        const typed = o.internal ? undefined : (s.types[o.type] ?? DEFAULT_TYPE_ACCOUNTS[o.type]);
+        if (typed) blocked.add(typed);
         continue;
       }
-      amount = toTiyin(minor, rate);
+      if (!r.exact) approx.set(acc.currency, (approx.get(acc.currency) ?? 0) + 1);
+      amount = toTiyin(minor, r.rate);
     }
 
     const bankRef: AccountRef = { expr: s.accounts[acc.number] ?? defaultAccountExpr(acc, a.accounts), ...(fxAcc ? { fx: true } : {}) };
@@ -89,6 +108,7 @@ export function bankEntries(a: Analysis, s: AutoSettings, rates: RateBook): Gen 
         unclassifiedSum += amount;
         if (!realInn(o.korrInn)) expr = isIn ? UNKNOWN_IN : UNKNOWN_OUT;
       }
+      if (o.type === COMBINED_TAX && expr === DEFAULT_TYPE_ACCOUNTS[COMBINED_TAX]) expr = taxByPurpose(o.purpose) ?? expr;
       if (expr === FOREIGN_BASE) other = { expr: FOREIGN_POOL(acc.currency), ...(fxAcc ? { fx: true } : {}) };
       else other = { expr, party };
     }
@@ -111,7 +131,9 @@ export function bankEntries(a: Analysis, s: AutoSettings, rates: RateBook): Gen 
     }
   }
 
-  drafts.push(...pairTransits(drafts));
+  drafts.push(...pairTransits(drafts, blocked));
+  for (const [ccy, n] of approx)
+    warnings.push({ kind: 'rate-approx', text: `${ccy}: ${n} ta operatsiyada o‘sha kungi MB kursi hali yo‘q — yaqin oldingi kun kursi olindi (aniq kurs cbu.uz’dan so‘raladi)`, ref: ccy, amount: n });
   if (unclassified)
     warnings.push({ kind: 'unclassified', text: `${unclassified} ta bank operatsiyasi qoidaga tushmadi — kontragent bo‘yicha 4010/6010 ga (STIR yo‘q bo‘lsa 6990/4890 ga) yozildi; “Bank vipiska” bo‘limida turini tekshiring`, amount: unclassifiedSum });
   if (capital)

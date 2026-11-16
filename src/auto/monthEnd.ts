@@ -1,5 +1,5 @@
 import { VAT_IN, VAT_OUT } from './defaults';
-import { rateOn, toTiyin } from './rates';
+import { rateInfo, toTiyin } from './rates';
 import type { ResolvedEntry } from './resolve';
 import type { AutoDraft, AutoWarning, Gen, RateBook, RateNeed } from './types';
 
@@ -20,6 +20,7 @@ export function monthEndDrafts(entries: ResolvedEntry[], rates: RateBook, codeOf
   const drafts: AutoDraft[] = [];
   const warnings: AutoWarning[] = [];
   const need = new Map<string, RateNeed>();
+  const missing = new Set<string>();
   if (!entries.length) return { drafts, warnings, needRates: [] };
 
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
@@ -57,15 +58,17 @@ export function monthEndDrafts(entries: ResolvedEntry[], rates: RateBook, codeOf
     }
 
     for (const r of fx.values()) {
-      const rate = rateOn(rates, r.ccy, end);
-      if (rate === null) {
-        const key = `${r.ccy}:${end}`;
-        if (!need.has(key)) {
-          need.set(key, { ccy: r.ccy, date: end });
+      const found = rateInfo(rates, r.ccy, end);
+      const key = `${r.ccy}:${end}`;
+      if (!found || !found.exact) need.set(key, { ccy: r.ccy, date: end });
+      if (!found) {
+        if (!missing.has(key)) {
+          missing.add(key);
           warnings.push({ kind: 'rate-missing', text: `${r.ccy} kursi ${end} uchun topilmadi — oy oxiri qayta baholanmadi`, ref: key });
         }
         continue;
       }
+      const rate = found.rate;
       const d = toTiyin(r.bal, rate) - (net.get(r.code) ?? 0);
       if (Math.abs(d) < 100) continue;
       const base = { src: `reval:${r.code}:${r.ccy}:${ym}`, date: end, text: `Valyuta qayta baholandi: ${r.code} (${r.ccy}, ${ym})`, amount: Math.abs(d) };

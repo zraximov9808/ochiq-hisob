@@ -79,6 +79,10 @@ export const actions = {
   update(recipe: (d: Draft<Doc>) => void) {
     set({ ...state, h: H.applyUpdate(state.h, recipe) });
   },
+  /** Automatic follow-up change (auto entries): joins the user's last step, no separate undo step. */
+  amend(recipe: (d: Draft<Doc>) => void) {
+    set({ ...state, h: H.amendUpdate(state.h, recipe) });
+  },
   undo() {
     set({ ...state, h: H.undo(state.h) });
   },

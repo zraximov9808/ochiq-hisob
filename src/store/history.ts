@@ -21,6 +21,12 @@ export function applyUpdate(h: History, recipe: (d: Draft<Doc>) => void): Histor
   return { ...h, doc: next, past: [...h.past, h.doc].slice(-LIMIT), future: [] };
 }
 
+/** A change made automatically after the user's last step: it joins that step instead of adding an undo step. */
+export function amendUpdate(h: History, recipe: (d: Draft<Doc>) => void): History {
+  const next = produce(h.doc, recipe);
+  return next === h.doc ? h : { ...h, doc: next };
+}
+
 export function undo(h: History): History {
   if (!h.past.length) return h;
   return { ...h, doc: h.past[h.past.length - 1], past: h.past.slice(0, -1), future: [h.doc, ...h.future] };

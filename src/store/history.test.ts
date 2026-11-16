@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { emptyDoc } from '../engine/types';
-import { applyUpdate, initHistory, isDirty, markSaved, redo, undo } from './history';
+import { amendUpdate, applyUpdate, initHistory, isDirty, markSaved, redo, undo } from './history';
 import { parseDocFile, serializeDoc } from './docFile';
 
 describe('history', () => {
@@ -60,4 +60,16 @@ describe('doc file', () => {
     expect(doc.taxRate).toBe(15);
     expect(doc.year).toBe(2025);
   });
+});
+
+test('an automatic follow-up change joins the last step: one undo takes back both', () => {
+  let h = initHistory(emptyDoc(2026));
+  h = applyUpdate(h, (d) => void (d.taxRate = 20));
+  h = amendUpdate(h, (d) => void (d.year = 2027));
+  expect(h.doc).toMatchObject({ taxRate: 20, year: 2027 });
+  expect(h.past).toHaveLength(1);
+  h = undo(h);
+  expect(h.doc).toMatchObject({ taxRate: 15, year: 2026 });
+  h = redo(h);
+  expect(h.doc).toMatchObject({ taxRate: 20, year: 2027 });
 });

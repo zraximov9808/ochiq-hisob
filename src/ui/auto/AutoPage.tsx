@@ -9,11 +9,11 @@ import type { AutoSettings, AutoWarning } from '../../auto/types';
 import { useT } from '../../i18n/useT';
 import { importFiles } from '../../import/importFiles';
 import { downloadBlob } from '../../store/fileIO';
-import { actions, useApp } from '../../store/store';
+import { actions, getState, useApp } from '../../store/store';
 import { toast } from '../components/common';
-import { bankActions, useBank } from '../bank/bankStore';
+import { bankActions, getBank, useBank } from '../bank/bankStore';
 import { fmtDay, fmtMoney } from '../bank/format';
-import { fetchMissingRates, useAutoBuild } from './useAutoSync';
+import { autoInputOf, fetchMissingRates, rebuildNow, useAutoBuild } from './useAutoSync';
 
 type Tab = 'types' | 'accounts' | 'services' | 'rates';
 
@@ -55,7 +55,7 @@ export default function AutoPage() {
   const { h } = useApp();
   const doc = h.doc;
   const s = autoSettings(doc);
-  const { built, analysis, input } = useAutoBuild();
+  const { built, analysis, input, hash } = useAutoBuild();
   const [tab, setTab] = useState<Tab>('types');
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
@@ -70,8 +70,24 @@ export default function AutoPage() {
     setS({ [field]: next });
   };
 
+  const resetAndRebuild = () => {
+    if (!confirm(t('Qo‘lda tuzatilgan va o‘chirilgan avto-provodkalar bekor qilinadi, hammasi yuklangan hujjatlardan qaytadan yoziladi. Davom etasizmi?'))) return;
+    actions.update((d) => resetAuto(d));
+    const fresh = autoInputOf(getBank(), getState().h.doc, analysis);
+    rebuildNow(fresh.input, fresh.hash);
+  };
+  const removeAll = () => {
+    if (!confirm(t('Jurnaldagi barcha avto-provodkalar o‘chiriladi va avtomatik yangilash o‘chiriladi (yuklangan fayllar qoladi). Ctrl+Z bilan qaytarish mumkin.'))) return;
+    actions.update((d) => {
+      d.entries = d.entries.filter((e) => !e.auto);
+      d.auto = { ...autoSettings(d), enabled: false, inputHash: '' };
+    });
+  };
+
   const handle = async (list: FileList | null) => {
     if (!list?.length) return;
+    // Uploading here is the go-ahead for a document saved before auto entries existed.
+    if (!doc.auto) setS({ enabled: true });
     setBusy(true);
     const r = await importFiles(Array.from(list));
     setBusy(false);
@@ -149,6 +165,9 @@ export default function AutoPage() {
             <input type="checkbox" checked={s.enabled} onChange={(e) => setS({ enabled: e.target.checked })} />
             {t('Avtomatik yangilash')}
           </label>
+          <button className="btn" disabled={!hasData} onClick={() => (rebuildNow(input, hash), toast('Avto-provodkalar yangilandi'))}>
+            {t('Hozir yangilash')}
+          </button>
           <button className="btn" onClick={() => actions.setUi({ page: 'journal' })}>
             {t('Jurnal')}
           </button>
@@ -257,11 +276,11 @@ export default function AutoPage() {
             </tbody>
           </table>
           <div className="toolbar" style={{ padding: '8px 10px' }}>
-            <button
-              className="btn small ghost"
-              onClick={() => confirm(t('Avto-provodkalar qayta tuzilsinmi? Qo‘lda tuzatilgan va o‘chirilgan avto-provodkalar ham qaytadan yoziladi.')) && actions.update((d) => resetAuto(d))}
-            >
+            <button className="btn small ghost" onClick={resetAndRebuild}>
               {t('Avto-provodkalarni tiklash')}
+            </button>
+            <button className="btn small ghost danger" onClick={removeAll}>
+              {t('Avto-provodkalarni o‘chirish')}
             </button>
           </div>
         </div>

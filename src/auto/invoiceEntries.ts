@@ -67,6 +67,10 @@ export function invoiceEntries(invoices: Invoice[], o: InvoiceEntryOptions): Gen
         s = { goods, services: net - goods, vat: inv.total - net };
       }
     }
+    if (inv.total < 0 || s.goods < 0 || s.services < 0 || s.vat < 0) {
+      warnings.push({ kind: 'negative', text: `Faktura № ${inv.docNo} (${party.name}): manfiy summa (tuzatish yoki qaytarish fakturasi) — avtomatik provodka qilinmadi, qo‘lda kiriting`, ref: inv.id, amount: inv.total });
+      continue;
+    }
     if (inv.brief) {
       const b = sale ? brief.sale : brief.purchase;
       b.n++;

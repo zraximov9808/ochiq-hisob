@@ -44,7 +44,14 @@ export type WarningKind =
   | 'manual-overlap'
   | 'closed-year'
   | 'bad-expr'
-  | 'export-gtd';
+  | 'export-gtd'
+  | 'bad-date'
+  | 'company'
+  | 'rate-approx'
+  | 'gtd-no-currency'
+  | 'negative'
+  | 'fx-opening'
+  | 'error';
 
 export interface AutoWarning {
   kind: WarningKind;

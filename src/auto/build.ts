@@ -25,6 +25,10 @@ export interface AutoInput {
   manualEntries: Entry[];
   year: number;
   company: { name: string; inn: string } | null;
+  /** STIR of the open document; data of another company is not applied to it. */
+  docCompanyInn?: string;
+  /** Auto entries the user changed by hand, as they are in the journal (for month-end). */
+  editedEntries?: Entry[];
 }
 
 export interface BuiltAuto {
@@ -36,9 +40,30 @@ export interface BuiltAuto {
 }
 
 const fmt = (tiyin: number) => (tiyin / 100).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+const realInn = (inn?: string) => !!inn && /^\d{9}$|^\d{14}$/.test(inn.trim()) && !/^0+$/.test(inn.trim());
+const empty = (input: AutoInput, warning: AutoWarning): BuiltAuto => ({ entries: [], added: [], warnings: [warning], needRates: [], company: input.company });
+
+/** Whether freshly built entries should be written: there is data, it is this document's company, and something changed. */
+export function shouldApply(x: { enabled: boolean; hasData: boolean; hash: string; inputHash: string; company: boolean }): boolean {
+  return x.enabled && x.hasData && !x.company && x.hash !== x.inputHash;
+}
+
+/** buildAuto that never throws: an unexpected error becomes a warning and no entries. */
+export function tryBuildAuto(input: AutoInput, subs: SubAccount[]): BuiltAuto {
+  try {
+    return buildAuto(input, subs);
+  } catch (e) {
+    return empty(input, { kind: 'error', text: `Avto-provodkalarni tuzishda xato: ${(e as Error)?.message ?? e}. Fayllarni qayta yuklab ko‘ring.` });
+  }
+}
 
 /** All auto entries from bank statements, e-invoices and customs declarations, plus month-end entries and checks. */
 export function buildAuto(input: AutoInput, subs: SubAccount[]): BuiltAuto {
+  if (realInn(input.docCompanyInn) && realInn(input.companyInn) && input.docCompanyInn!.trim() !== input.companyInn.trim())
+    return empty(input, {
+      kind: 'company',
+      text: `Yuklangan ma’lumot boshqa korxonaniki (STIR ${input.companyInn}), ochiq hujjat esa STIR ${input.docCompanyInn} uchun — avto-provodkalar yozilmadi. Shu korxona hujjatini oching yoki yangi hujjat yarating.`,
+    });
   const s = input.settings;
   const declared = input.opening.some((o) => synthetic(o.account) === '8330' && o.credit > 0);
   const settings = { ...s, declareCapital: s.declareCapital && !declared };
@@ -57,11 +82,20 @@ export function buildAuto(input: AutoInput, subs: SubAccount[]): BuiltAuto {
   }
 
   const r1 = resolveDrafts(drafts, subs);
-  const month = monthEndDrafts(r1.entries, input.rates, r1.codeOf);
+  // Month-end works on what the journal will hold: deleted sources left out, hand-edited ones as edited.
+  const skip = new Set(s.skip);
+  const edited = new Map((input.editedEntries ?? []).filter((e) => e.auto).map((e) => [e.auto!.src, e]));
+  const journal: ResolvedEntry[] = [...r1.entries.filter((e) => !skip.has(e.auto!.src) && !edited.has(e.auto!.src)), ...edited.values()];
+  const month = monthEndDrafts(journal, input.rates, r1.codeOf);
   const r2 = resolveDrafts(month.drafts, [...subs, ...r1.added]);
   const entries = [...r1.entries, ...r2.entries];
 
   const warnings: AutoWarning[] = [...bank.warnings, ...costs.warnings, ...inv.warnings, ...gtd.warnings, ...r1.warnings, ...month.warnings, ...r2.warnings];
+
+  // Currency accounts that start the period with money: that balance is not in the revaluation.
+  for (const a of input.analysis?.accounts ?? [])
+    if (a.currency !== 'UZS' && a.openingBalance)
+      warnings.push({ kind: 'fx-opening', text: `${a.currency} hisobi …${a.number.slice(-6)} davr boshida qoldiq bilan boshlanadi — bu qoldiq oy oxiri qayta baholashiga kirmaydi; kerak bo‘lsa kurs farqini qo‘lda kiriting`, ref: a.number });
 
   // Payroll: taxes on salaries are paid but no salary was accrued.
   const jsh = r1.codeOf('6410[JShDS]');

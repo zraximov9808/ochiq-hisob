@@ -49,6 +49,20 @@ function emit(next: BankState, persist: Array<(typeof KEYS)[number]> = []) {
   if (db) for (const k of persist) void set(k, state[k], db);
 }
 
+/** An invoice saved by an older version (no goods lines) gets the fields this version expects. */
+export const normalizeInvoice = (i: Invoice): Invoice => ({ ...i, items: Array.isArray(i.items) ? i.items : [] });
+
+/** A GTD line saved before value columns were read gets empty values. */
+export const normalizeGtd = (g: GtdItem): GtdItem => ({
+  ...g,
+  currency: g.currency ?? '',
+  rate: g.rate ?? null,
+  invoiceValue: g.invoiceValue ?? null,
+  fees: g.fees ?? 0,
+  duty: g.duty ?? 0,
+  importVat: g.importVat ?? 0,
+});
+
 let loading: Promise<void> | null = null;
 export function loadBank(): Promise<void> {
   if (!db || state.loaded) {
@@ -65,9 +79,9 @@ export function loadBank(): Promise<void> {
       overrides: (v.overrides as Record<string, Override>) ?? {},
       reviewed: (v.reviewed as string[]) ?? [],
       settings: { ...DEFAULT_SETTINGS, ...((v.settings as Settings) ?? {}) },
-      invoices: (v.invoices as Invoice[]) ?? [],
+      invoices: ((v.invoices as Invoice[]) ?? []).map(normalizeInvoice),
       invoiceFiles: (v.invoiceFiles as BankState['invoiceFiles']) ?? [],
-      gtd: (v.gtd as GtdItem[]) ?? [],
+      gtd: ((v.gtd as GtdItem[]) ?? []).map(normalizeGtd),
       gtdFiles: (v.gtdFiles as BankState['gtdFiles']) ?? [],
       stockQty: (v.stockQty as Record<string, number>) ?? {},
       rates: (v.rates as RateBook) ?? {},

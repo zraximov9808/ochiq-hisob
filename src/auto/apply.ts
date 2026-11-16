@@ -3,7 +3,8 @@ import type { BuiltAuto } from './build';
 import { DEFAULT_AUTO } from './defaults';
 import type { AutoSettings } from './types';
 
-export const autoSettings = (doc: Doc): AutoSettings => doc.auto ?? DEFAULT_AUTO;
+/** Settings of the document; a document saved before auto entries existed is filled automatically only when empty. */
+export const autoSettings = (doc: Doc): AutoSettings => doc.auto ?? { ...DEFAULT_AUTO, enabled: !doc.entries.length && !doc.opening.length };
 
 /**
  * Writes freshly built auto entries into the document (an immer draft): manual and hand-edited entries stay,

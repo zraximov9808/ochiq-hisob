@@ -5,9 +5,11 @@ const ALPHA: Record<string, string> = { '840': 'USD', '978': 'EUR', '643': 'RUB'
 
 /** ISO numeric currency code → letters; letter codes are returned as they are. */
 export function ccyAlpha(code: string): string {
-  const c = code.trim().toUpperCase();
+  const c = String(code ?? '').trim().toUpperCase();
   return ALPHA[c] ?? c;
 }
+
+export const isIsoDay = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d ?? '') && !isNaN(Date.parse(`${d}T00:00:00Z`));
 
 const addDays = (iso: string, n: number) => {
   const d = new Date(`${iso}T00:00:00Z`);
@@ -17,11 +19,17 @@ const addDays = (iso: string, n: number) => {
 
 /** Rate on a date, else on the nearest earlier date up to 7 days back (weekends, holidays); null if none. */
 export function rateOn(book: RateBook, ccy: string, date: string): number | null {
+  return rateInfo(book, ccy, date)?.rate ?? null;
+}
+
+/** Like rateOn, also telling whether the rate is the one of that very day. */
+export function rateInfo(book: RateBook, ccy: string, date: string): { rate: number; exact: boolean } | null {
   const c = ccyAlpha(ccy);
-  if (c === 'UZS') return 1;
+  if (c === 'UZS') return { rate: 1, exact: true };
+  if (!c || !isIsoDay(date)) return null;
   for (let i = 0; i <= 7; i++) {
     const r = book[`${c}:${addDays(date, -i)}`];
-    if (r) return r;
+    if (r) return { rate: r, exact: i === 0 };
   }
   return null;
 }

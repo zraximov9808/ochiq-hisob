@@ -2,6 +2,7 @@ import { CHART } from '../engine/accounts';
 import { nextSubCode } from '../engine/subaccounts';
 import { suggestTax } from '../engine/taxSuggest';
 import type { Entry, SubAccount } from '../engine/types';
+import { isIsoDay } from './rates';
 import type { AccountRef, AutoDraft, AutoWarning, Party } from './types';
 
 /** An auto entry plus what month-end revaluation needs to know about its currency sides. */
@@ -57,13 +58,18 @@ export function resolveDrafts(
     const inn = realInn(party.inn);
     const name = party.name.trim();
     if (!inn && !name) return p.base;
-    const found = all.find((s) => s.parent === p.base && ((inn && s.stir === inn) || (name && sameName(s.name, name))));
+    // A real INN decides alone; the name is used only when there is no INN.
+    const found = all.find((s) => s.parent === p.base && (inn ? s.stir === inn : !!name && sameName(s.name, name)));
     return found?.code ?? open(p.base, name || inn, inn);
   };
 
   const entries: ResolvedEntry[] = [];
   for (const d of drafts) {
     if (!(d.amount > 0)) continue;
+    if (!isIsoDay(d.date)) {
+      warnings.push({ kind: 'bad-date', text: `Sana yo‘q yoki noto‘g‘ri — provodka tuzilmadi: ${d.text}`, ref: d.src, amount: d.amount });
+      continue;
+    }
     const debit = resolve(d.debit);
     const credit = resolve(d.credit);
     if (!debit || !credit) {
