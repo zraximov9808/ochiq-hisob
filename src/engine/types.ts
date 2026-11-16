@@ -1,3 +1,5 @@
+import type { AutoSettings } from '../auto/types';
+
 /** All money values are integer tiyin. Dates are ISO yyyy-mm-dd. */
 
 export interface TaxTag {
@@ -66,6 +68,8 @@ export interface Doc {
   prevYear: Record<string, number>;
   /** Profit tax rate in percent. */
   taxRate: number;
+  /** Settings of entries built from uploaded documents (absent in older files). */
+  auto?: AutoSettings;
 }
 
 export function emptyDoc(year: number): Doc {

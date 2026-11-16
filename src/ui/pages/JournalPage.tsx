@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { editedEntry, removeEntry } from '../../auto/apply';
 import { findAccount, isKnownAccount, synthetic } from '../../engine/accounts';
 import { balanceLineFor } from '../../engine/balanceSheet';
 import { incomeLineFor } from '../../engine/incomeStatement';
@@ -75,7 +76,7 @@ export function JournalPage() {
         if (i >= 0) {
           const old = d.entries[i];
           const keepTax = old.tax?.manual && old.debit === entry.debit && old.credit === entry.credit;
-          d.entries[i] = { ...entry, tax: keepTax ? old.tax : undefined };
+          d.entries[i] = editedEntry(old, { ...entry, tax: keepTax ? old.tax : undefined });
         }
       } else d.entries.push(entry);
     });
@@ -136,8 +137,8 @@ export function JournalPage() {
 
   const setTax = (id: string, tag: TaxTag | undefined) =>
     actions.update((d) => {
-      const e = d.entries.find((x) => x.id === id);
-      if (e) e.tax = tag;
+      const i = d.entries.findIndex((x) => x.id === id);
+      if (i >= 0) d.entries[i] = editedEntry(d.entries[i], { ...d.entries[i], tax: tag });
     });
 
   const loadSample = () => {
@@ -377,7 +378,7 @@ function JournalRow({ e, editing, year, onEdit, onTax }: { e: Entry; editing: bo
           aria-label={t('O‘chirish')}
           onClick={() =>
             actions.update((d) => {
-              d.entries = d.entries.filter((x) => x.id !== e.id);
+              removeEntry(d, e.id);
             })
           }
         >

@@ -1,3 +1,4 @@
+import { DEFAULT_AUTO } from '../auto/defaults';
 import { emptyDoc, type Doc } from '../engine/types';
 
 export const FILE_EXT = '.ohisob';
@@ -28,6 +29,7 @@ export function parseDocFile(text: string): Doc {
     templates: Array.isArray(r.templates) ? r.templates : [],
     prevYear: r.prevYear ?? {},
     taxRate: typeof r.taxRate === 'number' ? r.taxRate : 15,
+    auto: r.auto && typeof r.auto === 'object' ? { ...DEFAULT_AUTO, ...r.auto } : undefined,
   } as Doc;
 }
 
