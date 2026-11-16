@@ -1,0 +1,105 @@
+import type { Analysis } from '../bank/analyze';
+import type { Invoice } from '../audit/invoices';
+import { synthetic } from '../engine/accounts';
+import type { Entry, Opening, SubAccount } from '../engine/types';
+import type { GtdItem } from '../stock/gtd';
+import { bankEntries } from './bankEntries';
+import { buildCosts } from './costing';
+import { gtdEntries } from './gtdEntries';
+import { invoiceEntries } from './invoiceEntries';
+import { monthEndDrafts } from './monthEnd';
+import { resolveDrafts, type ResolvedEntry } from './resolve';
+import type { AutoDraft, AutoSettings, AutoWarning, RateBook, RateNeed } from './types';
+
+export interface AutoInput {
+  analysis: Analysis | null;
+  invoices: Invoice[];
+  gtd: GtdItem[];
+  stockQty: Record<string, number>;
+  /** All known rates: GTD < CBU < typed in by hand. */
+  rates: RateBook;
+  settings: AutoSettings;
+  companyInn: string;
+  opening: Opening[];
+  /** Entries the user keyed in (not auto), for the payroll and overlap checks. */
+  manualEntries: Entry[];
+  year: number;
+  company: { name: string; inn: string } | null;
+}
+
+export interface BuiltAuto {
+  entries: ResolvedEntry[];
+  added: SubAccount[];
+  warnings: AutoWarning[];
+  needRates: RateNeed[];
+  company: { name: string; inn: string } | null;
+}
+
+const fmt = (tiyin: number) => (tiyin / 100).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+
+/** All auto entries from bank statements, e-invoices and customs declarations, plus month-end entries and checks. */
+export function buildAuto(input: AutoInput, subs: SubAccount[]): BuiltAuto {
+  const s = input.settings;
+  const declared = input.opening.some((o) => synthetic(o.account) === '8330' && o.credit > 0);
+  const settings = { ...s, declareCapital: s.declareCapital && !declared };
+
+  const bank = input.analysis ? bankEntries(input.analysis, settings, input.rates) : { drafts: [], warnings: [], needRates: [] };
+  const costs = buildCosts(input.gtd, input.invoices, { companyInn: input.companyInn, includePending: s.includePending, qtyOverrides: input.stockQty, rates: input.rates });
+  const inv = invoiceEntries(input.invoices, { companyInn: input.companyInn, s: settings, cogs: costs.cogs });
+  const gtd = gtdEntries(input.gtd, input.rates);
+
+  const seen = new Set<string>();
+  const drafts: AutoDraft[] = [];
+  for (const d of [...bank.drafts, ...inv.drafts, ...gtd.drafts]) {
+    if (seen.has(d.src)) continue;
+    seen.add(d.src);
+    drafts.push(d);
+  }
+
+  const r1 = resolveDrafts(drafts, subs);
+  const month = monthEndDrafts(r1.entries, input.rates, r1.codeOf);
+  const r2 = resolveDrafts(month.drafts, [...subs, ...r1.added]);
+  const entries = [...r1.entries, ...r2.entries];
+
+  const warnings: AutoWarning[] = [...bank.warnings, ...costs.warnings, ...inv.warnings, ...gtd.warnings, ...r1.warnings, ...month.warnings, ...r2.warnings];
+
+  // Payroll: taxes on salaries are paid but no salary was accrued.
+  const jsh = r1.codeOf('6410[JShDS]');
+  const payrollTax = entries.some((e) => (jsh && e.debit === jsh) || synthetic(e.debit) === '6520');
+  const accrued = [...entries, ...input.manualEntries].some((e) => synthetic(e.credit) === '6710');
+  if (payrollTax && !accrued)
+    warnings.push({ kind: 'payroll', text: 'JShDS / ijtimoiy soliq to‘langan, lekin ish haqi hisoblanmagan (6710 krediti yo‘q). Ish haqi hisoblash provodkalarini jurnalga qo‘lda kiriting (masalan, Dt 9420 Kt 6710, Dt 6710 Kt 6410, Dt 9420 Kt 6520).' });
+
+  // Transit accounts should come back to zero once both legs of every transfer are loaded.
+  const net = new Map<string, number>();
+  for (const e of entries) {
+    net.set(e.debit, (net.get(e.debit) ?? 0) + e.amount);
+    net.set(e.credit, (net.get(e.credit) ?? 0) - e.amount);
+  }
+  for (const [code, v] of net)
+    if (['5710', '5720'].includes(synthetic(code)) && v !== 0)
+      warnings.push({ kind: 'transit', text: `${code} qoldig‘i ${fmt(v)} so‘m — o‘tkazmaning ikkinchi tomoni (boshqa hisob vipiskasi) yuklanmagan bo‘lishi mumkin`, ref: code, amount: Math.abs(v) });
+
+  const outside = entries.filter((e) => !e.date.startsWith(String(input.year)));
+  if (outside.length)
+    warnings.push({ kind: 'year', text: `${outside.length} ta avto-provodka ${input.year}-yildan tashqarida — hisobotlarga kirmaydi (hujjat yilini tekshiring)`, amount: outside.length });
+
+  if (entries.length) {
+    const dates = entries.map((e) => e.date).sort();
+    const from = dates[0];
+    const to = dates[dates.length - 1];
+    const BANKISH = new Set(['5110', '5210', '4010', '6010']);
+    const overlap = input.manualEntries.filter((e) => !e.closing && e.date >= from && e.date <= to && (BANKISH.has(synthetic(e.debit)) || BANKISH.has(synthetic(e.credit))));
+    if (overlap.length)
+      warnings.push({ kind: 'manual-overlap', text: `Jurnalda shu davrda bank/hisob-kitob hisobvaraqlariga qo‘lda kiritilgan ${overlap.length} ta provodka bor — avto-provodkalar bilan ikki marta hisoblanishi mumkin`, amount: overlap.length });
+  }
+  if (input.manualEntries.some((e) => e.closing))
+    warnings.push({ kind: 'closed-year', text: 'Yil yopilgan (yopish provodkalari bor) — avto-provodkalar o‘zgargani uchun yilni qayta yoping' });
+
+  const uniq = new Map<string, AutoWarning>();
+  for (const w of warnings) uniq.set(`${w.kind}|${w.ref ?? ''}|${w.text}`, w);
+  const needs = new Map<string, RateNeed>();
+  for (const n of [...bank.needRates, ...gtd.needRates, ...month.needRates]) needs.set(`${n.ccy}:${n.date}`, n);
+
+  return { entries, added: [...r1.added, ...r2.added], warnings: [...uniq.values()], needRates: [...needs.values()], company: input.company };
+}

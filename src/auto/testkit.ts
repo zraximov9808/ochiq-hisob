@@ -1,4 +1,6 @@
 import type { Invoice, InvoiceItem } from '../audit/invoices';
+import type { Analysis } from '../bank/analyze';
+import type { BankAccount, Operation } from '../bank/model';
 import type { GtdItem } from '../stock/gtd';
 
 export const ME = '999000111';
@@ -25,3 +27,21 @@ export function gtdItem(gtdNo: string, itemNo: string, name: string, over: Parti
     qty: null, places: null, currency: '840', rate: 12000, invoiceValue: null, fees: 0, duty: 0, importVat: 0, file: 'g.xlsx', ...over,
   };
 }
+
+export const bankAcc = (number: string, currency = 'UZS'): BankAccount => ({
+  number, balanceAcc: number.slice(0, 5), currency, company: 'NAMUNA', inn: ME, bankName: 'B', mfo: '00001',
+  periodFrom: '2026-01-01', periodTo: '2026-12-31', openingBalance: 0, closingBalanceBank: 0, sourceFiles: ['f.xlsx'],
+});
+export const MAIN_ACC = bankAcc('20208000100000000001');
+export const USD_ACC = bankAcc('20208840100000000001', 'USD');
+export const SPECIAL_ACC = bankAcc('22613000100000000001');
+
+let seq = 0;
+export const bankOp = (o: Partial<Operation>): Operation => ({
+  id: `op${++seq}`, account: MAIN_ACC.number, datetime: '2026-07-06T10:00:00', docNo: '1', korrAccount: '', korrInn: '', korrName: '', korrMfo: '',
+  purpose: '', debit: 0, credit: 0, group: 'Kirim', type: '', ruleId: 'r', internal: false, runningBalance: 0, flags: [], ...o,
+});
+
+export const analysisOf = (operations: Operation[], accounts = [MAIN_ACC, USD_ACC, SPECIAL_ACC]): Analysis => ({
+  accounts, operations, duplicates: 0, checks: [], company: { name: 'NAMUNA', inn: ME, bankName: 'B', mfo: '', periodFrom: '', periodTo: '' },
+});
