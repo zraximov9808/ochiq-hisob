@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { editedEntry, removeEntry } from '../../auto/apply';
+import { AUTO_KIND_LABEL, autoKind } from '../../auto/labels';
 import { findAccount, isKnownAccount, synthetic } from '../../engine/accounts';
 import { balanceLineFor } from '../../engine/balanceSheet';
 import { incomeLineFor } from '../../engine/incomeStatement';
@@ -50,6 +51,7 @@ export function JournalPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
+  const [source, setSource] = useState<'all' | 'auto' | 'manual'>('all');
   const [limit, setLimit] = useState(300);
   const [showTemplates, setShowTemplates] = useState(false);
   const [dateText, setDateText] = useState(formatDate(draft.date));
@@ -122,6 +124,7 @@ export function JournalPage() {
     const list = doc.entries
       .map((e, i) => ({ e, i }))
       .filter(({ e }) => {
+        if ((source === 'auto' && !e.auto) || (source === 'manual' && e.auto)) return false;
         if (!q) return true;
         return (
           e.text.toLowerCase().includes(q) ||
@@ -133,7 +136,7 @@ export function JournalPage() {
       })
       .sort((a, b) => a.e.date.localeCompare(b.e.date) || a.i - b.i);
     return list.map((x) => x.e);
-  }, [doc.entries, query]);
+  }, [doc.entries, query, source]);
 
   const setTax = (id: string, tag: TaxTag | undefined) =>
     actions.update((d) => {
@@ -256,6 +259,21 @@ export function JournalPage() {
 
       <div className="toolbar">
         <input className="input" style={{ maxWidth: 320 }} placeholder={t('Qidirish: mazmun, hisobvaraq, summa')} value={query} onChange={(e) => setQuery(e.target.value)} />
+        {doc.entries.some((e) => e.auto) && (
+          <div className="seg" role="group" aria-label={t('Provodka manbasi')}>
+            {(
+              [
+                ['all', 'Hammasi'],
+                ['auto', 'Avto'],
+                ['manual', 'Qo‘lda'],
+              ] as const
+            ).map(([id, label]) => (
+              <button key={id} className={source === id ? 'on' : ''} onClick={() => setSource(id)}>
+                {t(label)}
+              </button>
+            ))}
+          </div>
+        )}
         <button className="btn" onClick={() => setShowTemplates(true)}>
           ⟳ {t('Takroriy provodkalar')}
         </button>
@@ -329,7 +347,18 @@ function JournalRow({ e, editing, year, onEdit, onTax }: { e: Entry; editing: bo
   return (
     <tr className={`clickable ${editing ? 'editing' : ''}`} onClick={onEdit} title={t('Tahrirlash uchun bosing')}>
       <td className={outside ? 'err-text' : 'muted'}>{formatDate(e.date)}</td>
-      <td>{e.text}</td>
+      <td>
+        {e.text}
+        {e.auto && (
+          <>
+            {' '}
+            <span className="tag" title={t('Yuklangan hujjatdan avtomatik tuzilgan')}>
+              {t('avto')} · {t(AUTO_KIND_LABEL[autoKind(e.auto.src)])}
+              {e.auto.edited ? ` · ${t('tuzatilgan')}` : ''}
+            </span>
+          </>
+        )}
+      </td>
       <td className="dt-code">{e.debit}</td>
       <td className="kt-code">{e.credit}</td>
       <td className="r">

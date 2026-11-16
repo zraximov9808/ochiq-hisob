@@ -12,6 +12,7 @@ import { Modal, Num, toast } from './common';
 const NAV: Array<{ group?: string; id: PageId; num?: string; label: string }> = [
   { group: 'Kiritish', id: 'opening', num: '1', label: 'Yil boshidagi qoldiqlar' },
   { id: 'journal', num: '2', label: 'Provodkalar jurnali' },
+  { id: 'auto', num: 'H', label: 'Hujjatlardan provodka' },
   { id: 'subaccounts', num: 'S', label: 'Subschyotlar' },
   { group: 'Hisobotlar', id: 'balance', num: '3', label: 'Balans (1-shakl)' },
   { id: 'income', num: '4', label: 'Moliyaviy natijalar (2-shakl)' },

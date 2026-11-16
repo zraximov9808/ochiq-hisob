@@ -2,6 +2,7 @@ import { createStore, del, get, set } from 'idb-keyval';
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_SETTINGS, type Override, type Settings } from '../../bank/analyze';
 import type { Invoice } from '../../audit/invoices';
+import type { RateBook } from '../../auto/types';
 import type { GtdItem } from '../../stock/gtd';
 import type { Rule } from '../../bank/classify';
 import type { ParsedStatement } from '../../bank/model';
@@ -31,12 +32,14 @@ export interface BankState {
   gtd: GtdItem[];
   gtdFiles: Array<{ file: string; ok: boolean; error?: string; count: number }>;
   stockQty: Record<string, number>;
+  /** Exchange rates fetched from cbu.uz (cache), `${CCY}:${date}` → so‘m. */
+  rates: RateBook;
 }
 
 const db = typeof indexedDB === 'undefined' ? undefined : createStore('ochiq-hisob-bank', 'kv');
-const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings', 'invoices', 'invoiceFiles', 'gtd', 'gtdFiles', 'stockQty'] as const;
+const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings', 'invoices', 'invoiceFiles', 'gtd', 'gtdFiles', 'stockQty', 'rates'] as const;
 
-const EMPTY: Omit<BankState, 'loaded'> = { statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS, invoices: [], invoiceFiles: [], gtd: [], gtdFiles: [], stockQty: {} };
+const EMPTY: Omit<BankState, 'loaded'> = { statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS, invoices: [], invoiceFiles: [], gtd: [], gtdFiles: [], stockQty: {}, rates: {} };
 let state: BankState = { loaded: false, ...EMPTY };
 const listeners = new Set<() => void>();
 
@@ -67,6 +70,7 @@ export function loadBank(): Promise<void> {
       gtd: (v.gtd as GtdItem[]) ?? [],
       gtdFiles: (v.gtdFiles as BankState['gtdFiles']) ?? [],
       stockQty: (v.stockQty as Record<string, number>) ?? {},
+      rates: (v.rates as RateBook) ?? {},
     });
   });
   return loading;
@@ -104,6 +108,9 @@ export const bankActions = {
     if (qty === null) delete stockQty[id];
     else stockQty[id] = qty;
     emit({ ...state, stockQty }, ['stockQty']);
+  },
+  addRates(book: RateBook) {
+    emit({ ...state, rates: { ...state.rates, ...book } }, ['rates']);
   },
   clearInvoices() {
     emit({ ...state, invoices: [], invoiceFiles: [] }, ['invoices', 'invoiceFiles']);

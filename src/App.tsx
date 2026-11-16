@@ -15,10 +15,12 @@ import { OpeningPage } from './ui/pages/OpeningPage';
 import { HelpPage, SettingsPage } from './ui/pages/OtherPages';
 import { BalancePage, IncomePage, TaxPage, TrialBalancePage } from './ui/pages/ReportPages';
 import { SubaccountsPage } from './ui/pages/SubaccountsPage';
+import { useAutoSync } from './ui/auto/useAutoSync';
 
 const BankPage = lazy(() => import('./ui/bank/BankPage'));
 const AuditPage = lazy(() => import('./ui/audit/AuditPage'));
 const OmborPage = lazy(() => import('./ui/stock/OmborPage'));
+const AutoPage = lazy(() => import('./ui/auto/AutoPage'));
 
 type ImportResult =
   | { kind: 'journal'; entries: ParsedEntry[]; errors: string[]; file: string }
@@ -31,6 +33,7 @@ export default function App() {
   const { h, ui } = useApp();
   const report = useMemo(() => runChecks(h.doc, ui.quarter), [h.doc, ui.quarter]);
   const [imported, setImported] = useState<ImportResult | null>(null);
+  useAutoSync();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -130,6 +133,12 @@ export default function App() {
             <OmborPage />
           </Suspense>
         );
+      case 'auto':
+        return (
+          <Suspense fallback={<div className="empty">{t('Yuklanmoqda…')}</div>}>
+            <AutoPage />
+          </Suspense>
+        );
       case 'settings':
         return <SettingsPage />;
       default:
@@ -137,7 +146,7 @@ export default function App() {
     }
   })();
 
-  const fullWidth = ui.page === 'bank' || ui.page === 'audit' || ui.page === 'ombor';
+  const fullWidth = ui.page === 'bank' || ui.page === 'audit' || ui.page === 'ombor' || ui.page === 'auto';
   const count = imported ? (imported.kind === 'journal' ? imported.entries.length : imported.opening.length) : 0;
   return (
     <ReportContext.Provider value={report}>

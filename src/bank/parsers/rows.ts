@@ -1,4 +1,3 @@
-import ExcelJS from 'exceljs';
 import type { Cell } from '../model';
 
 /** ExcelJS cell values can be rich text, formulas or hyperlinks; reduce them to plain values. */
@@ -67,6 +66,8 @@ const isZip = (data: ArrayBuffer) => {
 /** All worksheets of an .xlsx file as arrays of rows (row 1 → index 0); a CSV export is read as one sheet. */
 export async function readWorkbookRows(data: ArrayBuffer): Promise<Cell[][][]> {
   if (!isZip(data)) return [parseCsv(decodeText(data))];
+  // Loaded on demand: the helpers below are used by the always-loaded auto entries, ExcelJS is large.
+  const { default: ExcelJS } = await import('exceljs');
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(data);
   return wb.worksheets.map((ws) => {
