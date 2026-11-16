@@ -308,7 +308,7 @@ function Upload() {
     const invoiceFiles: Array<{ file: string; ok: boolean; error?: string; count: number }> = [];
     for (const f of Array.from(list)) {
       try {
-        if (!/\.xlsx$/i.test(f.name)) throw new Error('Faqat .xlsx fayllar o‘qiladi.');
+        if (!/\.(xlsx|csv)$/i.test(f.name)) throw new Error('Faqat .xlsx yoki .csv fayllar o‘qiladi.');
         const sheets = await readWorkbookRows(await f.arrayBuffer());
         const invSheets = sheets.filter(isInvoiceSheet);
         if (invSheets.length) {
@@ -354,7 +354,7 @@ function Upload() {
         role="button"
         tabIndex={0}
       >
-        <input ref={input} type="file" accept=".xlsx" multiple hidden onChange={(e) => void handle(e.target.files)} />
+        <input ref={input} type="file" accept=".xlsx,.csv" multiple hidden onChange={(e) => void handle(e.target.files)} />
         <div className="dz-title">{busy ? t('O‘qilmoqda…') : t('Bank vipiskalari va hisob-faktura reyestrlarini (kirim va chiqim) shu yerga tashlang')}</div>
         <div className="muted">{t('Fayl turi avtomatik aniqlanadi. Fakturalar my.soliq / Didox reyestridan .xlsx ko‘rinishida.')}</div>
         <div className="dz-safe">🔒 {t('Fayllar faqat sizning brauzeringizda qayta ishlanadi — hech qayerga yuborilmaydi.')}</div>

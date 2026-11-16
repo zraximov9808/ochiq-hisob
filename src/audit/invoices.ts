@@ -21,6 +21,8 @@ export interface Invoice {
   lines: number;
   /** Goods and services on the invoice (absent in data saved by older versions). */
   items: InvoiceItem[];
+  /** Header-only record (soliq.uz CSV): no goods lines and no VAT split; amount = total. */
+  brief?: boolean;
   file: string;
 }
 
@@ -38,6 +40,26 @@ export interface InvoiceItem {
 }
 
 const norm = (s: string) => s.toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
+
+const STATUS: Record<string, string> = { подтвержден: 'Подписан', 'ожидает подписи партнера': 'Ожидает', отменено: 'Отменен', отказано: 'Отказ' };
+
+/** soliq.uz and Didox spell statuses differently; both are brought to the Didox spelling. */
+export function normalizeStatus(s: string): string {
+  return STATUS[norm(s)] ?? s.trim();
+}
+
+const SERVICE_UNIT = /услуг|xizmat|хизмат|oy\b|месяц|kv\.? ?metr/i;
+
+/** A service line (rent, certification, subscription…) rather than goods. */
+export function isServiceItem(it: InvoiceItem): boolean {
+  return /услуг/i.test(it.origin) || SERVICE_UNIT.test(it.unit);
+}
+
+/** "4646 от 13.11.2026" → number and ISO day. */
+function numberAndDate(v: Cell): { no: string; date: string } {
+  const m = /^(.*?)\s+от\s+(\d{1,2})\.(\d{1,2})\.(\d{4})/i.exec(cellText(v));
+  return m ? { no: m[1].trim(), date: `${m[4]}-${m[3].padStart(2, '0')}-${m[2].padStart(2, '0')}` } : { no: cellText(v), date: '' };
+}
 
 function findHeader(rows: Cell[][]): number {
   return rows.slice(0, 15).findIndex((r) => {
@@ -81,6 +103,12 @@ export function parseInvoices(rows: Cell[][], file: string): Invoice[] {
     vat: col('НДС сумма'),
     total: starts('Стоимость поставки с учетом НДС') >= 0 ? starts('Стоимость поставки с учетом НДС') : starts('Стоимость поставки с учётом НДС'),
   };
+  // soliq.uz CSV: "СЧЁТ-ФАКТУРА" and "ДОГОВОР" hold "<number> от <date>", "СУММА К ОПЛАТЕ" the total; no goods lines.
+  const brief = C.no < 0 && col('Счёт-фактура') >= 0;
+  if (brief) {
+    C.contractNo = col('Договор');
+    C.total = starts('Сумма к оплате');
+  }
   const lineNoCol = head.findIndex((x, i) => i > C.id && x === '№');
   const I = {
     name: starts('Примечание к товару'),
@@ -102,7 +130,7 @@ export function parseInvoices(rows: Cell[][], file: string): Invoice[] {
       origin: I.origin < 0 ? '' : cellText(row[I.origin]),
     };
   };
-  if (C.id < 0 || C.total < 0 || C.no < 0) throw new Error(`${file}: hisob-faktura ustunlari to‘liq emas (ID, raqam yoki jami summa topilmadi).`);
+  if (C.id < 0 || C.total < 0 || (C.no < 0 && !brief)) throw new Error(`${file}: hisob-faktura ustunlari to‘liq emas (ID, raqam yoki jami summa topilmadi).`);
 
   const out: Invoice[] = [];
   for (let r = h + 1; r < rows.length; r++) {
@@ -118,6 +146,17 @@ export function parseInvoices(rows: Cell[][], file: string): Invoice[] {
     }
     const money = (i: number) => (i < 0 ? 0 : moneyCell(row[i]) ?? 0);
     const t = (i: number) => (i < 0 ? '' : cellText(row[i]));
+    if (brief) {
+      const doc = numberAndDate(row[col('Счёт-фактура')]);
+      const contract = numberAndDate(row[C.contractNo]);
+      out.push({
+        id, docNo: doc.no, date: doc.date, kind: 'Счет-фактура', docType: t(col('Тип ЭСФ')), status: normalizeStatus(t(C.status)),
+        contractNo: contract.no, contractDate: contract.date, sellerInn: t(C.sellerInn), sellerName: t(C.sellerName),
+        buyerInn: t(C.buyerInn), buyerName: t(C.buyerName), amount: money(C.total), vat: 0, total: money(C.total),
+        lines: 0, items: [], brief: true, file,
+      });
+      continue;
+    }
     // The second "№" column numbers the goods; "Общ." there marks a totals row followed by item rows.
     const firstLine = lineNoCol >= 0 && cellText(row[lineNoCol]) === 'Общ.' ? 0 : 1;
     out.push({
@@ -126,7 +165,7 @@ export function parseInvoices(rows: Cell[][], file: string): Invoice[] {
       date: isoDay(row[C.date]),
       kind: t(C.kind),
       docType: t(C.type),
-      status: t(C.status),
+      status: normalizeStatus(t(C.status)),
       contractNo: t(C.contractNo),
       contractDate: isoDay(row[C.contractDate]),
       sellerInn: t(C.sellerInn),

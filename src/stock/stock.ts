@@ -1,4 +1,4 @@
-import type { Invoice } from '../audit/invoices';
+import { isServiceItem, type Invoice } from '../audit/invoices';
 import type { GtdItem } from './gtd';
 import { mergeSimilarKeys, productDisplay, productKey } from './names';
 
@@ -46,8 +46,6 @@ export interface StockResult {
   unknownQty: StockMove[];
 }
 
-const SERVICE = /услуг|xizmat|хизмат|oy\b|месяц|kv\.? ?metr/i;
-
 /** Goods lines of signed invoices: sales are outgoing, purchases incoming; services are skipped. */
 export function invoiceMoves(invoices: Invoice[], companyInn: string, includePending: boolean): StockMove[] {
   const allowed = new Set(['Подписан', ...(includePending ? ['Ожидает'] : [])]);
@@ -58,7 +56,7 @@ export function invoiceMoves(invoices: Invoice[], companyInn: string, includePen
     const incoming = inv.buyerInn === companyInn;
     if (outgoing === incoming) continue;
     (inv.items ?? []).forEach((it, i) => {
-      if (!it.name || it.qty === null || /услуг/i.test(it.origin) || SERVICE.test(it.unit)) return;
+      if (!it.name || it.qty === null || isServiceItem(it)) return;
       out.push({
         id: `${inv.id}:${i}`,
         date: inv.date,

@@ -205,7 +205,7 @@ function Upload() {
     const gtdFiles: Array<{ file: string; ok: boolean; error?: string; count: number }> = [];
     for (const f of Array.from(list)) {
       try {
-        if (!/\.xlsx$/i.test(f.name)) throw new Error('Faqat .xlsx fayllar o‘qiladi.');
+        if (!/\.(xlsx|csv)$/i.test(f.name)) throw new Error('Faqat .xlsx yoki .csv fayllar o‘qiladi.');
         const sheets = await readWorkbookRows(await f.arrayBuffer());
         const gSheets = sheets.filter(isGtdSheet);
         const invSheets = sheets.filter(isInvoiceSheet);
@@ -253,7 +253,7 @@ function Upload() {
         role="button"
         tabIndex={0}
       >
-        <input ref={input} type="file" accept=".xlsx" multiple hidden onChange={(e) => void handle(e.target.files)} />
+        <input ref={input} type="file" accept=".xlsx,.csv" multiple hidden onChange={(e) => void handle(e.target.files)} />
         <div className="dz-title">{busy ? t('O‘qilmoqda…') : t('GTD hisoboti (Excel shablon) va kirim/chiqim faktura reyestrlarini shu yerga tashlang')}</div>
         <div className="muted">{t('Fayl turi avtomatik aniqlanadi. Ekspres auditda yuklangan fakturalar shu yerda ham ishlatiladi. GTD hisobotingiz bo‘lmasa, “Excel shablon yuklab olish” orqali bo‘sh shablonni to‘ldiring.')}</div>
         <div className="dz-safe">🔒 {t('Fayllar faqat sizning brauzeringizda qayta ishlanadi — hech qayerga yuborilmaydi.')}</div>

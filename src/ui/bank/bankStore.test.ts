@@ -1,0 +1,29 @@
+import { beforeEach, expect, test } from 'vitest';
+import type { Invoice } from '../../audit/invoices';
+import { bankActions, getBank } from './bankStore';
+
+const inv = (over: Partial<Invoice>): Invoice => ({
+  id: 'id1', docNo: '1', date: '2026-10-01', kind: '', docType: '', status: 'Подписан', contractNo: '', contractDate: '',
+  sellerInn: '1', sellerName: 'S', buyerInn: '2', buyerName: 'B', amount: 100, vat: 0, total: 100, lines: 1,
+  items: [{ name: 'x', code: '', unit: 'dona', qty: 1, amount: 100, vat: 0, total: 100, origin: 'Перепродажа' }], file: 'a.xlsx', ...over,
+});
+const brief = inv({ items: [], lines: 0, brief: true, file: 'b.csv' });
+const files = (file: string) => [{ file, ok: true, count: 1 }];
+
+beforeEach(async () => {
+  await bankActions.wipe();
+});
+
+test('a brief copy does not replace the detailed invoice', () => {
+  bankActions.addInvoices([inv({})], files('a.xlsx'));
+  bankActions.addInvoices([brief], files('b.csv'));
+  expect(getBank().invoices).toHaveLength(1);
+  expect(getBank().invoices[0].items).toHaveLength(1);
+});
+
+test('a detailed copy replaces the brief invoice', () => {
+  bankActions.addInvoices([brief], files('b.csv'));
+  bankActions.addInvoices([inv({})], files('a.xlsx'));
+  expect(getBank().invoices).toHaveLength(1);
+  expect(getBank().invoices[0].brief).toBeFalsy();
+});

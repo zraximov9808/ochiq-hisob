@@ -13,8 +13,60 @@ export function plainCell(v: unknown): Cell {
   return v as Cell;
 }
 
-/** All worksheets of an .xlsx file as arrays of rows (row 1 → index 0). */
+/** Text of a CSV export: UTF-8 when it decodes cleanly, otherwise Windows-1251 (soliq.uz). */
+function decodeText(data: ArrayBuffer): string {
+  let text: string;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(data);
+  } catch {
+    text = new TextDecoder('windows-1251').decode(data);
+  }
+  return text.replace(/^﻿/, '');
+}
+
+/** Delimited text → rows; the delimiter is the first of ';', ',', tab found in the first line. */
+export function parseCsv(text: string): Cell[][] {
+  const first = text.split(/\r?\n/, 1)[0];
+  const sep = [';', ',', '\t'].find((d) => first.includes(d)) ?? ';';
+  const rows: Cell[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"' && text[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else if (ch === '"') quoted = false;
+      else field += ch;
+    } else if (ch === '"' && field === '') quoted = true;
+    else if (ch === sep) {
+      row.push(field);
+      field = '';
+    } else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+    } else field += ch;
+  }
+  if (field !== '' || row.length) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+const isZip = (data: ArrayBuffer) => {
+  const b = new Uint8Array(data, 0, Math.min(2, data.byteLength));
+  return b[0] === 0x50 && b[1] === 0x4b;
+};
+
+/** All worksheets of an .xlsx file as arrays of rows (row 1 → index 0); a CSV export is read as one sheet. */
 export async function readWorkbookRows(data: ArrayBuffer): Promise<Cell[][][]> {
+  if (!isZip(data)) return [parseCsv(decodeText(data))];
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(data);
   return wb.worksheets.map((ws) => {

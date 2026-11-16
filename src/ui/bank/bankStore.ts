@@ -83,9 +83,14 @@ export const bankActions = {
     emit({ ...state, statements: [], files: [], overrides: {}, reviewed: [] }, ['statements', 'files', 'overrides', 'reviewed']);
   },
   addInvoices(invoices: Invoice[], files: BankState['invoiceFiles']) {
-    // A newer upload of the same invoice replaces the stored one (older versions kept no goods lines).
-    const fresh = new Set(invoices.map((i) => i.id));
-    emit({ ...state, invoices: [...state.invoices.filter((i) => !fresh.has(i.id)), ...invoices], invoiceFiles: replaceByName(state.invoiceFiles, files) }, ['invoices', 'invoiceFiles']);
+    // A newer upload of the same invoice replaces the stored one (older versions kept no goods lines),
+    // except that a header-only copy (soliq.uz CSV) never replaces one with goods lines.
+    const kept = new Map(state.invoices.map((i) => [i.id, i]));
+    for (const i of invoices) {
+      const old = kept.get(i.id);
+      if (!(i.brief && old && !old.brief)) kept.set(i.id, i);
+    }
+    emit({ ...state, invoices: [...kept.values()], invoiceFiles: replaceByName(state.invoiceFiles, files) }, ['invoices', 'invoiceFiles']);
   },
   addGtd(items: GtdItem[], files: BankState['gtdFiles']) {
     const fresh = new Set(items.map((g) => g.id));
@@ -127,6 +132,8 @@ export const bankActions = {
 };
 
 export const rulesOf = (s: BankState): Rule[] => s.rules ?? DEFAULT_RULES;
+
+export const getBank = (): BankState => state;
 
 export function useBank(): BankState {
   return useSyncExternalStore(
