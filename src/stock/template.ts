@@ -13,6 +13,12 @@ export const GTD_TEMPLATE_COLUMNS: Array<{ header: string; width: number; hint: 
   { header: 'гр.6 Кол-во мест', width: 11, hint: 'Joylar (qadoqlar) soni — ixtiyoriy' },
   { header: 'ед. изм.', width: 10, hint: 'шт, комплект, кг…' },
   { header: 'кол-во', width: 11, hint: 'Tovar soni — omborga shu son kiradi' },
+  { header: 'гр.22 Валюта контракта', width: 11, hint: 'Ixtiyoriy: valyuta kodi, masalan 840 (USD)', text: true },
+  { header: 'гр.23 Курс валюты контракта', width: 13, hint: 'Ixtiyoriy: GTD sanasidagi kurs (so‘m)' },
+  { header: 'гр.42 Фактурная стоимость товара', width: 15, hint: 'Ixtiyoriy: tovarning fakturaviy qiymati (kontrakt valyutasida) — tannarx uchun' },
+  { header: 'гр. 47-1 Сбор (10) Сумма', width: 14, hint: 'Ixtiyoriy: bojxona yig‘imi (so‘m)' },
+  { header: 'гр.47-1 Пошлина (20) Сумма', width: 14, hint: 'Ixtiyoriy: boj (so‘m)' },
+  { header: 'гр. 47-1 НДС (29) Сумма', width: 14, hint: 'Ixtiyoriy: import QQS (so‘m)' },
 ];
 
 const ROWS = 500;
@@ -55,7 +61,7 @@ export async function buildGtdTemplate(): Promise<ExcelJS.Workbook> {
     ['3.', 'Tovar nomini sotuv (chiqim) fakturasidagi nom bilan bir xil yozing — ilova tovarlarni nom bo‘yicha bog‘laydi.'],
     ['4.', '“ИМ 40” — import (kirim). Eksport uchun “ЭК 10” (chiqim) tanlang.'],
     ['5.', 'Faylni saqlab, Ombor bo‘limiga kirim/chiqim faktura reyestrlari bilan birga tashlang.'],
-    ['', ''],
+    ['6.', 'Valyuta, kurs, fakturaviy qiymat va to‘lov ustunlari ixtiyoriy: to‘ldirilsa, ilova import provodkalarini va sotilgan tovar tannarxini hisoblaydi.'],
     ['Namuna (bu varaq import qilinmaydi):', ''],
   ];
   lines.forEach((l, i) => {

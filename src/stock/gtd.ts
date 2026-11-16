@@ -1,5 +1,5 @@
 import type { Cell } from '../bank/model';
-import { cellText } from '../bank/parsers/rows';
+import { cellText, moneyCell } from '../bank/parsers/rows';
 
 /** One good from a customs declaration (ГТД) report. */
 export interface GtdItem {
@@ -17,6 +17,18 @@ export interface GtdItem {
   qty: number | null;
   /** Number of packages (гр.6 Кол-во мест). */
   places: number | null;
+  /** Contract currency as written (гр.22), e.g. "840"; '' when the report has no such column. */
+  currency: string;
+  /** Contract currency rate (гр.23), so‘m per unit. */
+  rate: number | null;
+  /** Invoice value of the good (гр.42) in minor units (cents) of the contract currency. */
+  invoiceValue: number | null;
+  /** Customs fee and inspection charge (гр.47-1), tiyin. */
+  fees: number;
+  /** Duty, extra duty, excise and other payments (гр.47-1), tiyin. */
+  duty: number;
+  /** Import VAT (гр.47-1), tiyin. */
+  importVat: number;
   file: string;
 }
 
@@ -70,7 +82,13 @@ export function parseGtd(rows: Cell[][], file: string): GtdItem[] {
     places: has('кол-во мест'),
     unit: head.findIndex((x) => x.startsWith('ед. изм') || x.startsWith('ед.изм')),
     qty: head.findIndex((x) => x === 'кол-во' || x === 'количество'),
+    currency: has('валюта контракта'),
+    rate: has('курс валюты контракта'),
+    value: has('фактурная стоимость'),
   };
+  // Customs payments: the "Сумма" columns of block 47-1 (47-2 holds deferred/exempt amounts and is not used).
+  const pay = (...names: string[]) => head.flatMap((x, i) => (x.includes('47-1') && x.includes('сумма') && names.some((n) => x.includes(n)) ? [i] : []));
+  const P = { fees: pay('сбор', 'досмотр'), duty: pay('пошлина', 'акциз', 'иные'), vat: pay('ндс') };
   const out: GtdItem[] = [];
   for (let r = h + 1; r < rows.length; r++) {
     const row = rows[r] ?? [];
@@ -79,6 +97,8 @@ export function parseGtd(rows: Cell[][], file: string): GtdItem[] {
     const name = t(C.name);
     if (!gtdNo || !name) continue;
     const itemNo = t(C.itemNo) || String(out.filter((g) => g.gtdNo === gtdNo).length + 1);
+    const sum = (cols: number[]) => cols.reduce((s, i) => s + (moneyCell(row[i]) ?? 0), 0);
+    const value = C.value >= 0 ? num(row[C.value]) : null;
     out.push({
       id: `gtd:${gtdNo}:${itemNo}`,
       date: isoDay(row[C.date]),
@@ -92,6 +112,12 @@ export function parseGtd(rows: Cell[][], file: string): GtdItem[] {
       unit: t(C.unit) === '.' ? '' : t(C.unit),
       qty: (C.qty >= 0 ? num(row[C.qty]) : null) ?? qtyFromText(name),
       places: C.places >= 0 ? num(row[C.places]) : null,
+      currency: t(C.currency),
+      rate: C.rate >= 0 ? num(row[C.rate]) : null,
+      invoiceValue: value === null ? null : Math.round(value * 100),
+      fees: sum(P.fees),
+      duty: sum(P.duty),
+      importVat: sum(P.vat),
       file,
     });
   }
