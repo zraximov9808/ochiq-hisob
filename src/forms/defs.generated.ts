@@ -113,7 +113,7 @@ export const GENERATED: Record<string, RawFormDef> = {
    },
    {
     "code": "050",
-    "label": "Sho''ba xo'jalik jamiyatlariga investitsiyalar (0620)",
+    "label": "Sho'ba xo'jalik jamiyatlariga investitsiyalar (0620)",
     "cells": {
      "3": "input",
      "4": "input"
@@ -300,7 +300,7 @@ export const GENERATED: Record<string, RawFormDef> = {
    },
    {
     "code": "240",
-    "label": "Sho''ba va qaram xo'jalik jamiyatlarning qarzi (4120)",
+    "label": "Sho'ba va qaram xo'jalik jamiyatlarning qarzi (4120)",
     "cells": {
      "3": "input",
      "4": "input"
@@ -579,7 +579,7 @@ export const GENERATED: Record<string, RawFormDef> = {
    },
    {
     "code": "520",
-    "label": "Sho''ba va qaram xo'jalik jamiyatlarga uzoq muddatli qarz (7120)",
+    "label": "Sho'ba va qaram xo'jalik jamiyatlarga uzoq muddatli qarz (7120)",
     "cells": {
      "3": "input",
      "4": "input"
@@ -698,7 +698,7 @@ export const GENERATED: Record<string, RawFormDef> = {
    },
    {
     "code": "630",
-    "label": "Sho''ba va qaram xo'jalik jamiyatlarga qarz (6120)",
+    "label": "Sho'ba va qaram xo'jalik jamiyatlarga qarz (6120)",
     "cells": {
      "3": "input",
      "4": "input"

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { emptyDoc } from '../engine/types';
 import { parseDocFile, serializeDoc } from '../store/docFile';
 import { FORMS, FORM_IDS } from './defs';
-import { evaluate, evaluateAll, formKey, manualValues, parseFormula, setFormName, setFormValue } from './values';
+import { evaluate, evaluateAll, formKey, manualValues, parseFormula, roundToMing, setFormName, setFormValue } from './values';
 
 const SOM = 100;
 
@@ -73,6 +73,13 @@ describe('form values', () => {
         for (const f of typeof l.formula === 'string' ? [l.formula] : Object.values(l.formula ?? {})) expect(() => parseFormula(f), `${id}:${l.code} ${f}`).not.toThrow();
     const all = evaluateAll({}, {});
     expect(Object.keys(all)).toEqual(FORM_IDS);
+  });
+
+  test('in ming so‘m every line is rounded and totals add up the rounded lines; rates stay', () => {
+    const g = roundToMing('b1', { '010': { '4': 1_499 * SOM }, '011': { '4': 1_501 * SOM } });
+    expect(g).toEqual({ '010': { '4': 1_000 * SOM }, '011': { '4': 2_000 * SOM } });
+    expect(evaluate(FORMS.b1, g, {})['012']['4'].v).toBe(-1_000 * SOM);
+    expect(roundToMing('tax-6', { '011': { '3': 1_499 * SOM, '4': 2_550 } })).toEqual({ '011': { '3': 1_000 * SOM, '4': 2_550 } });
   });
 
   test('a value for Q2 does not show in Q3', () => {

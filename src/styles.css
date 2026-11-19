@@ -235,3 +235,54 @@ table.grid { width: 100%; border-collapse: collapse; font-variant-numeric: tabul
 .pfilter-list { max-height: 320px; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
 .pfilter-item { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; padding: 3px 4px; border-radius: 6px; cursor: pointer; }
 .pfilter-item:hover { background: var(--surface-2); }
+
+/* ---- official forms (1-shakl, 2-shakl, profit tax and annexes) ---- */
+.form-layout { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.form-list { padding: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.form-list button { text-align: left; border: 1px solid var(--line); background: var(--surface); padding: 5px 10px; border-radius: 7px; cursor: pointer; font-size: 12.5px; display: flex; gap: 6px; align-items: center; color: var(--text); }
+.form-list button:hover:not(.on) { background: var(--surface-2); }
+.form-list button.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.form-list .has { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-left: auto; flex: none; }
+.form-sheet { padding: 16px; min-width: 0; }
+.form-head { margin-bottom: 12px; }
+.form-card-wrap { display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; margin-bottom: 8px; }
+.form-card { border-collapse: collapse; font-size: 12.5px; }
+.form-card td { border: 1px solid var(--line); padding: 3px 8px; min-width: 90px; height: 24px; }
+.form-card td:first-child { color: var(--muted); width: 230px; background: var(--surface-2); }
+.form-card.codes td:first-child { width: 70px; }
+.form-title { text-align: center; font-weight: 750; font-size: 15px; margin: 10px 0 2px; }
+.form-unit { text-align: center; color: var(--muted); font-size: 12.5px; }
+table.oform { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.oform th, .oform td { border: 1px solid #b9c3cc; padding: 3px 6px; }
+.oform th { background: #eef2f5; font-weight: 600; text-align: center; vertical-align: middle; font-size: 12px; }
+.oform tr.nums th { font-weight: 500; color: var(--muted); font-size: 11px; }
+.oform td.code { text-align: center; color: var(--muted); font-weight: 650; white-space: nowrap; width: 56px; }
+.oform td.lbl { min-width: 280px; }
+.oform tr.sub td.lbl { padding-left: 20px; }
+.oform tr.total td { font-weight: 700; }
+.oform tr.total td.lbl, .oform tr.total td.code { background: #f6f8f9; }
+.oform tr.hdr td { font-weight: 650; background: #fafbfc; color: var(--brand); }
+.oform td.x { text-align: center; color: #9aa6b2; background: #eef1f4; min-width: 60px; }
+.oform td.calc { text-align: right; background: #f4f7f9; white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 110px; }
+.oform td.calc.zero { color: var(--faint); font-weight: 400; }
+.oform td.in { padding: 1px; min-width: 120px; position: relative; }
+.oform td.in .input { border: 1px solid transparent; border-radius: 4px; padding: 3px 6px; background: transparent; }
+.oform td.in .input:hover { border-color: var(--line-strong); }
+.oform td.in .input:focus { background: #fff; border-color: var(--brand-2); }
+.oform td.in.auto .input { color: var(--brand-2); }
+.oform td.in.manual { background: #fffbea; }
+.oform td.in.over { background: var(--warn-soft); }
+.oform td.in.over .input { padding-right: 22px; }
+.oform .reset { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); border: 0; background: none; cursor: pointer; color: var(--warn); font-size: 14px; padding: 0 2px; }
+.oform td.lbl .input { padding: 3px 6px; }
+.oform .name-row { display: flex; gap: 4px; align-items: center; }
+.oform .link { border: 0; background: none; padding: 0; text-align: left; color: inherit; cursor: pointer; font: inherit; text-decoration: underline dotted var(--faint); text-underline-offset: 3px; }
+.oform .link:hover { color: var(--brand-2); }
+.oform tr.addrow td { border-left: 0; border-right: 0; padding: 4px 6px; }
+.form-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.form-legend .lg { display: inline-block; width: 12px; height: 12px; border: 1px solid #b9c3cc; vertical-align: -2px; margin-right: 5px; }
+.form-legend .lg.auto { background: #fff; border-color: var(--brand-2); }
+.form-legend .lg.manual { background: #fffbea; }
+.form-legend .lg.over { background: var(--warn-soft); }
+.form-legend .lg.calc { background: #f4f7f9; }
+.form-legend .lg.x { background: #eef1f4; }

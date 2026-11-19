@@ -1,3 +1,4 @@
+import { toMing } from '../engine/money';
 import type { Quarter } from '../engine/period';
 import type { Doc } from '../engine/types';
 import { FORMS, FORM_IDS } from './defs';
@@ -281,6 +282,24 @@ export function evaluateAll(
       for (const c of def.columns) values[line][c.id] = cell(id, line, c.id);
     }
     out[id] = values;
+  }
+  return out;
+}
+
+/** A rate or share in percent (the line's or the column's), not money. */
+export function isRateCell(id: FormId, line: string, col: string): boolean {
+  return !!(lineOf(id, line)?.rate || FORMS[id].columns.find((c) => c.id === col)?.rate);
+}
+
+/**
+ * Forms filed in ming so'm: every typed or booked line is rounded on its own, so totals add up the rounded
+ * lines as on the printed form. Rates are left as they are.
+ */
+export function roundToMing(id: FormId, grid: Grid): Grid {
+  const out: Grid = {};
+  for (const [line, cols] of Object.entries(grid)) {
+    out[line] = {};
+    for (const [col, v] of Object.entries(cols)) out[line][col] = isRateCell(id, line, col) ? v : toMing(v) * 100_000;
   }
   return out;
 }

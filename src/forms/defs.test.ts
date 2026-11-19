@@ -84,6 +84,12 @@ describe('form definitions', () => {
     expect(f.sections!.find((s) => s.num === '1')!.sum).toEqual(['d-in', 'd-out']);
   });
 
+  test('no Russian left from the templates, no doubled apostrophes', () => {
+    const texts = Object.values(FORMS).flatMap((f) => f.lines.map((l) => l.label));
+    expect(texts.filter((x) => /Dolgosroch|Nematerial|ʻ’|''/.test(x))).toEqual([]);
+    expect(line('b1', '050').label).toMatch(/^Shoʻba/);
+  });
+
   test('a number typed in the template name column is not kept as a line name', () => {
     expect(line('tax-1', '021')).toMatchObject({ label: '', cells: { '3': 'input' } });
   });

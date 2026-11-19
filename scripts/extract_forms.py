@@ -51,6 +51,8 @@ def to_latin(s: str) -> str:
             lat = 'ye' if (not prev.isalpha() or prev in VOWELS or prev.lower() in 'ъь') else 'e'
         elif low == 'ц':
             lat = 'ts' if prev in VOWELS else 's'
+        elif low == 'ъ' and prev.lower() in 'ўғ':
+            continue  # the apostrophe is already there: Шўъба → Sho'ba
         elif low in SIMPLE:
             lat = SIMPLE[low]
         else:

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { INCOME_LINES } from '../../engine/incomeStatement';
 import { sampleDoc } from '../../engine/sample';
-import { emptyDoc, type Company } from '../../engine/types';
+import { emptyDoc, type Company, type CompanyCodes } from '../../engine/types';
 import { useT } from '../../i18n/useT';
 import { forgetFileHandle } from '../../store/fileIO';
 import { actions, useApp } from '../../store/store';
@@ -22,10 +22,16 @@ export function SettingsPage() {
   const t = useT();
   const { h } = useApp();
   const doc = h.doc;
-  const setCompany = (k: keyof Company) => (v: string) =>
+  const setCompany = (k: Exclude<keyof Company, 'codes'>) => (v: string) =>
     actions.update((d) => {
       d.company[k] = v.trim();
     });
+  const setCode = (k: keyof CompanyCodes) => (v: string) =>
+    actions.update((d) => {
+      d.company.codes = { ...d.company.codes, [k]: v.trim() };
+      if (!v.trim()) delete d.company.codes[k];
+    });
+  const codes = doc.company.codes ?? {};
   return (
     <div className="page" key={doc.year + doc.company.name}>
       <PageHead title="Sozlamalar">{t('Korxona rekvizitlari rasmiy shakllarning sarlavhasiga yoziladi.')}</PageHead>
@@ -38,6 +44,23 @@ export function SettingsPage() {
           <TextField label="Rahbar" value={doc.company.director} onCommit={setCompany('director')} />
           <TextField label="Bosh buxgalter" value={doc.company.accountant} onCommit={setCompany('accountant')} />
           <TextField label="Soliq organi" value={doc.company.taxOffice} onCommit={setCompany('taxOffice')} />
+        </div>
+      </div>
+      <div className="card card-pad">
+        <h3 style={{ marginBottom: 4 }}>{t('Rasmiy shakllar sarlavhasi')}</h3>
+        <p className="muted small" style={{ marginTop: 0 }}>{t('1- va 2-shakl tepasidagi korxona kartochkasi. To‘ldirilmasa, bo‘sh qoladi.')}</p>
+        <div className="form-grid">
+          <TextField label="Faoliyat turi" value={doc.company.industry ?? ''} onCommit={setCompany('industry')} />
+          <TextField label="Tashkiliy-huquqiy shakli" value={doc.company.legalForm ?? ''} onCommit={setCompany('legalForm')} placeholder="MChJ" />
+          <TextField label="Mulkchilik shakli" value={doc.company.ownership ?? ''} onCommit={setCompany('ownership')} placeholder="Xususiy" />
+          <TextField label="Vazirlik, idora, xo‘jalik birlashmasi" value={doc.company.ministry ?? ''} onCommit={setCompany('ministry')} />
+          <TextField label="Hudud" value={doc.company.region ?? ''} onCommit={setCompany('region')} />
+          <TextField label="KTUT (OKPO)" value={codes.ktut ?? ''} onCommit={setCode('ktut')} />
+          <TextField label="IFUT (OKED)" value={codes.ifut ?? ''} onCommit={setCode('ifut')} />
+          <TextField label="TXSHT (OKOPF)" value={codes.txsht ?? ''} onCommit={setCode('txsht')} />
+          <TextField label="MShT (OKFS)" value={codes.msht ?? ''} onCommit={setCode('msht')} />
+          <TextField label="DBIBT (SOOGU)" value={codes.dbibt ?? ''} onCommit={setCode('dbibt')} />
+          <TextField label="MHOBT (SOATO)" value={codes.mxobt ?? ''} onCommit={setCode('mxobt')} />
         </div>
       </div>
       <div className="card card-pad">

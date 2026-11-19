@@ -55,6 +55,13 @@ const RATE_COLUMNS: Partial<Record<FormId, string[]>> = { 'tax-2.1a': ['4'], 'ta
 const TITLE: Partial<Record<FormId, string>> = {
   b1: 'Buxgalteriya balansi — 1-sonli shakl',
   f2: 'Moliyaviy natijalar to‘g‘risida hisobot — 2-sonli shakl',
+  tax: 'Foyda solig‘i hisob-kitobi',
+};
+
+/** The templates carry two lines in Russian; the official Uzbek wording replaces them. */
+const LABEL_FIX: Record<string, string> = {
+  'Dolgosrochnie otsrochennie rasxodi (0950, 0960, 0990)': "Uzoq muddatli kechiktirilgan xarajatlar (0950, 0960, 0990)",
+  'Nematerialnie aktivi': 'Nomoddiy aktivlar',
 };
 
 interface Patch {
@@ -257,7 +264,7 @@ const OVERDUE: RawFormDef & { sections: OverdueSection[] } = {
 };
 
 function patchLine(line: LineDef, patch: Patch | undefined): LineDef {
-  const out: LineDef = { ...line, label: normalizeUz(patch?.label ?? line.label) };
+  const out: LineDef = { ...line, label: normalizeUz(patch?.label ?? LABEL_FIX[line.label] ?? line.label) };
   if (!patch) return out;
   if (patch.formula === null) delete out.formula;
   else if (patch.formula !== undefined) out.formula = patch.formula;
