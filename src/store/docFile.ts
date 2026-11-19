@@ -22,7 +22,7 @@ export function parseDocFile(text: string): Doc {
   return {
     ...base,
     ...r,
-    company: { ...base.company, ...(r.company ?? {}) },
+    company: { ...base.company, ...(r.company ?? {}), codes: { ...(r.company?.codes ?? {}) } },
     opening: Array.isArray(r.opening) ? r.opening : [],
     entries: Array.isArray(r.entries) ? r.entries : [],
     subaccounts: Array.isArray(r.subaccounts) ? r.subaccounts : [],

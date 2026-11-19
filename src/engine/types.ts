@@ -53,6 +53,23 @@ export interface Company {
   director: string;
   accountant: string;
   taxOffice: string;
+  /** Header of the official forms (soliq.uz); optional, older files lack them. */
+  industry?: string;
+  legalForm?: string;
+  ownership?: string;
+  ministry?: string;
+  region?: string;
+  codes?: CompanyCodes;
+}
+
+/** Classifier codes in the form header: KTUT (OKPO), IFUT (OKED), TXSHT (OKOPF), MShT (OKFS), DBIBT (SOOGU), MHOBT (SOATO). */
+export interface CompanyCodes {
+  ktut?: string;
+  ifut?: string;
+  txsht?: string;
+  msht?: string;
+  dbibt?: string;
+  mxobt?: string;
 }
 
 export interface Doc {
@@ -70,6 +87,10 @@ export interface Doc {
   taxRate: number;
   /** Settings of entries built from uploaded documents (absent in older files). */
   auto?: AutoSettings;
+  /** Values typed into the official forms: "form:quarter" → line → column → value (tiyin, rates ×100). */
+  forms?: Record<string, Record<string, Record<string, number>>>;
+  /** Names of rows the filer names (overdue debtors, benefits, activity types): "form:quarter" → line → name. */
+  formNames?: Record<string, Record<string, string>>;
 }
 
 export function emptyDoc(year: number): Doc {
