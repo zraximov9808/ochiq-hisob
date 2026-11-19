@@ -93,3 +93,26 @@ export function isKnownAccount(code: string, subaccounts: SubAccount[]): boolean
 export function accountName(code: string, subaccounts: SubAccount[] = []): string {
   return findAccount(code, subaccounts)?.name ?? '';
 }
+
+/** A chart code (dotted chart sub-accounts included). */
+export const isChartCode = (code: string) => BY_CODE.has(code.trim());
+
+/** Off-balance: 3-digit codes (with their sub-accounts) and the non-numeric 1C service accounts. */
+export function isOffBalance(code: string): boolean {
+  const c = code.trim();
+  const a = BY_CODE.get(c) ?? BY_CODE.get(synthetic(c));
+  return a ? a.offBalance : isOffBalanceCode(c, '');
+}
+
+const fold = (s: string) => s.toLowerCase().replace(/[ʻ’'`]/g, "'").replace(/ё/g, 'е');
+
+/** Accounts whose code starts with the query or whose Uzbek or Russian name contains it; counterparty subaccounts too. */
+export function searchAccounts(q: string, subaccounts: SubAccount[], limit = 50): Account[] {
+  const query = fold(q.trim());
+  if (!query) return [];
+  const hit = (a: { code: string; name: string; nameRu?: string }) =>
+    a.code.startsWith(query) || fold(a.name).includes(query) || (!!a.nameRu && fold(a.nameRu).includes(query));
+  const out: Account[] = CHART.filter(hit);
+  for (const s of subaccounts) if (hit(s)) out.push(findAccount(s.code, subaccounts)!);
+  return out.slice(0, limit);
+}

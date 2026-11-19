@@ -1,3 +1,4 @@
+import { isChartCode } from './accounts';
 import type { SubAccount } from './types';
 
 const suffix = (code: string) => code.split('.')[1] ?? '';
@@ -12,9 +13,11 @@ export function nextSubCode(parent: string, name: string, stir: string, subs: Su
   const same = subs.find(
     (s) => s.parent !== parent && ((stir && s.stir === stir) || s.name.trim().toLowerCase() === name.trim().toLowerCase()),
   );
-  if (same && !taken.has(suffix(same.code))) return `${parent}.${suffix(same.code)}`;
-  const max = [...taken].reduce((m, s) => Math.max(m, Number(s) || 0), 0);
-  return `${parent}.${String(max + 1).padStart(2, '0')}`;
+  if (same && !taken.has(suffix(same.code)) && !isChartCode(`${parent}.${suffix(same.code)}`)) return `${parent}.${suffix(same.code)}`;
+  // Chart sub-accounts (4410.3, 004.01) are never reused as counterparty numbers.
+  let n = [...taken].reduce((m, s) => Math.max(m, Number(s) || 0), 0) + 1;
+  while (isChartCode(`${parent}.${String(n).padStart(2, '0')}`)) n++;
+  return `${parent}.${String(n).padStart(2, '0')}`;
 }
 
 /** Groups subaccounts by counterparty (STIR, else name) when `merge` is on; one group per subaccount otherwise. */

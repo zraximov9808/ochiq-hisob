@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { editedEntry, removeEntry } from '../../auto/apply';
 import { AUTO_KIND_LABEL, autoKind } from '../../auto/labels';
-import { findAccount, isKnownAccount, synthetic } from '../../engine/accounts';
+import { findAccount, isChartCode, isKnownAccount, synthetic } from '../../engine/accounts';
 import { balanceLineFor } from '../../engine/balanceSheet';
 import { incomeLineFor } from '../../engine/incomeStatement';
 import { formatAmount } from '../../engine/money';
@@ -225,13 +225,13 @@ export function JournalPage() {
           <div className="hint">
             {draft.debit && (
               <>
-                <b className="dt">Dt {draft.debit}</b> {hint.dAcc ? (draft.debit.includes('.') ? hint.dAcc.name : t(hint.dAcc.name)) : <span className="err-text">{t('topilmadi')}</span>}
+                <b className="dt">Dt {draft.debit}</b> {hint.dAcc ? (isChartCode(draft.debit) ? t(hint.dAcc.name) : hint.dAcc.name) : <span className="err-text">{t('topilmadi')}</span>}
               </>
             )}
             {draft.debit && draft.credit && ' · '}
             {draft.credit && (
               <>
-                <b className="kt">Kt {draft.credit}</b> {hint.cAcc ? (draft.credit.includes('.') ? hint.cAcc.name : t(hint.cAcc.name)) : <span className="err-text">{t('topilmadi')}</span>}
+                <b className="kt">Kt {draft.credit}</b> {hint.cAcc ? (isChartCode(draft.credit) ? t(hint.cAcc.name) : hint.cAcc.name) : <span className="err-text">{t('topilmadi')}</span>}
               </>
             )}
             {hint.parts.length > 0 && <div className="muted">{t(hint.parts.join('; '))}</div>}
@@ -332,6 +332,7 @@ export function JournalPage() {
 
 function JournalRow({ e, editing, year, onEdit, onTax }: { e: Entry; editing: boolean; year: number; onEdit: () => void; onTax: (tag: TaxTag | undefined) => void }) {
   const t = useT();
+  const subs = useApp().h.doc.subaccounts;
   const tag = effectiveTax(e);
   const def = tag.line ? TAX_LINE_BY_ID.get(tag.line) : undefined;
   const outside = !e.date.startsWith(String(year));
@@ -359,8 +360,14 @@ function JournalRow({ e, editing, year, onEdit, onTax }: { e: Entry; editing: bo
           </>
         )}
       </td>
-      <td className="dt-code">{e.debit}</td>
-      <td className="kt-code">{e.credit}</td>
+      <td className="dt-code">
+        {e.debit}
+        {!isKnownAccount(e.debit, subs) && <span className="tag warn" title={t('Hisobvaraqlar rejasida yo‘q')}>?</span>}
+      </td>
+      <td className="kt-code">
+        {e.credit}
+        {!isKnownAccount(e.credit, subs) && <span className="tag warn" title={t('Hisobvaraqlar rejasida yo‘q')}>?</span>}
+      </td>
       <td className="r">
         <b>{formatAmount(e.amount, 'som')}</b>
       </td>

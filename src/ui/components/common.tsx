@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { CHART, findAccount, isKnownAccount } from '../../engine/accounts';
+import { CHART, findAccount, isChartCode, isKnownAccount } from '../../engine/accounts';
 import { formatAmount, parseAmount, type Unit } from '../../engine/money';
 import type { SubAccount } from '../../engine/types';
 import { useT } from '../../i18n/useT';
@@ -74,7 +74,7 @@ export function AccountDatalist({ subaccounts }: { subaccounts: SubAccount[] }) 
       ))}
       {CHART.filter((a) => !a.group).map((a) => (
         <option key={a.code} value={a.code}>
-          {t(a.name)}
+          {`${t(a.name)} · ${a.nameRu}`}
         </option>
       ))}
     </datalist>
@@ -112,7 +112,7 @@ export function AccountLabel({ code }: { code: string }) {
   const acc = findAccount(code, h.doc.subaccounts);
   if (!code.trim()) return null;
   if (!acc) return <span className="err-text">{t('Bunday hisobvaraq yo‘q')}</span>;
-  return <>{code.includes('.') ? acc.name : t(acc.name)}</>;
+  return <>{isChartCode(code) ? t(acc.name) : acc.name}</>;
 }
 
 export function Modal(props: { title: string; onClose: () => void; children: ReactNode; footer?: ReactNode; wide?: boolean }) {

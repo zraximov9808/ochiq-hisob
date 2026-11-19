@@ -1,4 +1,4 @@
-import { synthetic } from './accounts';
+import { isOffBalance, synthetic } from './accounts';
 import { BALANCE_LINES, BALANCE_RULES, type BalanceLineDef } from './balanceForm';
 import { buildLedger } from './ledger';
 import { periodRange, type Quarter } from './period';
@@ -34,9 +34,7 @@ export function balanceLineFor(code: string, net: number): string | null {
   return net >= 0 ? rule[2] : rule[3];
 }
 
-export function isOffBalance(code: string): boolean {
-  return synthetic(code).length === 3;
-}
+export { isOffBalance } from './accounts';
 
 export function buildBalance(doc: Doc, quarter: Quarter): BalanceForm {
   const { from, to } = periodRange(doc.year, quarter);
