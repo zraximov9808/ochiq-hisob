@@ -1,0 +1,6 @@
+# One line ending in the repository, whatever editor wrote the file
+* text=auto eol=lf
+*.xlsx binary
+*.xltx binary
+*.png binary
+*.ico binary
