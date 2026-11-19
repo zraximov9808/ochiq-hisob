@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { CHART, findAccount, isChartCode, isKnownAccount } from '../../engine/accounts';
 import { formatAmount, parseAmount, type Unit } from '../../engine/money';
 import type { SubAccount } from '../../engine/types';
@@ -121,7 +122,8 @@ export function Modal(props: { title: string; onClose: () => void; children: Rea
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [props]);
-  return (
+  // rendered on <body>: a dialog opened from the side panel must not inherit its colours or stacking
+  return createPortal(
     <div className="modal-back" onMouseDown={(e) => e.target === e.currentTarget && props.onClose()}>
       <div className="modal" role="dialog" aria-modal="true" aria-label={props.title} style={props.wide ? { width: 'min(1100px, 100%)' } : undefined}>
         <div className="modal-head">
@@ -130,7 +132,8 @@ export function Modal(props: { title: string; onClose: () => void; children: Rea
         <div className="modal-body">{props.children}</div>
         <div className="modal-foot">{props.footer}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

@@ -5,8 +5,9 @@ import { emptyDoc } from '../../engine/types';
 import { uid } from '../../engine/uid';
 import { useT } from '../../i18n/useT';
 import { forgetFileHandle, openDocFile, saveDocToFile } from '../../store/fileIO';
-import { actions, getState, isDirty, useApp, type PageId } from '../../store/store';
+import { actions, getState, isDirty, openTarget, useApp, type PageId } from '../../store/store';
 import { useReport } from '../report';
+import { CompanySwitcher } from './CompanySwitcher';
 import { Modal, Num, toast } from './common';
 
 const NAV: Array<{ group?: string; id: PageId; num?: string; label: string }> = [
@@ -38,6 +39,7 @@ export function SideNav() {
           <div className="brand-sub">{t('provodkadan hisobotgacha')}</div>
         </div>
       </div>
+      <CompanySwitcher />
       <nav className="nav">
         {NAV.map((n) => (
           <div key={n.id} style={{ display: 'contents' }}>
@@ -84,13 +86,14 @@ export function TopBar({ onExcel }: { onExcel: (kind: 'all' | 'forms' | 'import'
     }
   };
   const open = async () => {
-    if (isDirty() && !confirm(t('Saqlanmagan o‘zgarishlar yo‘qoladi. Davom etasizmi?'))) return;
     try {
       const r = await openDocFile();
-      if (r) {
-        actions.replaceDoc(r.doc, r.name);
-        toast(`Ochildi: ${r.name}`);
-      }
+      if (!r) return;
+      // a file of another company opens in that company (or a new one): nothing here is replaced
+      if (openTarget(r.doc) === 'current' && isDirty() && !confirm(t('Saqlanmagan o‘zgarishlar yo‘qoladi. Davom etasizmi?'))) return;
+      const where = actions.openDoc(r.doc, r.name);
+      const name = r.doc.company.name || r.name;
+      toast(where === 'new' ? `Yangi korxona sifatida ochildi: ${name}` : where === 'other' ? `«${name}» korxonasida ochildi` : `Ochildi: ${r.name}`);
     } catch (e) {
       toast((e as Error).message);
     }

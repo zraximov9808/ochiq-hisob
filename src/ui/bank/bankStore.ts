@@ -162,6 +162,8 @@ export const bankActions = {
 export function switchBankDb(name: string): void {
   if (name === dbName) return;
   const wasLoaded = state.loaded || loading !== null;
+  // close the old connection, or deleting that company's database later stays blocked
+  void db?.('readonly', (s) => s.transaction.db.close()).catch(() => undefined);
   dbName = name;
   db = openDb(name);
   loading = null;

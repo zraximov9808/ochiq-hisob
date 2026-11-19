@@ -198,6 +198,14 @@ export const actions = {
       set({ ...state, co: { ...state.co, list: loadCompanies(kv).list } });
     }
   },
+  /** Opens a document from a file into the company it belongs to (see openTarget). */
+  openDoc(doc: Doc, fileName: string | null): OpenTarget {
+    const target = openTarget(doc);
+    if (target === 'new') actions.addCompany(doc.company.name, doc.company.stir);
+    if (target === 'other') actions.switchCompany(state.co.list.find((c) => c.stir === doc.company.stir.trim())!.id);
+    actions.replaceDoc(doc, fileName);
+    return target;
+  },
   /** Removes a company with its document and uploads; the last one cannot be removed. */
   removeCompany(id: string) {
     const ref = state.co.list.find((c) => c.id === id);
@@ -209,6 +217,22 @@ export const actions = {
     set({ ...state, co: loadCompanies(kv) });
   },
 };
+
+export type OpenTarget = 'current' | 'other' | 'new';
+
+/**
+ * Where a document opened from a file goes: the company with the same STIR, else a new company — unless the
+ * file has no STIR, or the current company is still empty and unnamed, then the current one.
+ */
+export function openTarget(doc: Doc): OpenTarget {
+  const stir = doc.company.stir.trim();
+  if (!stir) return 'current';
+  const ref = state.co.list.find((c) => c.stir === stir);
+  if (ref) return ref.id === state.co.currentId ? 'current' : 'other';
+  const cur = state.h.doc;
+  const blank = !cur.company.stir.trim() && !cur.entries.length && !cur.opening.length;
+  return blank ? 'current' : 'new';
+}
 
 export function getState(): AppState {
   return state;

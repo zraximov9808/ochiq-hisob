@@ -100,3 +100,48 @@ describe('store: switching companies', () => {
     expect(manualValues(getState().h.doc, 'tax', 4)).toEqual({ '090': { '3': 700 } });
   });
 });
+
+describe('store: opening a saved file', () => {
+  afterEach(() => {
+    delete (globalThis as { localStorage?: KV }).localStorage;
+  });
+
+  test('an opened file goes to the company with its STIR, or becomes a new company', async () => {
+    const kv = legacyKV();
+    (globalThis as { localStorage?: KV }).localStorage = kv;
+    vi.resetModules();
+    const { actions, getState, openTarget } = await import('./store');
+    const first = getState().co.list[0];
+    const other = emptyDoc(2026);
+    other.company = { ...other.company, name: 'Boshqa MChJ', stir: '309999999' };
+
+    expect(openTarget(other)).toBe('new');
+    expect(actions.openDoc(other, 'boshqa.ohisob')).toBe('new');
+    expect(getState().co.list).toHaveLength(2);
+    expect(getState().h.doc.company.name).toBe('Boshqa MChJ');
+
+    const again = emptyDoc(2026);
+    again.company = { ...again.company, name: '"Eski" MChJ', stir: '301234567' };
+    again.entries.push({ id: 'x', date: '2026-02-01', text: 'Fayldan', debit: '5110', credit: '4010', amount: 5 });
+    expect(openTarget(again)).toBe('other');
+    expect(actions.openDoc(again, 'eski.ohisob')).toBe('other');
+    expect(getState().co.currentId).toBe(first.id);
+    expect(getState().h.doc.entries).toHaveLength(1);
+    expect(getState().co.list).toHaveLength(2);
+
+    const noStir = emptyDoc(2026);
+    expect(openTarget(noStir)).toBe('current');
+  });
+});
+
+test('on a fresh start the first opened file fills the empty company instead of adding one', async () => {
+  (globalThis as { localStorage?: KV }).localStorage = memoryKV();
+  vi.resetModules();
+  const { actions, getState, openTarget } = await import('./store');
+  const doc = emptyDoc(2026);
+  doc.company = { ...doc.company, name: 'Birinchi MChJ', stir: '305555555' };
+  expect(openTarget(doc)).toBe('current');
+  actions.openDoc(doc, 'birinchi.ohisob');
+  expect(getState().co.list).toEqual([expect.objectContaining({ name: 'Birinchi MChJ', stir: '305555555' })]);
+  delete (globalThis as { localStorage?: KV }).localStorage;
+});
