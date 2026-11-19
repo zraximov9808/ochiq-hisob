@@ -4,9 +4,9 @@ import { formatDate, periodRange, type Quarter } from '../../engine/period';
 import { TAX_LINES } from '../../engine/taxLines';
 import type { Doc } from '../../engine/types';
 import { FORMS, FORM_IDS } from '../../forms/defs';
-import { autoAll } from '../../forms/sources';
+import { formSet } from '../../forms/sources';
 import type { FormDef, FormGroup, FormId } from '../../forms/types';
-import { evaluateAll, formKey, formNames, isRateCell, manualValues, roundToMing, setFormName, setFormValue, type Grid } from '../../forms/values';
+import { formKey, formNames, isRateCell, manualValues, setFormName, setFormValue } from '../../forms/values';
 import { useT } from '../../i18n/useT';
 import { actions, useApp } from '../../store/store';
 import { PageHead, toast } from '../components/common';
@@ -131,19 +131,7 @@ export function FormPage({ group }: { group: FormGroup }) {
   const def = FORMS[id];
   const unit: Unit = group === 'tax' ? 'som' : ui.unit;
 
-  const all = useMemo(() => {
-    const auto = autoAll(doc, ui.quarter, report);
-    const manual: Partial<Record<FormId, Grid>> = {};
-    for (const f of FORM_IDS) {
-      manual[f] = manualValues(doc, f, ui.quarter);
-      // forms 1 and 2 are filed in ming so'm: lines are rounded first, totals add the rounded lines
-      if (ui.unit === 'ming' && FORMS[f].group !== 'tax') {
-        auto[f] = roundToMing(f, auto[f] ?? {});
-        manual[f] = roundToMing(f, manual[f]!);
-      }
-    }
-    return evaluateAll(auto, manual);
-  }, [doc, ui.quarter, ui.unit, report]);
+  const all = useMemo(() => formSet(doc, ui.quarter, report, ui.unit), [doc, ui.quarter, ui.unit, report]);
 
   const manual = manualValues(doc, id, ui.quarter);
   const names = formNames(doc, id, ui.quarter);

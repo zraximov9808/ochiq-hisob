@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { runChecks } from '../engine/checks';
-import { M, referenceDoc } from '../engine/testDoc';
+import { M, entry, referenceDoc } from '../engine/testDoc';
+import { setFormValue } from '../forms/values';
+import { toCyrillic } from '../i18n/translit';
+import { buildFormsWorkbook } from './formWorkbook';
 import { parseJournalRows, parseOpeningRows } from './parse';
 import { buildFormWorkbook } from './workbooks';
 
@@ -74,4 +77,48 @@ test('excel balance totals add up from rounded lines', async () => {
   });
   expect(v['320']).toBe(60002);
   expect(v['400']).toBe(250002);
+});
+
+describe('buildFormsWorkbook', () => {
+  const codesOf = (ws: import('exceljs').Worksheet) => {
+    const v: Record<string, unknown[]> = {};
+    ws.eachRow((row) => {
+      const code = row.getCell(2).value;
+      if (typeof code === 'string' && /^\d{3,5}$/.test(code)) v[code] = Array.from({ length: ws.columnCount - 2 }, (_, i) => row.getCell(i + 3).value ?? null);
+    });
+    return v;
+  };
+
+  test('tax workbook has the main form and 14 annex sheets with codes', async () => {
+    const doc = referenceDoc([entry('2026-01-20', '4010', '9020.1', 100, 'Sotuv'), entry('2026-01-21', '9120.1', '2910', 60, 'Tannarx')]);
+    const wb = await buildFormsWorkbook('tax', doc, 4, runChecks(doc, 4), (s) => s);
+    expect(wb.worksheets.map((w) => w.name)).toEqual([
+      'Foyda solig‘i', '1-ilova', '2-ilova', '2.1-ilova', '2.1(a)-ilova', '2.1(b)-ilova', '3-ilova', '4-ilova', '5-ilova', '6-ilova', '7-ilova', '8-ilova', '9-ilova', '10-ilova', '11-ilova',
+    ]);
+    const main = codesOf(wb.worksheets[0]);
+    expect(main['030']).toEqual([40_000_000]);
+    expect(main['080']).toEqual([6_000_000]);
+    expect(main['070']).toEqual([15]);
+    expect(Object.keys(codesOf(wb.worksheets[2]))).toEqual(expect.arrayContaining(['0101', '0137', '01378']));
+    expect(codesOf(wb.worksheets[6])['020']).toEqual([null]);
+  });
+
+  test('balance workbook has 3 sheets and 400 = 780', async () => {
+    const doc = referenceDoc();
+    const wb = await buildFormsWorkbook('balance', doc, 1, runChecks(doc, 1), (s) => s);
+    expect(wb.worksheets).toHaveLength(3);
+    const b1 = codesOf(wb.worksheets[0]);
+    expect(b1['400']).toEqual([250_000, 250_000]);
+    expect(b1['780']).toEqual(b1['400']);
+    expect(codesOf(wb.worksheets[1])['790']).toEqual([null, null]);
+  });
+
+  test('closed cells print x, typed values show, Cyrillic sheet names', async () => {
+    const doc = referenceDoc();
+    setFormValue(doc, 'f2-budget', 1, '280', '3', 5 * M);
+    const wb = await buildFormsWorkbook('income', doc, 1, runChecks(doc, 1), (s) => toCyrillic(s));
+    expect(wb.worksheets.map((w) => w.name)).toEqual(['2-шакл', '2-шакл бюджет']);
+    expect(codesOf(wb.worksheets[0])['010']).toEqual([null, 'x', null, 'x']);
+    expect(codesOf(wb.worksheets[1])['280']).toEqual([5_000, null]);
+  });
 });

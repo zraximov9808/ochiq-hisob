@@ -1,19 +1,15 @@
 import ExcelJS from 'exceljs';
 import { accountName } from '../engine/accounts';
 import type { Report } from '../engine/checks';
-import { toMing } from '../engine/money';
 import { formatDate, type Quarter } from '../engine/period';
-import { roundBalance, roundIncome } from '../engine/rounding';
 import type { Reconciliation } from '../engine/reconciliation';
-import { TAX_LINES, TAX_MAIN_LINES } from '../engine/taxLines';
 import { buildTrialBalance } from '../engine/trialBalance';
 import type { Doc } from '../engine/types';
+import { buildFormsWorkbook } from './formWorkbook';
 
 export type Tr = (s: string) => string;
 export type FormKind = 'balance' | 'income' | 'tax';
 
-const QUARTER_LABEL: Record<Quarter, string> = { 1: 'I chorak', 2: 'Yarim yil (II chorak)', 3: '9 oy (III chorak)', 4: 'Yillik' };
-const MING = '#,##0;-#,##0;""';
 const SOM = '#,##0.00';
 const thin = { style: 'thin' as const, color: { argb: 'FF9AA5B1' } };
 const border = { top: thin, left: thin, bottom: thin, right: thin };
@@ -48,168 +44,6 @@ function tableHead(ws: ExcelJS.Worksheet, rowNo: number, titles: string[]) {
   row.height = 32;
 }
 
-function signatures(ws: ExcelJS.Worksheet, rowNo: number, doc: Doc, tr: Tr) {
-  ws.getCell(rowNo, 1).value = `${tr('Rahbar')}: ____________ ${doc.company.director}`;
-  ws.getCell(rowNo + 1, 1).value = `${tr('Bosh buxgalter')}: ____________ ${doc.company.accountant}`;
-}
-
-function companyLines(doc: Doc, tr: Tr): Array<[string, string]> {
-  return [
-    [tr('Korxona'), doc.company.name],
-    [tr('STIR'), doc.company.stir],
-    [tr('Manzil'), doc.company.address],
-  ];
-}
-
-function addBalance(wb: ExcelJS.Workbook, doc: Doc, r: Report, tr: Tr) {
-  const ws = wb.addWorksheet(tr('1-shakl Balans'));
-  ws.columns = [{ width: 70 }, { width: 10 }, { width: 20 }, { width: 20 }];
-  let n = header(ws, tr('BUXGALTERIYA BALANSI (1-shakl)'), [
-    [tr('Sana'), `${formatDate(r.balance.date.end)} ${tr('holatiga')}`],
-    ...companyLines(doc, tr),
-    [tr('O‘lchov birligi'), tr('ming so‘m')],
-  ], 4);
-  tableHead(ws, n++, [tr('Ko‘rsatkich nomi'), tr('Satr kodi'), tr('Hisobot davri boshiga'), tr('Hisobot davri oxiriga')]);
-  const rounded = roundBalance(r.balance);
-  for (const l of r.balance.lines) {
-    const row = ws.getRow(n++);
-    row.getCell(1).value = tr(l.label);
-    if (l.code) {
-      row.getCell(2).value = l.code;
-      if (!l.manual) {
-        row.getCell(3).value = toMing(rounded[l.code].start);
-        row.getCell(4).value = toMing(rounded[l.code].end);
-      }
-    }
-    row.getCell(3).numFmt = MING;
-    row.getCell(4).numFmt = MING;
-    const bold = l.kind !== 'line';
-    for (let i = 1; i <= 4; i++) {
-      row.getCell(i).border = border;
-      if (bold) row.getCell(i).font = { bold: true };
-    }
-    row.getCell(1).alignment = { wrapText: true };
-    row.getCell(2).alignment = { horizontal: 'center' };
-  }
-  signatures(ws, n + 1, doc, tr);
-}
-
-function addIncome(wb: ExcelJS.Workbook, doc: Doc, r: Report, tr: Tr) {
-  const ws = wb.addWorksheet(tr('2-shakl Moliyaviy natijalar'));
-  ws.columns = [{ width: 62 }, { width: 8 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 16 }];
-  let n = header(ws, tr('MOLIYAVIY NATIJALAR TO‘G‘RISIDA HISOBOT (2-shakl)'), [
-    [tr('Davr'), `${formatDate(r.income.period.from)} – ${formatDate(r.income.period.to)}`],
-    ...companyLines(doc, tr),
-    [tr('O‘lchov birligi'), tr('ming so‘m')],
-  ], 6);
-  tableHead(ws, n++, [
-    tr('Ko‘rsatkich nomi'), tr('Satr kodi'),
-    tr('O‘tgan yilning shu davrida: daromadlar (foyda)'), tr('O‘tgan yilning shu davrida: xarajatlar (zararlar)'),
-    tr('Hisobot davrida: daromadlar (foyda)'), tr('Hisobot davrida: xarajatlar (zararlar)'),
-  ]);
-  const rounded = roundIncome(r.income);
-  const put = (v: number | undefined, col: 'inc' | 'exp' | 'res', want: 'inc' | 'exp'): ExcelJS.CellValue => {
-    if (col !== 'res' && col !== want) return 'x';
-    if (v === undefined) return null;
-    if (col !== 'res') return toMing(v);
-    if (v > 0) return want === 'inc' ? toMing(v) : null;
-    if (v < 0) return want === 'exp' ? toMing(-v) : null;
-    return want === 'inc' ? 0 : null;
-  };
-  for (const l of r.income.lines) {
-    const row = ws.getRow(n++);
-    row.getCell(1).value = tr(l.label);
-    row.getCell(2).value = l.code;
-    row.getCell(3).value = put(rounded.prev[l.code], l.col, 'inc');
-    row.getCell(4).value = put(rounded.prev[l.code], l.col, 'exp');
-    row.getCell(5).value = put(rounded.cur[l.code], l.col, 'inc');
-    row.getCell(6).value = put(rounded.cur[l.code], l.col, 'exp');
-    for (let i = 1; i <= 6; i++) {
-      const c = row.getCell(i);
-      c.border = border;
-      if (i >= 3) {
-        c.numFmt = '#,##0;-#,##0;0';
-        c.alignment = { horizontal: 'right' };
-      }
-      if (l.total) c.font = { bold: true };
-    }
-    row.getCell(1).alignment = { wrapText: true };
-    row.getCell(2).alignment = { horizontal: 'center' };
-  }
-  signatures(ws, n + 1, doc, tr);
-}
-
-function addTax(wb: ExcelJS.Workbook, doc: Doc, r: Report, quarter: Quarter, tr: Tr) {
-  const x = r.tax;
-  const meta: Array<[string, string]> = [
-    [tr('Hisobot davri'), tr(QUARTER_LABEL[quarter])],
-    [tr('Soliq davri'), String(doc.year)],
-    ...companyLines(doc, tr),
-    [tr('Soliq organi'), doc.company.taxOffice],
-    [tr('O‘lchov birligi'), tr('so‘m')],
-  ];
-  const main = wb.addWorksheet(tr('Asosiy shakl'));
-  main.columns = [{ width: 90 }, { width: 10 }, { width: 22 }];
-  let n = header(main, tr('FOYDA SOLIG‘I HISOB-KITOBI'), meta, 3);
-  tableHead(main, n++, [tr('Ko‘rsatkichlar (o‘sib boruvchi tartibda)'), tr('Satr kodi'), tr('Summa')]);
-  for (const l of TAX_MAIN_LINES) {
-    const row = main.getRow(n++);
-    row.getCell(1).value = tr(l.label);
-    row.getCell(2).value = l.code;
-    const v = x.main[l.code] ?? 0;
-    row.getCell(3).value = l.rate ? v : so(v);
-    row.getCell(3).numFmt = l.rate ? '0.00' : SOM;
-    for (let i = 1; i <= 3; i++) {
-      row.getCell(i).border = border;
-      if (l.bold) row.getCell(i).font = { bold: true };
-    }
-    row.getCell(1).alignment = { wrapText: true };
-    row.getCell(2).alignment = { horizontal: 'center' };
-  }
-  signatures(main, n + 1, doc, tr);
-
-  const a1 = wb.addWorksheet(tr('1-ilova'));
-  a1.columns = [{ width: 80 }, { width: 10 }, { width: 22 }];
-  n = header(a1, tr('1-ilova. Jami daromadlar'), meta.slice(0, 4), 3);
-  tableHead(a1, n++, [tr('Ko‘rsatkich'), tr('Satr kodi'), tr('Summa')]);
-  const a1rows: Array<[string, string, number, boolean]> = [
-    [tr('Jami daromadlar'), '010', x.annex1['010'] ?? 0, true],
-    [tr('Tovar (ish, xizmat)larni realizatsiya qilishdan daromadlar — jami (021–026)'), '020', x.annex1['020'] ?? 0, true],
-    ...TAX_LINES.filter((l) => l.annex === 1).map((l): [string, string, number, boolean] => [tr(l.label), l.code, x.annex1[l.code] ?? 0, false]),
-  ];
-  for (const [label, code, v, bold] of a1rows) {
-    const row = a1.getRow(n++);
-    row.values = [label, code, so(v)];
-    row.getCell(3).numFmt = SOM;
-    for (let i = 1; i <= 3; i++) {
-      row.getCell(i).border = border;
-      if (bold) row.getCell(i).font = { bold: true };
-    }
-  }
-
-  const a2 = wb.addWorksheet(tr('2-ilova'));
-  a2.columns = [{ width: 70 }, { width: 10 }, { width: 22 }, { width: 22 }];
-  n = header(a2, tr('2-ilova. Xarajatlar'), meta.slice(0, 4), 4);
-  tableHead(a2, n++, [tr('Ko‘rsatkich'), tr('Satr kodi'), tr('Jami xarajatlar (3-ustun)'), tr('Shundan chegirilmaydigan (4-ustun)')]);
-  const a2rows: Array<[string, string, { total: number; nonDeductible: number }, boolean]> = [
-    [tr('Jami xarajatlar'), '010', x.annex2['010'], true],
-    ...TAX_LINES.filter((l) => l.annex === 2).map((l): [string, string, { total: number; nonDeductible: number }, boolean] => [
-      tr(l.label), l.code, x.annex2[l.code] ?? { total: 0, nonDeductible: 0 }, false,
-    ]),
-  ];
-  for (const [label, code, v, bold] of a2rows) {
-    const row = a2.getRow(n++);
-    row.values = [label, code, so(v.total), so(v.nonDeductible)];
-    row.getCell(3).numFmt = SOM;
-    row.getCell(4).numFmt = SOM;
-    for (let i = 1; i <= 4; i++) {
-      row.getCell(i).border = border;
-      if (bold) row.getCell(i).font = { bold: true };
-    }
-  }
-  a2.getCell(n + 1, 1).value = tr('2-ilova II bo‘limi (0101–0137) va 3–11-ilovalar soliq hisobotida qo‘lda to‘ldiriladi.');
-}
-
 function newBook(): ExcelJS.Workbook {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Ochiq Hisob';
@@ -217,19 +51,14 @@ function newBook(): ExcelJS.Workbook {
   return wb;
 }
 
+/** One official form with its annexes, each on its own sheet (see formWorkbook.ts). */
 export async function buildFormWorkbook(kind: FormKind, doc: Doc, quarter: Quarter, r: Report, tr: Tr): Promise<ExcelJS.Workbook> {
-  const wb = newBook();
-  if (kind === 'balance') addBalance(wb, doc, r, tr);
-  if (kind === 'income') addIncome(wb, doc, r, tr);
-  if (kind === 'tax') addTax(wb, doc, r, quarter, tr);
-  return wb;
+  return buildFormsWorkbook(kind, doc, quarter, r, tr, newBook());
 }
 
 export async function buildAllWorkbook(doc: Doc, quarter: Quarter, r: Report, tr: Tr): Promise<ExcelJS.Workbook> {
   const wb = newBook();
-  addBalance(wb, doc, r, tr);
-  addIncome(wb, doc, r, tr);
-  addTax(wb, doc, r, quarter, tr);
+  for (const group of ['balance', 'income', 'tax'] as const) await buildFormsWorkbook(group, doc, quarter, r, tr, wb);
 
   const tb = buildTrialBalance(doc, quarter);
   const ws = wb.addWorksheet(tr('Aylanma-saldo'));

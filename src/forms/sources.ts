@@ -7,9 +7,9 @@ import { periodRange, type Quarter } from '../engine/period';
 import { TAX_LINE_BY_ID } from '../engine/taxLines';
 import { effectiveTax, taxSign } from '../engine/taxSuggest';
 import type { Doc, Entry } from '../engine/types';
-import { FORM_IDS } from './defs';
+import { FORMS, FORM_IDS } from './defs';
 import type { FormId } from './types';
-import type { Grid } from './values';
+import { evaluateAll, manualValues, roundToMing, type FormValues, type Grid } from './values';
 
 /**
  * Values the books give the official forms (tiyin; rates ×100). Typed-in values win over these, and the
@@ -39,6 +39,23 @@ export function autoValues(id: FormId, doc: Doc, quarter: Quarter, report: Repor
 /** Every form's values from the books. */
 export function autoAll(doc: Doc, quarter: Quarter, report: Report): Partial<Record<FormId, Grid>> {
   return Object.fromEntries(FORM_IDS.map((id) => [id, autoValues(id, doc, quarter, report)]));
+}
+
+/**
+ * Every form as shown and filed: the books' values with what was typed in for the quarter. 1- and 2-shakl
+ * in ming so'm round each line before the totals, as on the printed form; the tax forms stay in so'm.
+ */
+export function formSet(doc: Doc, quarter: Quarter, report: Report, unit: 'som' | 'ming'): Record<FormId, FormValues> {
+  const auto = autoAll(doc, quarter, report);
+  const manual: Partial<Record<FormId, Grid>> = {};
+  for (const f of FORM_IDS) {
+    manual[f] = manualValues(doc, f, quarter);
+    if (unit === 'ming' && FORMS[f].group !== 'tax') {
+      auto[f] = roundToMing(f, auto[f] ?? {});
+      manual[f] = roundToMing(f, manual[f]!);
+    }
+  }
+  return evaluateAll(auto, manual);
 }
 
 // ---- helpers ------------------------------------------------------------------------------------
