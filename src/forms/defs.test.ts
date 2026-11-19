@@ -56,7 +56,8 @@ describe('form definitions', () => {
     expect(line('tax', '010').formula).toBe('{tax-1:010} - {tax-1:052} - {tax-1:060} - {tax-1:120} - {tax-1:131}');
     expect(line('tax', '061').formula).toBe('{tax-4:010:19} - {tax-4:010:22}');
     expect(line('tax', '150').formula).toContain('{tax-10:090}');
-    expect(line('tax', '070')).toMatchObject({ formula: '#15', rate: true });
+    expect(line('tax', '070')).toMatchObject({ rate: true });
+    expect(line('f2', '030').formula).toEqual({ '3': 'max0(010:3 - 020:4)', '4': 'max0(-(010:3 - 020:4))', '5': 'max0(010:5 - 020:6)', '6': 'max0(-(010:5 - 020:6))' });
   });
 
   test('every cross-form reference names a form and line that exist', () => {

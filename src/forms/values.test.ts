@@ -26,8 +26,8 @@ describe('form values', () => {
     expect(v['051']['3']).toEqual({ v: null, auto: false });
   });
 
-  test('the main tax sheet adds up its annexes, rate 15 % by default', () => {
-    const all = evaluateAll({}, { 'tax-1': { '021': { '3': 10_000 * SOM } }, 'tax-2': { '020': { '3': 4_000 * SOM } } });
+  test('the main tax sheet adds up its annexes at the rate given', () => {
+    const all = evaluateAll({ tax: { '070': { '3': 15 * SOM } } }, { 'tax-1': { '021': { '3': 10_000 * SOM } }, 'tax-2': { '020': { '3': 4_000 * SOM } } });
     expect(all['tax-1']['010']['3'].v).toBe(10_000 * SOM);
     expect(all.tax['010']['3'].v).toBe(10_000 * SOM);
     expect(all.tax['020']['3'].v).toBe(4_000 * SOM);
@@ -38,7 +38,7 @@ describe('form values', () => {
   });
 
   test('a loss gives no tax and moves to annex 8', () => {
-    const all = evaluateAll({}, { 'tax-1': { '021': { '3': 1_000 * SOM } }, 'tax-2': { '020': { '3': 4_000 * SOM } } });
+    const all = evaluateAll({ tax: { '070': { '3': 15 * SOM } } }, { 'tax-1': { '021': { '3': 1_000 * SOM } }, 'tax-2': { '020': { '3': 4_000 * SOM } } });
     expect(all.tax['060']['3'].v).toBe(0);
     expect(all.tax['080']['3'].v).toBe(0);
     expect(all['tax-8']['020']['4'].v).toBe(3_000 * SOM);

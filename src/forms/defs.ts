@@ -71,6 +71,24 @@ const range = (from: number, to: number, pad = 4) => Array.from({ length: to - f
 const each = (codes: string[], patch: (code: string) => Patch) => Object.fromEntries(codes.map((c) => [c, patch(c)]));
 /** Share of a line in the 3rd column of a total, in percent (6- and 7-ilova, 4th column). */
 const share = (codes: string[], total: string) => each(codes, (c) => ({ formula: { '4': `ratio(${c}:3, ${total}:3)` } }));
+/**
+ * 2-shakl result line: a profit goes to the income column, a loss to the expense column. `net` is written with
+ * I and E for the income and expense columns (3/4 last year, 5/6 this period).
+ */
+const result = (net: string): Patch => ({
+  formula: Object.fromEntries(
+    [
+      ['3', '4'],
+      ['5', '6'],
+    ].flatMap(([i, e]) => {
+      const n = net.replace(/:I\b/g, `:${i}`).replace(/:E\b/g, `:${e}`);
+      return [
+        [i, `max0(${n})`],
+        [e, `max0(-(${n}))`],
+      ];
+    }),
+  ),
+});
 const cost21 = {
   '050': { formula: sum('0501', '0502') },
   '060': { formula: sum('0601', '0602') },
@@ -85,6 +103,13 @@ const cost21 = {
  * "but not less than zero" and lines the filer names. Rates are typed in percent (15 = 15 %).
  */
 const PATCHES: Partial<Record<FormId, Record<string, Patch>>> = {
+  f2: {
+    '030': result('010:I - 020:E'),
+    '100': result('030:I - 030:E - 040:E + 090:I'),
+    '220': result('100:I - 100:E + 110:I - 170:E'),
+    '240': result('220:I - 220:E + 230:I - 230:E'),
+    '270': result('240:I - 240:E - 250:E - 260:E'),
+  },
   tax: {
     '010': { formula: '{tax-1:010} - {tax-1:052} - {tax-1:060} - {tax-1:120} - {tax-1:131}' },
     '020': { formula: '{tax-2:010:3} - {tax-2:010:4} + {tax-2.1:010:3} - {tax-2.1:010:4}' },
@@ -93,7 +118,8 @@ const PATCHES: Partial<Record<FormId, Record<string, Patch>>> = {
     '060': { formula: 'max0(030 - 040 - 050)' },
     '061': { formula: '{tax-4:010:19} - {tax-4:010:22}' },
     '062': { formula: 'max0(060 - 061)' },
-    '070': { formula: '#15', rate: true },
+    // the rate comes from the settings (sources.ts), 15 % unless changed
+    '070': { rate: true },
     '071': { cells: { '3': 'input' }, rate: true },
     '072': { cells: { '3': 'input' }, rate: true },
     '080': { formula: 'pct(062 - 063, or(072, 070)) + pct(063, 071)' },
