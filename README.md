@@ -2,20 +2,23 @@
 
 Bepul web ilova: buxgalter faqat provodkalarni kiritadi, ilova esa bir vaqtda quyidagilarni tuzadi:
 
-- **Buxgalteriya balansi (1-shakl)**
-- **Moliyaviy natijalar to‘g‘risida hisobot (2-shakl)**
-- **Foyda solig‘i hisob-kitobi** (asosiy shakl, 1-ilova, 2-ilova)
+- **Buxgalteriya balansi (1-shakl)** — balansdan tashqari schyotlar va muddati o‘tgan qarzlar ilovalari bilan
+- **Moliyaviy natijalar to‘g‘risida hisobot (2-shakl)** — byudjetga to‘lovlar ilovasi bilan
+- **Foyda solig‘i hisob-kitobi** — asosiy shakl va 1–11-ilovalar (2.1, 2.1(a), 2.1(b) bilan)
 
 …va ularning o‘zaro mosligini tekshiradi (aktiv = passiv, sof foyda → 450-satr, foyda solig‘i 150 = 2-shakl 250, sof tushum 2-shakl 010 = 1-ilova 020).
 
 ## Imkoniyatlar
 
+- Hisobvaraqlar rejasi — 1C dagi 758 ta hisobvaraq (o‘zbekcha nomlar; kod, o‘zbekcha yoki ruscha nom bo‘yicha qidiruv); eski hujjatdagi rejada yo‘q kodlar jurnalda belgilanadi
+- Rasmiy shakllar soliq.uz ko‘rinishida: korxona kartochkasi, ustun raqamlari, `x` kataklar, jami satrlar formula bo‘yicha. Qiymatlar hisobdan avtomatik to‘ladi; oq katakka o‘z sonini yozish mumkin (↺ — avtomatik qiymatga qaytarish), qo‘lda yozilgani shu chorak va shu korxonada qoladi
+- Bir nechta korxona: yon panelda qo‘shish, almashish, nomini o‘zgartirish, o‘chirish; har korxonaning jurnali, sozlamalari va yuklangan fayllari alohida. `.ohisob` fayl STIR bo‘yicha o‘z korxonasiga ochiladi
 - Yil boshidagi qoldiqlar, provodkalar jurnali (jonli izoh: hisobvaraq nomi va hisobotdagi joyi)
 - Har bir provodka uchun foyda solig‘i satri avtomatik tanlanadi, “chegirilmaydi” belgisi (jarima, xayriya…)
 - Subschyotlar (6010.05), kontragent STIR, solishtirish dalolatnomasi (Excel)
 - Aylanma-saldo qaydnomasi, satrni bosib manbasini ko‘rish
 - Takroriy provodkalar, namuna ma’lumotlar, yil yakuni yopish va keyingi yilga o‘tish
-- Excel: 3 ta rasmiy shakl, barcha hisobotlar kitobi, jurnal/qoldiqlarni import qilish
+- Excel: har bir shakl ilovalari bilan bitta kitob (har ilova alohida varaq, shablondagi kabi sarlavhalar), barcha hisobotlar kitobi, jurnal/qoldiqlarni import qilish
 - Lotin / Кирилл, ming so‘m / so‘m, Ctrl+Z / Ctrl+Y / Ctrl+S
 - Server yo‘q: ma’lumotlar faqat brauzerda va foydalanuvchining `.ohisob` faylida. Birinchi ochilgandan keyin internetsiz ishlaydi.
 
@@ -57,9 +60,10 @@ GTD hisobotini (“Отчет о таможенном оформлении то�
 
 Bank vipiskalari, kirim/chiqim hisob-faktura reyestrlari (Didox / my.soliq .xlsx yoki soliq.uz CSV) va GTD hisobotini bitta joyga tashlang — provodkalar jurnalga “avto” belgisi bilan tushadi, balans, 2-shakl va foyda solig‘i shulardan avtomatik to‘ladi.
 
-- Bank: tushum Dt 5110 Kt 4010 (kontragent subschyoti), to‘lov Dt 6010 Kt 5110, komissiya 9690, bojxona bo‘naki 4410, soliqlar 6410/6520, ustav fondi 4610 (+ e’lon Dt 4610 Kt 8330), ichki o‘tkazmalar 5710/5720 orqali. Har bir operatsiya turi va bank hisobi uchun hisobvaraqni o‘zgartirish mumkin.
-- Fakturalar: sotuv Dt 4010 Kt 9020/9030 + QQS 6410; tannarx Dt 9120 Kt 2910 (o‘rtacha tortilgan narx); xarid Dt 2910 / xizmat 9420 Kt 6010 + QQS 4410. Bir faktura ikki reyestrda bo‘lsa — bir marta (tarkibli nusxa ustun). Tarkibsiz (CSV) fakturada QQS va tovar/xizmat ulushi taxminiy — “Diqqat”da ko‘rsatiladi.
-- GTD: tovar qiymati (гр.42 × kurs) Dt 2910 Kt 6010 (xorijiy yetkazib beruvchilar), boj va yig‘im tannarxga, import QQS 4410 ga.
+- Bank: tushum Dt 5110 Kt 4010 (kontragent subschyoti), to‘lov Dt 6010 Kt 5110, komissiya 9690, bojxona bo‘naki 4490, JShDS 6420.1, INPS 6530.1, ijtimoiy soliq 6510.1, ustav fondi 4610 (+ e’lon Dt 4610 Kt 8330), ichki o‘tkazmalar 5710/5715, valyuta oldi-sotdisi 5730/5740 orqali. Har bir operatsiya turi va bank hisobi uchun hisobvaraqni o‘zgartirish mumkin.
+- Fakturalar: sotuv Dt 4010 Kt 9020.1/9030.1 + QQS 6410.1; tannarx Dt 9120.1 Kt 2910 (o‘rtacha tortilgan narx); xarid Dt 2910 / xizmat 9420 Kt 6010 + QQS 4410.3 (tovar) / 4410.4 (xizmat). Bir faktura ikki reyestrda bo‘lsa — bir marta (tarkibli nusxa ustun). Tarkibsiz (CSV) fakturada QQS va tovar/xizmat ulushi taxminiy — “Diqqat”da ko‘rsatiladi.
+- GTD: tovar qiymati (гр.42 × kurs) Dt 2910 Kt 6015 (xorijiy yetkazib beruvchilar), boj va yig‘im tannarxga (Kt 4490), import QQS 4410.5 ga.
+- Shakllarga: balans va 2-shakl hisobvaraqlardan; balansdan tashqari ilova 001–014 qoldiqlaridan; byudjetga to‘lovlar soliq hisobvaraqlaridan (hisoblangan — kredit, to‘langan — bank orqali debet); foyda solig‘i 1- va 2-ilovalari jurnaldagi soliq belgilaridan hisobvaraq bo‘yicha taqsimlanadi (2-ilova 0101–0137 satrlari ham).
 - Valyuta: Markaziy bank kursi (cbu.uz’dan avtomatik, faqat valyuta kodi va sana yuboriladi; qo‘lda kiritish mumkin), oy oxirida qayta baholash 9540/9620; har oy QQS zachyoti.
 - Qo‘lda tuzatilgan avto-provodka keyingi yuklashda o‘zgarmaydi, o‘chirilgani qaytmaydi; “Avto-provodkalarni tiklash” hammasini qayta yozadi.
 - Ish haqi hisoblash fayllardan chiqmaydi — ogohlantirish beriladi, qo‘lda kiritiladi.
@@ -93,12 +97,15 @@ npm run build    # dist/ — statik sayt
 ## Muhim cheklovlar
 
 - Ilova hisob-kitobni avtomatlashtiradi, lekin buxgalter tekshiruvining o‘rnini bosmaydi.
-- Foyda solig‘i: asosiy shakl (010–150) to‘liq; 1-ilova va 2-ilovaning I bo‘limi provodkalardan to‘ldiriladi. 2-ilova II bo‘limi (0101–0137) va 3–11-ilovalar hozircha qo‘lda to‘ldiriladi. “shakl bilan solishtiring” belgili satrlarni amaldagi rasmiy shakl bilan tekshiring.
-- Excel fayllari rasmiy shakllar tuzilishida yaratiladi (satr kodlari bilan), lekin davlat shablonining aynan nusxasi emas.
+- Foyda solig‘i: asosiy shakl ilovalardan formula bo‘yicha hisoblanadi; 1- va 2-ilovalar provodkalardan to‘ladi. 2.1, 3–11-ilovalar (amortizatsiya, imtiyozlar, o‘tgan yillar zarari, chet el daromadi va boshqalar) qo‘lda to‘ldiriladi — ularning jami va bog‘liq satrlari formula bo‘yicha.
+- Muddati o‘tgan qarzlar ilovasi qo‘lda to‘ldiriladi (provodkalarda to‘lov muddati yo‘q).
+- Shakllar tuzilishi soliq.uz shablonlaridan olingan; Excel fayl ham shu tuzilishda, lekin davlat shablonining aynan fayl nusxasi emas — topshirishdan oldin solishtiring.
+- Korxonalar faqat shu brauzerda saqlanadi: boshqa kompyuterga `.ohisob` fayl orqali o‘tkaziladi (yuklangan bank/faktura fayllari esa qayta yuklanadi).
 
 ## Tuzilishi
 
-- `src/engine` — hisob mantiqi (sof TypeScript, testlar bilan): hisobvaraqlar rejasi, bosh daftar, balans, 2-shakl, foyda solig‘i, tekshiruvlar, yil yopish
+- `src/engine` — hisob mantiqi (sof TypeScript, testlar bilan): hisobvaraqlar rejasi (`chart.ts`, 1C dan), bosh daftar, balans, 2-shakl, foyda solig‘i, tekshiruvlar, yil yopish
+- `src/forms` — rasmiy shakllar va ilovalar ta’rifi (`defs.generated.ts` — `scripts/extract_forms.py` shablonlardan yaratadi), formulalar, hisobdan avtomatik qiymatlar
 - `src/excel` — Excel import/eksport (ExcelJS, kerak bo‘lganda yuklanadi)
-- `src/store` — holat, undo/redo, avtosaqlash, fayl
+- `src/store` — holat, undo/redo, avtosaqlash, fayl, korxonalar ro‘yxati
 - `src/ui` — sahifalar va komponentlar
