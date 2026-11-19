@@ -92,12 +92,12 @@ export function runChecks(doc: Doc, quarter: Quarter): Report {
       diff === 0
         ? undefined
         : {
-            label: diff > 0 ? `Dt 9810 Kt 6410 ${som(diff)} qo'shish` : `Dt 6410 Kt 9810 ${som(-diff)} qo'shish`,
+            label: diff > 0 ? `Dt 9810 Kt 6430 ${som(diff)} qo'shish` : `Dt 6430 Kt 9810 ${som(-diff)} qo'shish`,
             entry: {
               date: to,
               text: diff > 0 ? "Foyda solig'i hisoblandi" : "Foyda solig'i tuzatildi",
-              debit: diff > 0 ? '9810' : '6410',
-              credit: diff > 0 ? '6410' : '9810',
+              debit: diff > 0 ? '9810' : '6430',
+              credit: diff > 0 ? '6430' : '9810',
               amount: Math.abs(diff),
               tax: { line: null, manual: true },
             },

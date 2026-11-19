@@ -31,11 +31,11 @@ describe('runChecks', () => {
     expect(byId(runChecks(doc, 1), 'opening').ok).toBe(false);
   });
 
-  test('missing profit tax entry fails and offers Dt 9810 Kt 6410 fix', () => {
+  test('missing profit tax entry fails and offers Dt 9810 Kt 6430 fix', () => {
     const r = runChecks(referenceDoc(sales()), 1);
     const c = byId(r, 'tax-9810');
     expect(c.ok).toBe(false);
-    expect(c.fix?.entry).toMatchObject({ debit: '9810', credit: '6410', amount: 4.5 * M, date: '2026-03-31' });
+    expect(c.fix?.entry).toMatchObject({ debit: '9810', credit: '6430', amount: 4.5 * M, date: '2026-03-31' });
   });
 
   test('profit tax entry equal to the calculation passes', () => {

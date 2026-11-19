@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildIncome } from './incomeStatement';
+import { buildIncome, incomeLineFor } from './incomeStatement';
 import { M, entry, referenceDoc } from './testDoc';
 
 const base = () => [
@@ -64,5 +64,16 @@ describe('buildIncome', () => {
   test('contributions list accounts behind a line', () => {
     const f = buildIncome(referenceDoc(base()), 1);
     expect(f.contrib['060']).toEqual([{ account: '9420', amount: 30 * M }]);
+  });
+});
+
+describe('2-shakl lines on the 1C chart', () => {
+  test('2-shakl lines follow the chart', () => {
+    const pairs: Array<[string, string]> = [
+      ['9520', '120'], ['9530', '130'], ['9550', '140'], ['9541', '150'], ['9540', '150'], ['9510', '160'], ['9590', '160'],
+      ['9650', '190'], ['9610', '180'], ['9621', '200'], ['9690', '210'], ['9431.4', '070'], ['9020.1', '010'], ['9120.1', '020'],
+      ['9381', '090'], ['9440', '080'], ['9810', '250'], ['9820', '260'], ['9720', '230'],
+    ];
+    expect(pairs.map(([acc]) => [acc, incomeLineFor(acc)?.code])).toEqual(pairs);
   });
 });

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { isKnownAccount } from './accounts';
+import { CHART, isChartCode, isKnownAccount } from './accounts';
 import { runChecks } from './checks';
 import { sampleDoc } from './sample';
 
@@ -20,4 +20,12 @@ test('applying the suggested tax fix makes every check pass', () => {
   const fix = runChecks(doc, 1).checks.find((c) => c.id === 'tax-9810')!.fix!;
   doc.entries.push({ id: 'fix', ...fix.entry });
   expect(runChecks(doc, 1).checks.every((c) => c.ok)).toBe(true);
+});
+
+test('sample posts to the lowest-level chart accounts and books the tax fix to 6430', () => {
+  const doc = sampleDoc(2026);
+  const parents = doc.entries.flatMap((e) => [e.debit, e.credit]).filter((c) => isChartCode(c) && CHART.some((a) => a.code.startsWith(c + '.')));
+  expect([...new Set(parents)]).toEqual([]);
+  const fix = runChecks(doc, 1).checks.find((c) => c.id === 'tax-9810')!.fix!;
+  expect(fix.entry).toMatchObject({ debit: '9810', credit: '6430' });
 });

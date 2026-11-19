@@ -13,37 +13,36 @@ export interface IncomeLineDef {
   label: string;
   col: 'inc' | 'exp' | 'res';
   total?: boolean;
-  range?: [number, number];
   formula?: Array<[1 | -1, string]>;
 }
 
 const RAW: IncomeLineDef[] = [
-  { code: '010', label: "Mahsulot (tovar, ish va xizmat)larni sotishdan sof tushum", col: 'inc', range: [9000, 9099] },
-  { code: '020', label: "Sotilgan mahsulot (tovar, ish va xizmat)larning tannarxi", col: 'exp', range: [9100, 9199] },
+  { code: '010', label: "Mahsulot (tovar, ish va xizmat)larni sotishdan sof tushum", col: 'inc' },
+  { code: '020', label: "Sotilgan mahsulot (tovar, ish va xizmat)larning tannarxi", col: 'exp' },
   { code: '030', label: "Mahsulot (tovar, ish va xizmat)larni sotishning yalpi foydasi (zarari) (satr. 010-020)", col: 'res', total: true, formula: [[1, '010'], [-1, '020']] },
   { code: '040', label: "Davr xarajatlari, jami (satr. 050+060+070+080), shu jumladan:", col: 'exp', total: true, formula: [[1, '050'], [1, '060'], [1, '070'], [1, '080']] },
-  { code: '050', label: 'Sotish xarajatlari', col: 'exp', range: [9410, 9419] },
-  { code: '060', label: "Ma'muriy xarajatlar", col: 'exp', range: [9420, 9429] },
-  { code: '070', label: 'Boshqa operatsion xarajatlar', col: 'exp', range: [9430, 9439] },
-  { code: '080', label: "Hisobot davrining soliq solinadigan foydadan kelgusida chegiriladigan xarajatlari", col: 'exp', range: [9440, 9499] },
-  { code: '090', label: 'Asosiy faoliyatning boshqa daromadlari', col: 'inc', range: [9300, 9399] },
+  { code: '050', label: 'Sotish xarajatlari', col: 'exp' },
+  { code: '060', label: "Ma'muriy xarajatlar", col: 'exp' },
+  { code: '070', label: 'Boshqa operatsion xarajatlar', col: 'exp' },
+  { code: '080', label: "Hisobot davrining soliq solinadigan foydadan kelgusida chegiriladigan xarajatlari", col: 'exp' },
+  { code: '090', label: 'Asosiy faoliyatning boshqa daromadlari', col: 'inc' },
   { code: '100', label: "Asosiy faoliyatning foydasi (zarari) (satr. 030-040+090)", col: 'res', total: true, formula: [[1, '030'], [-1, '040'], [1, '090']] },
   { code: '110', label: "Moliyaviy faoliyatning daromadlari, jami (satr. 120+130+140+150+160), shu jumladan:", col: 'inc', total: true, formula: [[1, '120'], [1, '130'], [1, '140'], [1, '150'], [1, '160']] },
-  { code: '120', label: 'Dividendlar shaklidagi daromadlar', col: 'inc', range: [9510, 9519] },
-  { code: '130', label: 'Foizlar shaklidagi daromadlar', col: 'inc', range: [9520, 9529] },
-  { code: '140', label: "Uzoq muddatli ijara (lizing)dan daromadlar", col: 'inc', range: [9530, 9539] },
-  { code: '150', label: 'Valyuta kursi farqidan daromadlar', col: 'inc', range: [9540, 9549] },
-  { code: '160', label: 'Moliyaviy faoliyatning boshqa daromadlari', col: 'inc', range: [9550, 9599] },
+  { code: '120', label: 'Dividendlar shaklidagi daromadlar', col: 'inc' },
+  { code: '130', label: 'Foizlar shaklidagi daromadlar', col: 'inc' },
+  { code: '140', label: "Uzoq muddatli ijara (lizing)dan daromadlar", col: 'inc' },
+  { code: '150', label: 'Valyuta kursi farqidan daromadlar', col: 'inc' },
+  { code: '160', label: 'Moliyaviy faoliyatning boshqa daromadlari', col: 'inc' },
   { code: '170', label: "Moliyaviy faoliyat bo'yicha xarajatlar (satr. 180+190+200+210), shu jumladan:", col: 'exp', total: true, formula: [[1, '180'], [1, '190'], [1, '200'], [1, '210']] },
-  { code: '180', label: 'Foizlar shaklidagi xarajatlar', col: 'exp', range: [9610, 9619] },
+  { code: '180', label: 'Foizlar shaklidagi xarajatlar', col: 'exp' },
   { code: '190', label: "Uzoq muddatli ijara (lizing) bo'yicha foizlar shaklidagi xarajatlar", col: 'exp' },
-  { code: '200', label: 'Valyuta kursi farqidan zararlar', col: 'exp', range: [9620, 9629] },
-  { code: '210', label: "Moliyaviy faoliyat bo'yicha boshqa xarajatlar", col: 'exp', range: [9630, 9699] },
+  { code: '200', label: 'Valyuta kursi farqidan zararlar', col: 'exp' },
+  { code: '210', label: "Moliyaviy faoliyat bo'yicha boshqa xarajatlar", col: 'exp' },
   { code: '220', label: "Umumxo'jalik faoliyatining foydasi (zarari) (satr. 100+110-170)", col: 'res', total: true, formula: [[1, '100'], [1, '110'], [-1, '170']] },
-  { code: '230', label: 'Favqulodda foyda va zararlar', col: 'res', range: [9700, 9799] },
+  { code: '230', label: 'Favqulodda foyda va zararlar', col: 'res' },
   { code: '240', label: "Foyda solig'ini to'lagunga qadar foyda (zarar) (satr. 220+/-230)", col: 'res', total: true, formula: [[1, '220'], [1, '230']] },
-  { code: '250', label: "Foyda solig'i", col: 'exp', range: [9810, 9819] },
-  { code: '260', label: "Foydadan boshqa soliqlar va yig'imlar", col: 'exp', range: [9820, 9899] },
+  { code: '250', label: "Foyda solig'i", col: 'exp' },
+  { code: '260', label: "Foydadan boshqa soliqlar va yig'imlar", col: 'exp' },
   { code: '270', label: "Hisobot davrining sof foydasi (zarari) (satr. 240-250-260)", col: 'res', total: true, formula: [[1, '240'], [-1, '250'], [-1, '260']] },
 ];
 
@@ -69,11 +68,35 @@ export function resultEntries(doc: Doc, from: string, to: string): Entry[] {
   );
 }
 
+/** 2-shakl line of a P&L account (1C chart): royalty 9510 and other financial items go to 160/210. */
+function incomeCode(n: number): string | undefined {
+  if (n >= 9000 && n <= 9099) return '010';
+  if (n >= 9100 && n <= 9199) return '020';
+  if (n >= 9300 && n <= 9399) return '090';
+  if (n >= 9410 && n <= 9419) return '050';
+  if (n >= 9420 && n <= 9429) return '060';
+  if (n >= 9430 && n <= 9439) return '070';
+  if (n >= 9440 && n <= 9499) return '080';
+  if (n === 9520) return '120';
+  if (n === 9530) return '130';
+  if (n === 9550) return '140';
+  if (n === 9540 || n === 9541) return '150';
+  if (n >= 9500 && n <= 9599) return '160';
+  if (n === 9610) return '180';
+  if (n === 9650) return '190';
+  if (n === 9620 || n === 9621) return '200';
+  if (n >= 9600 && n <= 9699) return '210';
+  if (n >= 9700 && n <= 9799) return '230';
+  if (n >= 9810 && n <= 9819) return '250';
+  if (n >= 9820 && n <= 9899) return '260';
+  return undefined;
+}
+
 export function incomeLineFor(code: string): IncomeLineDef | undefined {
   const syn = synthetic(code);
   if (syn.length !== 4 || !syn.startsWith('9')) return undefined;
-  const n = Number(syn);
-  return INCOME_LINES.find((l) => l.range && n >= l.range[0] && n <= l.range[1]);
+  const line = incomeCode(Number(syn));
+  return line ? INCOME_LINES.find((l) => l.code === line) : undefined;
 }
 
 export function buildIncome(doc: Doc, quarter: Quarter): IncomeForm {
