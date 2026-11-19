@@ -15,6 +15,7 @@ import { OpeningPage } from './ui/pages/OpeningPage';
 import { HelpPage, SettingsPage } from './ui/pages/OtherPages';
 import { BalancePage, IncomePage, TaxPage, TrialBalancePage } from './ui/pages/ReportPages';
 import { SubaccountsPage } from './ui/pages/SubaccountsPage';
+import { ChartPage } from './ui/pages/ChartPage';
 import { useAutoSync } from './ui/auto/useAutoSync';
 
 const BankPage = lazy(() => import('./ui/bank/BankPage'));
@@ -107,6 +108,8 @@ export default function App() {
         return <JournalPage />;
       case 'subaccounts':
         return <SubaccountsPage />;
+      case 'chart':
+        return <ChartPage />;
       case 'balance':
         return <BalancePage />;
       case 'income':
