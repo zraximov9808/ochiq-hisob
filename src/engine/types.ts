@@ -98,7 +98,7 @@ export function emptyDoc(year: number): Doc {
     app: 'ochiq-hisob',
     version: 1,
     year,
-    company: { name: '', stir: '', address: '', director: '', accountant: '', taxOffice: '' },
+    company: { name: '', stir: '', address: '', director: '', accountant: '', taxOffice: '', codes: {} },
     opening: [],
     entries: [],
     subaccounts: [],
