@@ -30,6 +30,8 @@ export function parseDocFile(text: string): Doc {
     prevYear: r.prevYear ?? {},
     taxRate: typeof r.taxRate === 'number' ? r.taxRate : 15,
     auto: r.auto && typeof r.auto === 'object' ? { ...DEFAULT_AUTO, ...r.auto } : undefined,
+    // a file without the mark was written on the previous chart
+    chart: r.chart === '1c' ? '1c' : undefined,
   } as Doc;
 }
 

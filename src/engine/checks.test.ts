@@ -89,6 +89,15 @@ describe('closing', () => {
     expect(next.opening.find((o) => o.account === '8710')?.credit).toBe(30 * M);
     expect(next.prevYear['270']).toBe(30 * M);
   });
+
+  test("values typed into last year's forms do not carry into the new year", () => {
+    const doc = referenceDoc(sales());
+    doc.forms = { 'tax:4': { '090': { '3': 5 * M } } };
+    doc.formNames = { 'b1-overdue:4': { 'd-in.1': 'Mijoz' } };
+    const next = rollToNextYear(doc);
+    expect(next.forms).toBeUndefined();
+    expect(next.formNames).toBeUndefined();
+  });
 });
 
 describe('trial balance', () => {
@@ -127,5 +136,23 @@ describe('nextSubCode', () => {
   test('otherwise takes the next free number', () => {
     expect(nextSubCode('6010', 'Beta', '', subs)).toBe('6010.06');
     expect(nextSubCode('2910', 'Oziq-ovqat', '', subs)).toBe('2910.01');
+  });
+});
+
+describe('checks follow the forms being filed', () => {
+  test('profit tax check and its fix use the form 150 (dividends are taxed at source, not in the base)', () => {
+    const doc = referenceDoc([...sales(), entry('2026-02-01', '5110', '9520', 10, 'Dividend olindi')]);
+    const r = runChecks(doc, 4);
+    expect(r.forms.tax['150']['3'].v).toBe(4.5 * M);
+    const c = r.checks.find((x) => x.id === 'tax-9810')!;
+    expect(c.ok).toBe(false);
+    expect(c.fix!.entry.amount).toBe(4.5 * M);
+  });
+
+  test('a typed value that unbalances the filed balance is flagged', () => {
+    const doc = referenceDoc(sales());
+    expect(runChecks(doc, 4).checks.find((x) => x.id === 'form-bal')!.ok).toBe(true);
+    doc.forms = { 'b1:4': { '010': { '4': 999 * M } } };
+    expect(runChecks(doc, 4).checks.find((x) => x.id === 'form-bal')!.ok).toBe(false);
   });
 });

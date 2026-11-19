@@ -49,7 +49,8 @@ const listeners = new Set<() => void>();
 function emit(next: BankState, persist: Array<(typeof KEYS)[number]> = []) {
   state = next;
   listeners.forEach((l) => l());
-  if (db) for (const k of persist) void set(k, state[k], db);
+  // before the stored data is read, a write would replace it with a partial list
+  if (db && state.loaded) for (const k of persist) void set(k, state[k], db);
 }
 
 /** An invoice saved by an older version (no goods lines) gets the fields this version expects. */
@@ -169,6 +170,28 @@ export function switchBankDb(name: string): void {
   loading = null;
   emit({ loaded: false, ...EMPTY });
   if (wasLoaded) void loadBank();
+}
+
+/**
+ * Runs an upload and stores its result into the company it was started for: dropped (null) if the user switched
+ * company while the files were being read; stored only after that company's uploads are loaded, so nothing is replaced.
+ */
+export async function storeUpload<T>(work: () => Promise<T>, save: (result: T) => void): Promise<T | null> {
+  const stillHere = beginUpload();
+  const result = await work();
+  if (!(await stillHere())) return null;
+  save(result);
+  return result;
+}
+
+/** Call when an upload starts; await the returned check right before storing (false: the company was switched). */
+export function beginUpload(): () => Promise<boolean> {
+  const target = dbName;
+  return async () => {
+    if (dbName !== target) return false;
+    await loadBank();
+    return dbName === target;
+  };
 }
 
 /** Deletes a removed company's uploads database. */

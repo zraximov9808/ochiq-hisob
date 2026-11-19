@@ -3,7 +3,7 @@ import type { ParsedStatement } from '../bank/model';
 import { parseStatements } from '../bank/parsers/detect';
 import { readWorkbookRows } from '../bank/parsers/rows';
 import { isGtdSheet, parseGtd, type GtdItem } from '../stock/gtd';
-import { bankActions, type BankState, type FileResult } from '../ui/bank/bankStore';
+import { bankActions, beginUpload, type BankState, type FileResult } from '../ui/bank/bankStore';
 
 export interface ImportSummary {
   statements: number;
@@ -23,6 +23,7 @@ export async function importFiles(files: Iterable<File>): Promise<ImportSummary>
   const gtd: GtdItem[] = [];
   const gtdFiles: Counted = [];
   const errors: ImportSummary['errors'] = [];
+  const stillHere = beginUpload();
 
   for (const f of files) {
     try {
@@ -55,6 +56,7 @@ export async function importFiles(files: Iterable<File>): Promise<ImportSummary>
     }
   }
 
+  if (!(await stillHere())) return { statements: 0, invoices: 0, gtd: 0, errors: [{ file: '—', error: 'Yuklash vaqtida korxona almashtirildi — fayllar saqlanmadi, qayta yuklang.' }] };
   if (statementFiles.length) bankActions.addStatements(statements, statementFiles);
   if (invoiceFiles.length) bankActions.addInvoices(invoices, invoiceFiles);
   if (gtdFiles.length) bankActions.addGtd(gtd, gtdFiles);

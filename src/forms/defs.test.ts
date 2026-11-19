@@ -46,7 +46,7 @@ describe('form definitions', () => {
   const line = (id: keyof typeof FORMS, code: string) => FORMS[id].lines.find((l) => l.code === code)!;
 
   test('annex totals have formulas', () => {
-    expect(line('tax-1', '010').formula).toMatch(/^020 \+ 050 \+ 051 .* \+ 280$/);
+    expect(line('tax-1', '010').formula).toMatch(/^020 \+ 050 \+ 060 .* \+ 280$/);
     expect(line('tax-2', '010').formula).toBe('020 + 030');
     expect(line('b1', '400').formula).toBe('130 + 390');
     expect(line('f2-budget', '480').formula).not.toMatch(/291/);

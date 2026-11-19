@@ -16,10 +16,14 @@ function CompanyForm({ dialog, onClose }: { dialog: Extract<NonNullable<Dialog>,
   const ok = name.trim() !== '' && !badStir;
   const submit = () => {
     if (!ok) return;
-    if (dialog.mode === 'add') {
-      actions.addCompany(name, stir);
-      toast(`Korxona qo‘shildi: ${name.trim()}`);
-    } else actions.renameCompany(dialog.ref.id, name, stir);
+    try {
+      if (dialog.mode === 'add') {
+        actions.addCompany(name, stir);
+        toast(`Korxona qo‘shildi: ${name.trim()}`);
+      } else actions.renameCompany(dialog.ref.id, name, stir);
+    } catch (e) {
+      toast((e as Error).message);
+    }
     onClose();
   };
   return (
@@ -114,7 +118,12 @@ export function CompanySwitcher() {
   const pick = (id: string) => {
     setOpen(false);
     if (id === co.currentId) return;
-    actions.switchCompany(id);
+    try {
+      actions.switchCompany(id);
+    } catch (e) {
+      toast((e as Error).message);
+      return;
+    }
     const c = co.list.find((x) => x.id === id);
     toast(`Korxona: ${c?.name || t('Nomsiz korxona')}`);
   };

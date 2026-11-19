@@ -145,3 +145,63 @@ test('on a fresh start the first opened file fills the empty company instead of 
   expect(getState().co.list).toEqual([expect.objectContaining({ name: 'Birinchi MChJ', stir: '305555555' })]);
   delete (globalThis as { localStorage?: KV }).localStorage;
 });
+
+describe('store: review fixes', () => {
+  afterEach(() => {
+    delete (globalThis as { localStorage?: KV }).localStorage;
+  });
+  const boot = async (kv: KV) => {
+    (globalThis as { localStorage?: KV }).localStorage = kv;
+    vi.resetModules();
+    return import('./store');
+  };
+
+  test('renaming a company that is not open survives switching to it', async () => {
+    const { actions, getState } = await boot(legacyKV());
+    const first = getState().co.list[0];
+    const b = actions.addCompany('B MChJ', '302222222');
+    actions.update((d) => {
+      d.company.address = 'x';
+    });
+    actions.switchCompany(first.id);
+    actions.renameCompany(b.id, 'B renamed', '302222223');
+    actions.switchCompany(b.id);
+    expect(getState().h.doc.company).toMatchObject({ name: 'B renamed', stir: '302222223' });
+    expect(getState().co.list.find((c) => c.id === b.id)).toMatchObject({ name: 'B renamed', stir: '302222223' });
+  });
+
+  test('a switch is refused when the current document cannot be saved', async () => {
+    const kv = legacyKV();
+    const { actions, getState } = await boot(kv);
+    const first = getState().co.list[0];
+    const b = actions.addCompany('B MChJ', '');
+    actions.switchCompany(first.id);
+    actions.update((d) => {
+      d.entries.push({ id: 'u1', date: '2026-01-05', text: 'Saqlanmagan', debit: '5110', credit: '4010', amount: 100 });
+    });
+    const setItem = kv.setItem;
+    kv.setItem = (k, v) => {
+      if (k === first.docKey) throw new Error('QuotaExceededError');
+      setItem(k, v);
+    };
+    expect(() => actions.switchCompany(b.id)).toThrow(/saqlanmadi/);
+    expect(getState().co.currentId).toBe(first.id);
+    expect(getState().h.doc.entries).toHaveLength(1);
+  });
+
+  test('opening a file of another company with unsaved work is flagged before anything is replaced', async () => {
+    const { actions, getState, unsavedWork } = await boot(legacyKV());
+    const first = getState().co.list[0];
+    actions.addCompany('B MChJ', '302222222');
+    actions.update((d) => {
+      d.entries.push({ id: 'b1', date: '2026-01-05', text: 'Faqat brauzerda', debit: '5110', credit: '4010', amount: 100 });
+    });
+    actions.switchCompany(first.id);
+    const old = emptyDoc(2026);
+    old.company = { ...old.company, name: 'B MChJ', stir: '302222222' };
+    expect(unsavedWork(old)).toEqual({ company: 'B MChJ' });
+    const fresh = emptyDoc(2026);
+    fresh.company = { ...fresh.company, name: 'Yangi', stir: '309999999' };
+    expect(unsavedWork(fresh)).toBeNull();
+  });
+});

@@ -103,8 +103,8 @@ let saveTimer: ReturnType<typeof setTimeout> | undefined;
 
 const currentRef = (s: AppState = state) => s.co.list.find((c) => c.id === s.co.currentId)!;
 
-/** Writes the current company's document now (before a switch, or when the save timer fires). */
-function flush() {
+/** Writes the current company's document now (before a switch, or when the save timer fires); false if it could not. */
+function flush(): boolean {
   clearTimeout(saveTimer);
   saveTimer = undefined;
   const ref = currentRef();
@@ -112,8 +112,10 @@ function flush() {
     kv.setItem(ref.docKey, serializeDoc(state.h.doc));
     kv.setItem(dirtyKey(ref), H.isDirty(state.h) ? '1' : '0');
     kv.setItem(UI_KEY, JSON.stringify(state.ui));
+    return true;
   } catch {
     /* storage full or blocked: the file save still works */
+    return false;
   }
 }
 
@@ -168,7 +170,8 @@ export const actions = {
   switchCompany(id: string) {
     const ref = state.co.list.find((c) => c.id === id);
     if (!ref || id === state.co.currentId) return;
-    flush();
+    // the document only lives in memory until it is written: never drop it for another one
+    if (!flush()) throw new Error('Joriy korxona hujjati brauzerga saqlanmadi (xotira to‘lgan bo‘lishi mumkin). Avval “Saqlash” bilan faylga saqlang, keyin korxonani almashtiring.');
     setCurrentCompany(kv, id);
     const { doc, dirty } = docOf(ref, state.h.doc.year);
     const h = H.initHistory(doc);
@@ -195,6 +198,17 @@ export const actions = {
       });
     else {
       renameCompanyIn(kv, id, name, stir);
+      // the stored document carries the name too; on the next switch it would bring the old one back
+      const ref = state.co.list.find((c) => c.id === id);
+      const { doc } = ref ? readDoc(ref) : { doc: null };
+      if (ref && doc) {
+        doc.company = { ...doc.company, name: name.trim(), stir: stir.trim() };
+        try {
+          kv.setItem(ref.docKey, serializeDoc(doc));
+        } catch {
+          /* the list keeps the new name; the document keeps the old one until it is opened and edited */
+        }
+      }
       set({ ...state, co: { ...state.co, list: loadCompanies(kv).list } });
     }
   },
@@ -232,6 +246,18 @@ export function openTarget(doc: Doc): OpenTarget {
   const cur = state.h.doc;
   const blank = !cur.company.stir.trim() && !cur.entries.length && !cur.opening.length;
   return blank ? 'current' : 'new';
+}
+
+/**
+ * Work that opening this file would replace and that exists only in this browser (not saved to a file):
+ * the current document, or the stored document of the company with the file's STIR.
+ */
+export function unsavedWork(doc: Doc): { company: string } | null {
+  const target = openTarget(doc);
+  if (target === 'new') return null;
+  if (target === 'current') return isDirty() ? { company: currentRef().name } : null;
+  const ref = state.co.list.find((c) => c.stir === doc.company.stir.trim())!;
+  return kv.getItem(dirtyKey(ref)) === '1' ? { company: ref.name } : null;
 }
 
 export function getState(): AppState {

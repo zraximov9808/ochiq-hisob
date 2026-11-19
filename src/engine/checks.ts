@@ -5,6 +5,10 @@ import { buildLedger } from './ledger';
 import { formatAmount } from './money';
 import { periodRange, type Quarter } from './period';
 import { buildProfitTax, type ProfitTax } from './profitTax';
+import { formSet } from '../forms/sources';
+import { planChartMigration } from './migrate';
+import type { FormId } from '../forms/types';
+import type { FormValues } from '../forms/values';
 import type { Doc, Entry } from './types';
 
 export interface Check {
@@ -19,7 +23,7 @@ export interface Warning {
   id: string;
   level: 'warn' | 'info';
   text: string;
-  action?: 'close-year';
+  action?: 'close-year' | 'migrate-chart';
 }
 
 export interface Report {
@@ -28,6 +32,8 @@ export interface Report {
   balance: BalanceForm;
   income: IncomeForm;
   tax: ProfitTax;
+  /** The official forms as filed (so'm): the books' values with what was typed in. */
+  forms: Record<FormId, FormValues>;
 }
 
 const som = (v: number) => formatAmount(v, 'som');
@@ -41,6 +47,8 @@ export function runChecks(doc: Doc, quarter: Quarter): Report {
   const balance = buildBalance(doc, quarter);
   const income = buildIncome(doc, quarter);
   const tax = buildProfitTax(doc, quarter);
+  const forms = formSet(doc, quarter, { checks: [], warnings: [], balance, income, tax } as unknown as Report, 'som');
+  const fv = (id: FormId, line: string, col = '3') => forms[id][line]?.[col]?.v ?? 0;
   const checks: Check[] = [];
   const b = (code: string) => balance.byCode[code];
 
@@ -59,6 +67,14 @@ export function runChecks(doc: Doc, quarter: Quarter): Report {
     ok: b('400').end === b('780').end,
     title: 'Balans davr oxiriga: aktiv (400) = passiv (780)',
     detail: `${ming(b('400').end)} = ${ming(b('780').end)} ming so'm`,
+  });
+
+  // the filed form: typed values and the template's own totals (it leaves 230, 510, 620 out of 210, 490, 600)
+  checks.push({
+    id: 'form-bal',
+    ok: fv('b1', '400', '3') === fv('b1', '780', '3') && fv('b1', '400', '4') === fv('b1', '780', '4'),
+    title: 'Rasmiy 1-shakl (qo‘lda kiritilganlar bilan): aktiv (400) = passiv (780)',
+    detail: `${ming(fv('b1', '400', '4'))} = ${ming(fv('b1', '780', '4'))} ming so'm`,
   });
 
   let distributed = 0;
@@ -80,7 +96,8 @@ export function runChecks(doc: Doc, quarter: Quarter): Report {
       ` = ${ming(expected450)}; balansda 450 oxiri ${ming(b('450').end)}`,
   });
 
-  const tax150 = tax.main['150'];
+  // what the filed calculation says, with its annexes and typed values
+  const tax150 = fv('tax', '150');
   const booked = income.byCode['250'];
   const diff = tax150 - booked;
   checks.push({
@@ -105,7 +122,7 @@ export function runChecks(doc: Doc, quarter: Quarter): Report {
   });
 
   const rev2 = income.byCode['010'];
-  const revTax = tax.annex1['020'] ?? 0;
+  const revTax = fv('tax-1', '020');
   checks.push({
     id: 'revenue',
     ok: rev2 === revTax,
@@ -113,11 +130,19 @@ export function runChecks(doc: Doc, quarter: Quarter): Report {
     detail: rev2 === revTax ? `${som(rev2)} so'm` : `2-shakl ${som(rev2)}, 1-ilova ${som(revTax)} so'm`,
   });
 
-  return { checks, warnings: buildWarnings(doc, quarter, balance, income, tax), balance, income, tax };
+  return { checks, warnings: buildWarnings(doc, quarter, balance, income, tax), balance, income, tax, forms };
 }
 
 function buildWarnings(doc: Doc, quarter: Quarter, balance: BalanceForm, income: IncomeForm, tax: ProfitTax): Warning[] {
   const w: Warning[] = [];
+  const remap = planChartMigration(doc);
+  if (remap.length)
+    w.push({
+      id: 'old-chart',
+      level: 'warn',
+      text: `Hujjat oldingi hisobvaraqlar rejasida yozilgan, yangi rejada bu kodlarning ma'nosi boshqa: ${remap.map((r) => `${r.from} → ${r.to} (${r.count} ta)`).join(', ')}. Hisobotlar to'g'ri chiqishi uchun hujjatni yangi rejaga o'tkazing.`,
+      action: 'migrate-chart',
+    });
   const y = doc.year;
   const before = doc.entries.filter((e) => e.date < `${y}-01-01`).length;
   const after = doc.entries.filter((e) => e.date > `${y}-12-31`).length;

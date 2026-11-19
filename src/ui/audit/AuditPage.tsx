@@ -9,7 +9,7 @@ import { readWorkbookRows } from '../../bank/parsers/rows';
 import { useT } from '../../i18n/useT';
 import { downloadBlob } from '../../store/fileIO';
 import { Modal, toast } from '../components/common';
-import { bankActions, loadBank, rulesOf, useBank, type FileResult } from '../bank/bankStore';
+import { bankActions, loadBank, rulesOf, useBank, type FileResult, beginUpload } from '../bank/bankStore';
 import { Money, fmtDay } from '../bank/format';
 
 type Filter = 'all' | 'debitor' | 'kreditor' | 'yopiq' | 'NO_INVOICE' | 'NO_PAYMENT';
@@ -302,6 +302,7 @@ function Upload() {
   const handle = async (list: FileList | null) => {
     if (!list?.length) return;
     setBusy(true);
+    const stillHere = beginUpload();
     const statements: ParsedStatement[] = [];
     const bankFiles: FileResult[] = [];
     const invoices: Invoice[] = [];
@@ -323,6 +324,11 @@ function Upload() {
       } catch (e) {
         invoiceFiles.push({ file: f.name, ok: false, error: (e as Error).message, count: 0 });
       }
+    }
+    if (!(await stillHere())) {
+      setBusy(false);
+      toast('Yuklash vaqtida korxona almashtirildi — fayllar saqlanmadi, qayta yuklang.');
+      return;
     }
     if (statements.length) bankActions.addStatements(statements, bankFiles);
     if (invoiceFiles.length) bankActions.addInvoices(invoices, invoiceFiles);

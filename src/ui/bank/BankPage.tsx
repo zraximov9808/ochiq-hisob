@@ -9,7 +9,7 @@ import { useT } from '../../i18n/useT';
 import { downloadBlob } from '../../store/fileIO';
 import { actions, useApp } from '../../store/store';
 import { toast } from '../components/common';
-import { bankActions, loadBank, rulesOf, useBank, type FileResult } from './bankStore';
+import { bankActions, loadBank, rulesOf, useBank, type FileResult, beginUpload } from './bankStore';
 import { BarChart, LineChart, Money, ShareBar, fmtDay, fmtMonth } from './format';
 import { EMPTY_FILTER, OpsTable, type OpsFilter } from './OpsTable';
 import { RulesTab } from './RulesTab';
@@ -174,6 +174,7 @@ function UploadTab({ onDone }: { onDone: () => void }) {
   const handle = async (list: FileList | null) => {
     if (!list?.length) return;
     setBusy(true);
+    const stillHere = beginUpload();
     const statements: ParsedStatement[] = [];
     const results: FileResult[] = [];
     for (const f of Array.from(list)) {
@@ -185,6 +186,11 @@ function UploadTab({ onDone }: { onDone: () => void }) {
       } catch (e) {
         results.push({ file: f.name, ok: false, error: (e as Error).message, accounts: [] });
       }
+    }
+    if (!(await stillHere())) {
+      setBusy(false);
+      toast('Yuklash vaqtida korxona almashtirildi — fayllar saqlanmadi, qayta yuklang.');
+      return;
     }
     bankActions.addStatements(statements, results);
     setBusy(false);

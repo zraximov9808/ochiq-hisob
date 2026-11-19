@@ -119,7 +119,8 @@ const PATCHES: Partial<Record<FormId, Record<string, Patch>>> = {
   },
   tax: {
     '010': { formula: '{tax-1:010} - {tax-1:052} - {tax-1:060} - {tax-1:120} - {tax-1:131}' },
-    '020': { formula: '{tax-2:010:3} - {tax-2:010:4} + {tax-2.1:010:3} - {tax-2.1:010:4}' },
+    // "2-ilova … yoki 2.1-ilova": a filer fills one of them; 2.1 wins when it has anything
+    '020': { formula: 'or({tax-2.1:010:3} - {tax-2.1:010:4}, {tax-2:010:3} - {tax-2:010:4})' },
     '040': { formula: '{tax-6:030:3}' },
     '050': { formula: '{tax-7:030:3}' },
     '060': { formula: 'max0(030 - 040 - 050)' },
@@ -135,6 +136,8 @@ const PATCHES: Partial<Record<FormId, Record<string, Patch>>> = {
     '150': { formula: '080 - 100 - 110 + 140 - {tax-10:090} + {tax-11:060}' },
   },
   'tax-1': {
+    // "020 va 050–280-satrlar": the main lines only; "shu jumladan" parts (051, 052, 071, 081, 131) are inside them
+    '010': { formula: sum('020', '050', '060', '070', '080', '090', ...range(100, 130, 3).filter((c) => Number(c) % 10 === 0), '132', ...range(140, 280, 3).filter((c) => Number(c) % 10 === 0)) },
     '020': { formula: 'max(021 + 022 + 023 + 024 + 025 + 026, 030 - 040)' },
     '021': { cells: { '3': 'input' } },
     '260': { formula: ['3', '4', '5', '6', '7', '8'].map((c) => `{tax-9:070:${c}}`).join(' + ') },
@@ -179,6 +182,8 @@ const PATCHES: Partial<Record<FormId, Record<string, Patch>>> = {
     '010': { formula: { '3': '{tax-1:020}', '4': '#100' } },
     ...share(range(11, 16, 3), '010'),
     '020': { formula: '{tax:030}' },
+    // "040–060-satrlar yig'indisi": 051–056 are already inside 050
+    '030': { formula: sum('040', '050', '060') },
     '040': { formula: '{tax-8:050:3} + {tax-8:050:4}' },
     '060': { formula: { '3': sum(...range(61, 66, 3)), '4': '#100' } },
     ...share(range(61, 66, 3), '060'),

@@ -87,6 +87,8 @@ export interface Doc {
   taxRate: number;
   /** Settings of entries built from uploaded documents (absent in older files). */
   auto?: AutoSettings;
+  /** '1c' for documents on the 1C chart of accounts; older documents lack it (see migrate.ts). */
+  chart?: '1c';
   /** Values typed into the official forms: "form:quarter" → line → column → value (tiyin, rates ×100). */
   forms?: Record<string, Record<string, Record<string, number>>>;
   /** Names of rows the filer names (overdue debtors, benefits, activity types): "form:quarter" → line → name. */
@@ -105,5 +107,6 @@ export function emptyDoc(year: number): Doc {
     templates: [],
     prevYear: {},
     taxRate: 15,
+    chart: '1c',
   };
 }

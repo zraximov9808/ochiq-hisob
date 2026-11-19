@@ -1,6 +1,6 @@
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Invoice } from '../../audit/invoices';
-import { bankActions, getBank, normalizeGtd, normalizeInvoice } from './bankStore';
+import { bankActions, getBank, normalizeGtd, normalizeInvoice, storeUpload, switchBankDb } from './bankStore';
 
 const inv = (over: Partial<Invoice>): Invoice => ({
   id: 'id1', docNo: '1', date: '2026-10-01', kind: '', docType: '', status: 'Подписан', contractNo: '', contractDate: '',
@@ -34,4 +34,25 @@ test('records saved by older versions get the fields this version expects', () =
   expect(normalizeInvoice(old as Invoice).items).toEqual([]);
   const g = normalizeGtd({ id: 'gtd:1:1', date: '2026-07-06', gtdNo: '1', itemNo: '1', regime: 'ИМ 40', sender: '', name: 'X', hsCode: '', ikpu: '', unit: '', qty: 1, places: null, file: 'g' } as never);
   expect(g).toMatchObject({ currency: '', rate: null, invoiceValue: null, fees: 0, duty: 0, importVat: 0 });
+});
+
+describe('uploads and companies', () => {
+  test('an upload finished after a company switch is not stored into the other company', async () => {
+    switchBankDb('ochiq-hisob-bank-a');
+    const save = vi.fn();
+    const r = await storeUpload(async () => {
+      switchBankDb('ochiq-hisob-bank-b');
+      return 3;
+    }, save);
+    expect(r).toBeNull();
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  test('an upload is stored once the company’s uploads are loaded', async () => {
+    switchBankDb('ochiq-hisob-bank-c');
+    const seen: boolean[] = [];
+    const r = await storeUpload(async () => 5, () => seen.push(getBank().loaded));
+    expect(r).toBe(5);
+    expect(seen).toEqual([true]);
+  });
 });

@@ -17,6 +17,7 @@ import { BalancePage, IncomePage, TaxPage, TrialBalancePage } from './ui/pages/R
 import { SubaccountsPage } from './ui/pages/SubaccountsPage';
 import { ChartPage } from './ui/pages/ChartPage';
 import { useAutoSync } from './ui/auto/useAutoSync';
+import { ChartMigrationPrompt } from './ui/components/ChartMigrationPrompt';
 
 const BankPage = lazy(() => import('./ui/bank/BankPage'));
 const AuditPage = lazy(() => import('./ui/audit/AuditPage'));
@@ -165,6 +166,7 @@ export default function App() {
       </div>
       <AccountDatalist subaccounts={h.doc.subaccounts} />
       <ToastHost />
+      <ChartMigrationPrompt />
       {imported && (
         <Modal
           title={`${t('Exceldan import')}: ${imported.file}`}

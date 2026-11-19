@@ -82,6 +82,27 @@ describe('form values', () => {
     expect(roundToMing('tax-6', { '011': { '3': 1_499 * SOM, '4': 2_550 } })).toEqual({ '011': { '3': 1_000 * SOM, '4': 2_550 } });
   });
 
+  test('"of which" lines are not added on top of their line (1-ilova 010, 6-ilova 030)', () => {
+    const all = evaluateAll(
+      { tax: { '070': { '3': 15 * SOM } } },
+      {
+        'tax-1': { '050': { '3': 30 * SOM }, '051': { '3': 20 * SOM }, '052': { '3': 10 * SOM }, '070': { '3': 100 * SOM }, '071': { '3': 500 * SOM }, '080': { '3': 7 * SOM }, '081': { '3': 70 * SOM }, '130': { '3': 9 * SOM }, '131': { '3': 4 * SOM }, '132': { '3': 2 * SOM } },
+        'tax-6': { '051': { '3': 100 * SOM } },
+      },
+    );
+    expect(all['tax-1']['010']['3'].v).toBe((30 + 100 + 7 + 9 + 2) * SOM);
+    expect(all.tax['010']['3'].v).toBe((30 + 100 + 7 + 9 + 2 - 10 - 4) * SOM);
+    expect(all['tax-6']['050']['3'].v).toBe(100 * SOM);
+    expect(all['tax-6']['030']['3'].v).toBe(100 * SOM);
+  });
+
+  test('the main sheet deducts annex 2.1 when it is filled, else annex 2 — never both', () => {
+    const both = evaluateAll({ tax: { '070': { '3': 15 * SOM } }, 'tax-2': { '020': { '3': 500 * SOM } } }, { 'tax-2.1': { '0301': { '3': 400 * SOM } } });
+    expect(both.tax['020']['3'].v).toBe(400 * SOM);
+    const only2 = evaluateAll({ 'tax-2': { '020': { '3': 500 * SOM }, '030': { '4': 50 * SOM } } }, {});
+    expect(only2.tax['020']['3'].v).toBe(450 * SOM);
+  });
+
   test('a value for Q2 does not show in Q3', () => {
     const doc = emptyDoc(2026);
     setFormValue(doc, 'tax-2', 2, '020', '3', 500 * SOM);

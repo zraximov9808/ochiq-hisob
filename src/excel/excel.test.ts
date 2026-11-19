@@ -113,6 +113,17 @@ describe('buildFormsWorkbook', () => {
     expect(codesOf(wb.worksheets[1])['790']).toEqual([null, null]);
   });
 
+  test('no sheet merges a single cell (Excel would offer to repair the file)', async () => {
+    const doc = referenceDoc();
+    for (const group of ['balance', 'income', 'tax'] as const) {
+      const wb = await buildFormsWorkbook(group, doc, 4, runChecks(doc, 4), (s) => s);
+      for (const ws of wb.worksheets) {
+        const merges = (ws.model as { merges?: string[] }).merges ?? [];
+        expect(merges.filter((m) => { const [a, b] = m.split(':'); return !b || a === b; }), ws.name).toEqual([]);
+      }
+    }
+  });
+
   test('closed cells print x, typed values show, Cyrillic sheet names', async () => {
     const doc = referenceDoc();
     setFormValue(doc, 'f2-budget', 1, '280', '3', 5 * M);

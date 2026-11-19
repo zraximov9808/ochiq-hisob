@@ -8,7 +8,7 @@ import { buildStock, needsGtd, type StockRow } from '../../stock/stock';
 import { useT } from '../../i18n/useT';
 import { downloadBlob } from '../../store/fileIO';
 import { Modal, toast } from '../components/common';
-import { bankActions, loadBank, useBank } from '../bank/bankStore';
+import { bankActions, loadBank, useBank, beginUpload } from '../bank/bankStore';
 import { fmtDay } from '../bank/format';
 import { ProductFilter } from './ProductFilter';
 
@@ -223,6 +223,7 @@ function Upload() {
   const handle = async (list: FileList | null) => {
     if (!list?.length) return;
     setBusy(true);
+    const stillHere = beginUpload();
     const invoices: Invoice[] = [];
     const gtd: GtdItem[] = [];
     const invFiles: Array<{ file: string; ok: boolean; error?: string; count: number }> = [];
@@ -247,6 +248,11 @@ function Upload() {
       } catch (e) {
         gtdFiles.push({ file: f.name, ok: false, error: (e as Error).message, count: 0 });
       }
+    }
+    if (!(await stillHere())) {
+      setBusy(false);
+      toast('Yuklash vaqtida korxona almashtirildi — fayllar saqlanmadi, qayta yuklang.');
+      return;
     }
     if (invFiles.length) bankActions.addInvoices(invoices, invFiles);
     if (gtdFiles.length) bankActions.addGtd(gtd, gtdFiles);

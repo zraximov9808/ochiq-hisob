@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { makeClosingEntries } from '../../engine/closing';
 import type { Quarter } from '../../engine/period';
+import { applyChartMigration } from '../../engine/migrate';
 import { emptyDoc } from '../../engine/types';
 import { uid } from '../../engine/uid';
 import { useT } from '../../i18n/useT';
 import { forgetFileHandle, openDocFile, saveDocToFile } from '../../store/fileIO';
-import { actions, getState, isDirty, openTarget, useApp, type PageId } from '../../store/store';
+import { actions, getState, isDirty, unsavedWork, useApp, type PageId } from '../../store/store';
 import { useReport } from '../report';
 import { CompanySwitcher } from './CompanySwitcher';
 import { Modal, Num, toast } from './common';
@@ -89,8 +90,9 @@ export function TopBar({ onExcel }: { onExcel: (kind: 'all' | 'forms' | 'import'
     try {
       const r = await openDocFile();
       if (!r) return;
-      // a file of another company opens in that company (or a new one): nothing here is replaced
-      if (openTarget(r.doc) === 'current' && isDirty() && !confirm(t('Saqlanmagan o‘zgarishlar yo‘qoladi. Davom etasizmi?'))) return;
+      // the file replaces the document of the company with its STIR (this one or another): ask if that has unsaved work
+      const lost = unsavedWork(r.doc);
+      if (lost && !confirm(`${t('Faylga saqlanmagan o‘zgarishlar yo‘qoladi')}: «${lost.company || t('Nomsiz korxona')}». ${t('Davom etasizmi?')}`)) return;
       const where = actions.openDoc(r.doc, r.name);
       const name = r.doc.company.name || r.name;
       toast(where === 'new' ? `Yangi korxona sifatida ochildi: ${name}` : where === 'other' ? `«${name}» korxonasida ochildi` : `Ochildi: ${r.name}`);
@@ -275,7 +277,7 @@ export function ChecksPanel() {
           <span className="code">150</span>
           <span>{t('Foyda solig‘i, so‘m')}</span>
           <b>
-            <Num v={r.tax.main['150']} unit="som" />
+            <Num v={r.forms.tax['150']['3'].v ?? 0} unit="som" />
           </b>
         </div>
         <div>
@@ -292,6 +294,19 @@ export function ChecksPanel() {
               <li key={w.id} className={w.level}>
                 {w.level === 'info' ? '✓ ' : ''}
                 {t(w.text)}
+                {w.action === 'migrate-chart' && (
+                  <div style={{ marginTop: 6 }}>
+                    <button
+                      className="btn small"
+                      onClick={() => {
+                        actions.update((d) => applyChartMigration(d));
+                        toast('Hujjat yangi hisobvaraqlar rejasiga o‘tkazildi (Ctrl+Z — qaytarish)');
+                      }}
+                    >
+                      {t('Yangi rejaga o‘tkazish')}
+                    </button>
+                  </div>
+                )}
                 {w.action === 'close-year' && (
                   <div style={{ marginTop: 6 }}>
                     <button className="btn small" onClick={closeYear}>

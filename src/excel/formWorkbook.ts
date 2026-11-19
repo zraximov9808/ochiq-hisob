@@ -117,7 +117,8 @@ function addFormSheet(wb: ExcelJS.Workbook, def: FormDef, values: FormValues, do
   };
   const firstTwo = def.sections ? ['№', 'Muddati o‘tgan qarzdorlikka ega bo‘lgan debitor va kreditorlar ro‘yxati'] : ['Ko‘rsatkichlar nomi', 'Satr kodi'];
   firstTwo.forEach((text, i) => {
-    ws.mergeCells(top, i + 1, top + head.length - 1, i + 1);
+    // a one-row header needs no merge: Excel treats a single-cell merge as damage
+    if (head.length > 1) ws.mergeCells(top, i + 1, top + head.length - 1, i + 1);
     ws.getCell(top, i + 1).value = tr(text);
   });
   const taken = new Set<string>();

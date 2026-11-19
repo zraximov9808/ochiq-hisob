@@ -49,5 +49,7 @@ export function rollToNextYear(doc: Doc): Doc {
   }
   const income = buildIncome(full, 4).byCode;
   const prevYear = Object.fromEntries(Object.entries(income).filter(([, v]) => v !== 0));
-  return { ...doc, year: doc.year + 1, opening, entries: [], prevYear };
+  // values typed into this year's forms belong to this year only
+  const { forms: _forms, formNames: _names, ...rest } = doc;
+  return { ...rest, year: doc.year + 1, opening, entries: [], prevYear };
 }
