@@ -91,14 +91,14 @@ describe('I3 month-end works on what is actually in the journal', () => {
     invoice('s1', '2026-07-10', true, [item('Y', 1, 4000, 500)]),
     invoice('s2', '2026-08-02', true, [item('Z', 1, 10)]),
   ];
-  const offset = (b: ReturnType<typeof buildAuto>) => b.entries.find((e) => e.auto!.src === 'vat:2026-07')?.amount ?? 0;
+  const offset = (b: ReturnType<typeof buildAuto>) => b.entries.filter((e) => e.auto!.src.startsWith('vat:2026-07')).reduce((s, e) => s + e.amount, 0);
   test('a deleted purchase VAT entry is not offset', () => {
     expect(offset(buildAuto(input({ invoices: invs }), []))).toBe(300);
     expect(offset(buildAuto(input({ invoices: invs, settings: { ...DEFAULT_AUTO, skip: ['inv:p1:vat'] } }), []))).toBe(0);
   });
   test('a hand-edited VAT entry is offset with its edited amount', () => {
-    const edited: Entry = { id: 'a:inv:p1:vat', date: '2026-07-05', text: '', debit: '4410.01', credit: '6010.01', amount: 100, auto: { src: 'inv:p1:vat', edited: true } };
-    const subs = [{ code: '4410.01', parent: '4410', name: 'QQS' }, { code: '6010.01', parent: '6010', name: '"ALFA" MCHJ', stir: '300000001' }];
+    const edited: Entry = { id: 'a:inv:p1:vat', date: '2026-07-05', text: '', debit: '4410.3', credit: '6010.01', amount: 100, auto: { src: 'inv:p1:vat', edited: true } };
+    const subs = [{ code: '6010.01', parent: '6010', name: '"ALFA" MCHJ', stir: '300000001' }];
     expect(offset(buildAuto(input({ invoices: invs, editedEntries: [edited] }), subs))).toBe(100);
   });
 });
@@ -136,7 +136,7 @@ test('I8 combined tax payments are split by purpose so VAT meets VAT', () => {
     DEFAULT_AUTO,
     {},
   );
-  expect(g.drafts.map((x) => x.debit.expr)).toEqual(['6410[QQS]', '6410[Foyda solig‘i]', '6410[Mol-mulk solig‘i]']);
+  expect(g.drafts.map((x) => x.debit.expr)).toEqual(['6410.1', '6430', '6450']);
 });
 
 test('I9 a currency account with an opening balance is reported', () => {

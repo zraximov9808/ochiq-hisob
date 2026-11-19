@@ -60,7 +60,7 @@ describe('bankEntries', () => {
     expect(g.drafts[0]).toMatchObject({
       amount: 180000000,
       fx: { ccy: 'USD', amount: 15000 },
-      debit: { expr: '6010[Xorijiy yetkazib beruvchilar (USD)]', fx: true },
+      debit: { expr: '6015[Xorijiy yetkazib beruvchilar (USD)]', fx: true },
       credit: { expr: '5210[USD 20208840100000000001]', fx: true },
     });
   });
@@ -80,7 +80,7 @@ describe('bankEntries', () => {
     expect(bankEntries(analysis([op({ type: "Ustav fondiga hissa (ta'sischidan)", credit: 900 })]), { ...DEFAULT_AUTO, declareCapital: false }, rates).drafts).toHaveLength(1);
   });
 
-  test('SPOT pair difference closes 5720[Valyuta xaridi] to 9430', () => {
+  test('SPOT pair difference closes 5730 to 9431.7', () => {
     const g = bankEntries(
       analysis([
         op({ account: SPECIAL.number, group: 'Chiqim', type: "Valyuta xaridiga to'lov (SPOT, so'mda)", debit: 1210000000 }),
@@ -90,7 +90,7 @@ describe('bankEntries', () => {
       rates,
     );
     const pair = g.drafts.find((d) => d.src.startsWith('pair:'))!;
-    expect(pair).toMatchObject({ debit: { expr: '9430' }, credit: { expr: '5720[Valyuta xaridi]' }, amount: 10000000 });
+    expect(pair).toMatchObject({ debit: { expr: '9431.7' }, credit: { expr: '5730' }, amount: 10000000 });
   });
 
   test('unclassified outflow without INN → 4890[Aniqlanmagan to‘lovlar] + warning', () => {
@@ -101,6 +101,6 @@ describe('bankEntries', () => {
 
   test('a penalty is marked non-deductible', () => {
     const g = bankEntries(analysis([op({ group: 'Soliqlar', type: "Penya (INPS / soliqlar bo'yicha)", debit: 50 })]), DEFAULT_AUTO, rates);
-    expect(g.drafts[0]).toMatchObject({ debit: { expr: '9430' }, nonDeductible: true });
+    expect(g.drafts[0]).toMatchObject({ debit: { expr: '9431.7' }, nonDeductible: true });
   });
 });

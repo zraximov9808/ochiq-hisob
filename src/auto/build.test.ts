@@ -10,13 +10,15 @@ import { analysisOf, bankOp, invoice, item, ME } from './testkit';
 const e = (date: string, debit: string, credit: string, amount: number, extra: Partial<ResolvedEntry> = {}): ResolvedEntry => ({
   id: `a:${date}:${debit}:${credit}`, date, text: '', debit, credit, amount, auto: { src: `${date}${debit}${credit}` }, ...extra,
 });
-const codes: Record<string, string> = { '4410[QQS]': '4410.01', '6410[QQS]': '6410.01' };
-const codeOf = (x: string) => codes[x];
+const codeOf = (x: string) => x;
 
 describe('monthEndDrafts', () => {
   test('month-end VAT offset takes the smaller balance', () => {
-    const g = monthEndDrafts([e('2026-07-05', '4410.01', '6010.01', 300), e('2026-07-10', '4010.01', '6410.01', 500), e('2026-08-02', '5110', '4010.01', 1)], {}, codeOf);
-    expect(g.drafts).toEqual([expect.objectContaining({ src: 'vat:2026-07', date: '2026-07-31', debit: { expr: '6410[QQS]' }, credit: { expr: '4410[QQS]' }, amount: 300 })]);
+    const g = monthEndDrafts([e('2026-07-05', '4410.3', '6010.01', 200), e('2026-07-06', '4410.4', '6010.01', 100), e('2026-07-10', '4010.01', '6410.1', 250), e('2026-08-02', '5110', '4010.01', 1)], {}, codeOf);
+    expect(g.drafts).toEqual([
+      expect.objectContaining({ src: 'vat:2026-07:4410.3', date: '2026-07-31', debit: { expr: '6410.1' }, credit: { expr: '4410.3' }, amount: 200 }),
+      expect.objectContaining({ src: 'vat:2026-07:4410.4', debit: { expr: '6410.1' }, credit: { expr: '4410.4' }, amount: 50 }),
+    ]);
   });
 
   test('revaluation posts 9540 gain on a USD account when the rate rises', () => {

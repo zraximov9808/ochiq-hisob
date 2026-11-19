@@ -1,5 +1,5 @@
 import type { GtdItem } from '../stock/gtd';
-import { CUSTOMS_ADVANCE, FOREIGN_BASE, FOREIGN_POOL, VAT_IN } from './defaults';
+import { CUSTOMS_ADVANCE, FOREIGN_BASE, FOREIGN_POOL, VAT_IN_IMPORT } from './defaults';
 import { ccyAlpha, rateInfo, toTiyin } from './rates';
 import type { AutoDraft, AutoWarning, Gen, RateBook, RateNeed } from './types';
 
@@ -40,7 +40,7 @@ export function gtdEntries(gtd: GtdItem[], rates: RateBook): Gen {
     const charges = items.reduce((s, g) => s + (g.fees ?? 0) + (g.duty ?? 0), 0);
     const vat = items.reduce((s, g) => s + (g.importVat ?? 0), 0);
     if (charges > 0) drafts.push({ ...base, src: `gtd:${no}:duty`, debit: { expr: '2910' }, credit: { expr: CUSTOMS_ADVANCE }, amount: charges });
-    if (vat > 0) drafts.push({ ...base, src: `gtd:${no}:vat`, debit: { expr: VAT_IN }, credit: { expr: CUSTOMS_ADVANCE }, amount: vat });
+    if (vat > 0) drafts.push({ ...base, src: `gtd:${no}:vat`, debit: { expr: VAT_IN_IMPORT }, credit: { expr: CUSTOMS_ADVANCE }, amount: vat });
   }
   return { drafts, warnings, needRates };
 }

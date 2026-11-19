@@ -12,6 +12,8 @@ const POSTABLE = new Set(CHART.filter((a) => !a.group && !a.offBalance).map((a) 
 
 export function parseExpr(expr: string): { base: string; kind: 'plain' | 'party' | 'named' | 'sub'; name?: string } | null {
   const e = expr.trim();
+  // A dotted chart code (4410.3, 9020.1) is a chart account in its own right.
+  if (e.includes('.') && POSTABLE.has(e)) return { base: e, kind: 'plain' };
   const m = /^(\d{4})(?:(\.\*)|\[(.+)\]|\.(\d+))?$/.exec(e);
   if (!m || !POSTABLE.has(m[1])) return null;
   if (m[2]) return { base: m[1], kind: 'party' };

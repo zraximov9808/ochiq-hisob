@@ -1,5 +1,5 @@
 import { isServiceItem, type Invoice } from '../audit/invoices';
-import { VAT_IN, VAT_OUT } from './defaults';
+import { COST_OF_GOODS, SALES_GOODS, SALES_SERVICES, VAT_IN_GOODS, VAT_IN_SERVICES, VAT_OUT } from './defaults';
 import type { AutoDraft, AutoSettings, AutoWarning, Gen, Party } from './types';
 
 export interface InvoiceEntryOptions {
@@ -13,15 +13,19 @@ interface Split {
   goods: number;
   services: number;
   vat: number;
+  /** Part of the VAT that falls on services (input VAT goes to 4410.4 instead of 4410.3). */
+  vatServices: number;
 }
 
 /** Goods, services and VAT of an invoice with goods lines (or with totals only, from older saved data). */
 function splitDetailed(inv: Invoice): Split {
-  if (!inv.items.length) return { goods: inv.amount, services: 0, vat: inv.vat };
-  const s: Split = { goods: 0, services: 0, vat: 0 };
+  if (!inv.items.length) return { goods: inv.amount, services: 0, vat: inv.vat, vatServices: 0 };
+  const s: Split = { goods: 0, services: 0, vat: 0, vatServices: 0 };
   for (const it of inv.items) {
-    if (isServiceItem(it)) s.services += it.amount;
-    else s.goods += it.amount;
+    if (isServiceItem(it)) {
+      s.services += it.amount;
+      s.vatServices += it.vat;
+    } else s.goods += it.amount;
     s.vat += it.vat;
   }
   return s;
@@ -40,7 +44,7 @@ export function invoiceEntries(invoices: Invoice[], o: InvoiceEntryOptions): Gen
   const vatPayer = !salesWithVat.length || salesWithVat.some((i) => splitDetailed(i).vat > 0);
   const profile = new Map<string, Split>();
   for (const i of detailed.filter((x) => x.buyerInn === o.companyInn)) {
-    const p = profile.get(i.sellerInn) ?? { goods: 0, services: 0, vat: 0 };
+    const p = profile.get(i.sellerInn) ?? { goods: 0, services: 0, vat: 0, vatServices: 0 };
     const s = splitDetailed(i);
     p.goods += s.goods;
     p.services += s.services;
@@ -56,15 +60,16 @@ export function invoiceEntries(invoices: Invoice[], o: InvoiceEntryOptions): Gen
     if (!inv.brief) s = splitDetailed(inv);
     else if (sale) {
       const vat = vatPayer ? Math.round((inv.total * 12) / 112) : 0;
-      s = { goods: inv.total - vat, services: 0, vat };
+      s = { goods: inv.total - vat, services: 0, vat, vatServices: 0 };
     } else {
       const p = profile.get(inv.sellerInn);
       const net0 = p ? p.goods + p.services : 0;
-      if (!p || !net0) s = { goods: 0, services: inv.total, vat: 0 };
+      if (!p || !net0) s = { goods: 0, services: inv.total, vat: 0, vatServices: 0 };
       else {
         const net = Math.round((inv.total * net0) / (net0 + p.vat));
         const goods = Math.round((net * p.goods) / net0);
-        s = { goods, services: net - goods, vat: inv.total - net };
+        const vat = inv.total - net;
+        s = { goods, services: net - goods, vat, vatServices: net ? Math.round((vat * (net - goods)) / net) : 0 };
       }
     }
     if (inv.total < 0 || s.goods < 0 || s.services < 0 || s.vat < 0) {
@@ -83,15 +88,16 @@ export function invoiceEntries(invoices: Invoice[], o: InvoiceEntryOptions): Gen
       if (amount > 0) drafts.push({ ...base, src: `inv:${inv.id}:${part}`, debit, credit, amount });
     };
     if (sale) {
-      add('goods', s.goods, counter, { expr: '9020' });
-      add('services', s.services, counter, { expr: '9030' });
+      add('goods', s.goods, counter, { expr: SALES_GOODS });
+      add('services', s.services, counter, { expr: SALES_SERVICES });
       add('vat', s.vat, counter, { expr: VAT_OUT });
       const cost = inv.items.reduce((sum, _it, i) => sum + (o.cogs.get(`${inv.id}:${i}`)?.cost ?? 0), 0);
-      add('cogs', cost, { expr: '9120' }, { expr: '2910' });
+      add('cogs', cost, { expr: COST_OF_GOODS }, { expr: '2910' });
     } else {
       add('goods', s.goods, { expr: '2910' }, counter);
       add('services', s.services, { expr: o.s.services[inv.sellerInn] ?? o.s.serviceDefault }, counter);
-      add('vat', s.vat, { expr: VAT_IN }, counter);
+      add('vat', s.vat - s.vatServices, { expr: VAT_IN_GOODS }, counter);
+      add('vat-s', s.vatServices, { expr: VAT_IN_SERVICES }, counter);
     }
   }
 

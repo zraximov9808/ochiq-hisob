@@ -1,4 +1,4 @@
-import { VAT_IN, VAT_OUT } from './defaults';
+import { VAT_INPUTS, VAT_OUT } from './defaults';
 import { rateInfo, toTiyin } from './rates';
 import type { ResolvedEntry } from './resolve';
 import type { AutoDraft, AutoWarning, Gen, RateBook, RateNeed } from './types';
@@ -13,7 +13,7 @@ const nextMonth = (ym: string) => {
 };
 
 /**
- * Month-end entries for every month the entries cover: VAT offset (6410[QQS] against 4410[QQS]) and revaluation
+ * Month-end entries for every month the entries cover: VAT offset (6410.1 against 4410.3/.4/.5) and revaluation
  * of accounts followed in foreign currency (gain 9540, loss 9620). The last month closes on the last entry date.
  */
 export function monthEndDrafts(entries: ResolvedEntry[], rates: RateBook, codeOf: (expr: string) => string | undefined): Gen {
@@ -34,7 +34,7 @@ export function monthEndDrafts(entries: ResolvedEntry[], rates: RateBook, codeOf
     r.bal += v;
     fx.set(k, r);
   };
-  const vin = codeOf(VAT_IN);
+  const vins = VAT_INPUTS.map(codeOf).filter((c): c is string => !!c);
   const vout = codeOf(VAT_OUT);
 
   let i = 0;
@@ -48,14 +48,15 @@ export function monthEndDrafts(entries: ResolvedEntry[], rates: RateBook, codeOf
       if (e.fx && e.fxCredit) addFx(e.credit, e.fx.ccy, -e.fx.amount);
     }
 
-    if (vin && vout) {
-      const off = Math.min(net.get(vin) ?? 0, -(net.get(vout) ?? 0));
-      if (off > 0) {
-        drafts.push({ src: `vat:${ym}`, date: end, text: `QQS hisobga olindi (${ym})`, debit: { expr: VAT_OUT }, credit: { expr: VAT_IN }, amount: off });
+    // Output VAT is offset by input VAT account by account (goods, services, imports) while there is VAT to pay.
+    if (vout)
+      for (const vin of vins) {
+        const off = Math.min(net.get(vin) ?? 0, -(net.get(vout) ?? 0));
+        if (off <= 0) continue;
+        drafts.push({ src: `vat:${ym}:${vin}`, date: end, text: `QQS hisobga olindi (${ym})`, debit: { expr: vout }, credit: { expr: vin }, amount: off });
         add(vin, -off);
         add(vout, off);
       }
-    }
 
     for (const r of fx.values()) {
       const found = rateInfo(rates, r.ccy, end);

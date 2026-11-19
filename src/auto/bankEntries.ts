@@ -1,7 +1,7 @@
 import type { Analysis } from '../bank/analyze';
 import type { BankAccount } from '../bank/model';
 import {
-  DEFAULT_TYPE_ACCOUNTS, FOREIGN_BASE, FOREIGN_POOL, INTERNAL_FX, INTERNAL_UZS, NON_DEDUCTIBLE_TYPES, PAIRED_TRANSITS, VAT_OUT,
+  DEFAULT_TYPE_ACCOUNTS, FOREIGN_BASE, FOREIGN_POOL, INTERNAL_FX, INTERNAL_UZS, NON_DEDUCTIBLE_TYPES, OTHER_EXPENSE, PAIRED_TRANSITS, PROFIT_TAX, PROPERTY_TAX, VAT_OUT,
 } from './defaults';
 import { rateInfo, toTiyin } from './rates';
 import type { AccountRef, AutoDraft, AutoSettings, AutoWarning, Gen, RateBook, RateNeed } from './types';
@@ -25,12 +25,12 @@ const COMBINED_TAX = "QQS / Foyda solig'i / Mol-mulk solig'i";
 /** Which tax a combined "QQS / foyda / mol-mulk" payment is, from its purpose text. */
 function taxByPurpose(purpose: string): string | undefined {
   if (/ндс|добавленн|qqs|ққс|қўшилган/i.test(purpose)) return VAT_OUT;
-  if (/прибыл|foyda|фойда/i.test(purpose)) return '6410[Foyda solig‘i]';
-  if (/имуществ|mol-mulk|мол-мулк/i.test(purpose)) return '6410[Mol-mulk solig‘i]';
+  if (/прибыл|foyda|фойда/i.test(purpose)) return PROFIT_TAX;
+  if (/имуществ|mol-mulk|мол-мулк/i.test(purpose)) return PROPERTY_TAX;
   return undefined;
 }
 
-/** Pairs the so‘m and currency legs of each paired transit and closes the difference to 9430 (loss) / 9390 (gain). */
+/** Pairs the so‘m and currency legs of each paired transit and closes the difference to OTHER_EXPENSE (loss) / 9390 (gain). */
 function pairTransits(drafts: AutoDraft[], blocked: Set<string>): AutoDraft[] {
   const out: AutoDraft[] = [];
   const byDate = (a: AutoDraft, b: AutoDraft) => a.date.localeCompare(b.date) || a.src.localeCompare(b.src);
@@ -45,7 +45,7 @@ function pairTransits(drafts: AutoDraft[], blocked: Set<string>): AutoDraft[] {
       const base = { src: `pair:${later.src.replace(/^bank:/, '')}`, date: later.date, amount: Math.abs(diff) };
       out.push(
         diff > 0
-          ? { ...base, text: 'Valyuta operatsiyasi bo‘yicha farq (zarar)', debit: { expr: '9430' }, credit: { expr: t } }
+          ? { ...base, text: 'Valyuta operatsiyasi bo‘yicha farq (zarar)', debit: { expr: OTHER_EXPENSE }, credit: { expr: t } }
           : { ...base, text: 'Valyuta operatsiyasi bo‘yicha farq (foyda)', debit: { expr: t }, credit: { expr: '9390' } },
       );
     }

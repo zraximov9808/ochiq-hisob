@@ -98,8 +98,7 @@ export function buildAuto(input: AutoInput, subs: SubAccount[]): BuiltAuto {
       warnings.push({ kind: 'fx-opening', text: `${a.currency} hisobi …${a.number.slice(-6)} davr boshida qoldiq bilan boshlanadi — bu qoldiq oy oxiri qayta baholashiga kirmaydi; kerak bo‘lsa kurs farqini qo‘lda kiriting`, ref: a.number });
 
   // Payroll: taxes on salaries are paid but no salary was accrued.
-  const jsh = r1.codeOf('6410[JShDS]');
-  const payrollTax = entries.some((e) => (jsh && e.debit === jsh) || synthetic(e.debit) === '6520');
+  const payrollTax = entries.some((e) => ['6420', '6510', '6520', '6530'].includes(synthetic(e.debit)));
   const accrued = [...entries, ...input.manualEntries].some((e) => synthetic(e.credit) === '6710');
   if (payrollTax && !accrued)
     warnings.push({ kind: 'payroll', text: 'JShDS / ijtimoiy soliq to‘langan, lekin ish haqi hisoblanmagan (6710 krediti yo‘q). Ish haqi hisoblash provodkalarini jurnalga qo‘lda kiriting (masalan, Dt 9420 Kt 6710, Dt 6710 Kt 6410, Dt 9420 Kt 6520).' });

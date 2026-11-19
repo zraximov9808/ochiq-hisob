@@ -13,5 +13,5 @@ test('every built-in bank operation type has a default account', () => {
 test('every default account expression is valid', () => {
   const bad = Object.values(DEFAULT_TYPE_ACCOUNTS).filter((e) => !parseExpr(e));
   expect(bad).toEqual([]);
-  expect(parseExpr(FOREIGN_POOL('USD'))).toMatchObject({ base: '6010', kind: 'named' });
+  expect(parseExpr(FOREIGN_POOL('USD'))).toMatchObject({ base: '6015', kind: 'named' });
 });
