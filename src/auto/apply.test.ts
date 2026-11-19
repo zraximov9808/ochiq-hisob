@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { describe, expect, test } from 'vitest';
 import { emptyDoc, type Doc, type Entry } from '../engine/types';
 import { parseDocFile, serializeDoc } from '../store/docFile';
-import { applyAuto, autoSettings, editedEntry, removeEntry, resetAuto } from './apply';
+import { applyAuto, autoSettings, editedEntry, removeEntries, removeEntry, resetAuto } from './apply';
 import type { BuiltAuto } from './build';
 import type { ResolvedEntry } from './resolve';
 
@@ -79,4 +79,39 @@ test('documents saved without auto settings still open; saved settings keep thei
   expect(autoSettings(old).enabled).toBe(true);
   const saved = parseDocFile(JSON.stringify({ ...emptyDoc(2026), auto: { enabled: false, skip: ['x'] } }));
   expect(saved.auto).toMatchObject({ enabled: false, skip: ['x'], serviceDefault: '9420' });
+});
+
+describe('auto entries saved under the previous source keys', () => {
+  const hand = (src: string, debit: string, deleted = false): Doc =>
+    deleted
+      ? { ...doc([]), auto: { ...autoSettings(doc([])), skip: [src] } }
+      : doc([{ id: 'h', date: '2026-07-31', text: 'qo‘lda tuzatilgan', debit, credit: '4410.01', amount: 7, auto: { src, edited: true } }]);
+
+  test('a hand-edited monthly VAT offset (vat:<month>) keeps out the new per-account offsets', () => {
+    const d = apply(hand('vat:2026-07', '6410.01'), built([auto('vat:2026-07:4410.3'), auto('vat:2026-07:4410.4'), auto('vat:2026-08:4410.3')]));
+    expect(srcs(d)).toEqual(['vat:2026-07', 'vat:2026-08:4410.3']);
+  });
+
+  test('a deleted monthly VAT offset stays deleted', () => {
+    const d = apply(hand('vat:2026-07', '', true), built([auto('vat:2026-07:4410.3')]));
+    expect(srcs(d)).toEqual([]);
+  });
+
+  test('an old invoice VAT entry edited by hand also covers the new services VAT; a new-chart one does not', () => {
+    const old = apply(hand('inv:p1:vat', '4410.01'), built([auto('inv:p1:vat'), auto('inv:p1:vat-s')]));
+    expect(srcs(old)).toEqual(['inv:p1:vat']);
+    const fresh = apply(hand('inv:p1:vat', '4410.3'), built([auto('inv:p1:vat'), auto('inv:p1:vat-s')]));
+    expect(srcs(fresh)).toEqual(['inv:p1:vat', 'inv:p1:vat-s']);
+  });
+});
+
+describe('deleting several entries at once', () => {
+  test('removes the chosen entries; deleted auto entries do not come back on the next build', () => {
+    const d1 = apply(doc(), built([auto('a'), auto('b'), auto('c')]));
+    const ids = d1.entries.filter((e) => e.auto?.src !== 'c').map((e) => e.id);
+    const d2 = produce(d1, (x) => removeEntries(x as Doc, ids));
+    expect(srcs(d2)).toEqual(['c']);
+    expect(autoSettings(d2).skip).toEqual(['a', 'b']);
+    expect(srcs(apply(d2, built([auto('a'), auto('b'), auto('c')]), 'h2'))).toEqual(['c']);
+  });
 });

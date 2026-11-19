@@ -15,6 +15,9 @@ export interface FileResult {
   accounts: Array<{ number: string; currency: string; from: string; to: string; count: number }>;
 }
 
+/** What an uploaded file held. */
+export type UploadKind = 'statement' | 'invoice' | 'gtd';
+
 export interface BankState {
   loaded: boolean;
   statements: ParsedStatement[];
@@ -39,7 +42,9 @@ export interface BankState {
 const openDb = (name: string) => (typeof indexedDB === 'undefined' ? undefined : createStore(name, 'kv'));
 /** Each company has its own database of uploads; the first one keeps the original name. */
 let dbName = 'ochiq-hisob-bank';
-let db = openDb(dbName);
+/** Opened on first use: opening a company's database creates it, which a removed company must not get back. */
+let db: ReturnType<typeof openDb> | null = null;
+const store = () => (db ??= openDb(dbName)) ?? undefined;
 const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings', 'invoices', 'invoiceFiles', 'gtd', 'gtdFiles', 'stockQty', 'rates'] as const;
 
 const EMPTY: Omit<BankState, 'loaded'> = { statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS, invoices: [], invoiceFiles: [], gtd: [], gtdFiles: [], stockQty: {}, rates: {} };
@@ -50,7 +55,8 @@ function emit(next: BankState, persist: Array<(typeof KEYS)[number]> = []) {
   state = next;
   listeners.forEach((l) => l());
   // before the stored data is read, a write would replace it with a partial list
-  if (db && state.loaded) for (const k of persist) void set(k, state[k], db);
+  const d = state.loaded ? store() : undefined;
+  if (d) for (const k of persist) void set(k, state[k], d);
 }
 
 /** An invoice saved by an older version (no goods lines) gets the fields this version expects. */
@@ -69,14 +75,14 @@ export const normalizeGtd = (g: GtdItem): GtdItem => ({
 
 let loading: Promise<void> | null = null;
 export function loadBank(): Promise<void> {
-  if (!db || state.loaded) {
+  const from = store();
+  if (!from || state.loaded) {
     if (!state.loaded) emit({ ...state, loaded: true });
     return Promise.resolve();
   }
-  const from = db;
   loading ??= Promise.all(KEYS.map((k) => get(k, from))).then((vals) => {
     // the company was switched while this was loading: its data belongs to the other company
-    if (from !== db) return;
+    if (from !== store()) return;
     const v = Object.fromEntries(KEYS.map((k, i) => [k, vals[i]]));
     emit({
       loaded: true,
@@ -152,9 +158,29 @@ export const bankActions = {
   setSettings(settings: Settings) {
     emit({ ...state, settings }, ['settings']);
   },
+  /** Deletes one uploaded file and what was read from it; the other files stay. */
+  removeFile(kind: UploadKind, file: string) {
+    if (kind === 'statement')
+      emit({ ...state, statements: state.statements.filter((s) => s.file !== file), files: state.files.filter((f) => f.file !== file) }, ['statements', 'files']);
+    else if (kind === 'invoice')
+      emit({ ...state, invoices: state.invoices.filter((i) => i.file !== file), invoiceFiles: state.invoiceFiles.filter((f) => f.file !== file) }, ['invoices', 'invoiceFiles']);
+    else {
+      const gone = new Set(state.gtd.filter((g) => g.file === file).map((g) => g.id));
+      const stockQty = Object.fromEntries(Object.entries(state.stockQty).filter(([id]) => !gone.has(id)));
+      emit({ ...state, gtd: state.gtd.filter((g) => g.file !== file), gtdFiles: state.gtdFiles.filter((f) => f.file !== file), stockQty }, ['gtd', 'gtdFiles', 'stockQty']);
+    }
+  },
+  /** Deletes every uploaded file (statements, invoices, GTD) and what was typed about them; rules and settings stay. */
+  clearUploads() {
+    emit(
+      { ...state, statements: [], files: [], overrides: {}, reviewed: [], invoices: [], invoiceFiles: [], gtd: [], gtdFiles: [], stockQty: {} },
+      ['statements', 'files', 'overrides', 'reviewed', 'invoices', 'invoiceFiles', 'gtd', 'gtdFiles', 'stockQty'],
+    );
+  },
   /** Deletes everything this section stored in the browser. */
   async wipe() {
-    if (db) await Promise.all(KEYS.map((k) => del(k, db)));
+    const d = store();
+    if (d) await Promise.all(KEYS.map((k) => del(k, d)));
     emit({ loaded: true, ...EMPTY });
   },
 };
@@ -166,7 +192,7 @@ export function switchBankDb(name: string): void {
   // close the old connection, or deleting that company's database later stays blocked
   void db?.('readonly', (s) => s.transaction.db.close()).catch(() => undefined);
   dbName = name;
-  db = openDb(name);
+  db = null;
   loading = null;
   emit({ loaded: false, ...EMPTY });
   if (wasLoaded) void loadBank();
@@ -193,6 +219,9 @@ export function beginUpload(): () => Promise<boolean> {
     return dbName === target;
   };
 }
+
+/** Which company's uploads are open (their database name). */
+export const bankTarget = () => dbName;
 
 /** Deletes a removed company's uploads database. */
 export function deleteBankDb(name: string): void {

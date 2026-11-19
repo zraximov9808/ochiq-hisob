@@ -1,3 +1,4 @@
+import { isChartCode } from '../engine/accounts';
 import type { Doc, Entry } from '../engine/types';
 import type { BuiltAuto } from './build';
 import { DEFAULT_AUTO } from './defaults';
@@ -14,10 +15,21 @@ export function applyAuto(d: Doc, built: BuiltAuto, inputHash: string): void {
   const s = autoSettings(d);
   const skip = new Set(s.skip);
   const edited = new Set(d.entries.filter((e) => e.auto?.edited).map((e) => e.auto!.src));
+  // invoice VAT edited under the previous chart (old subaccount codes) covered goods and services VAT together
+  const oldInvoiceVat = new Set(
+    d.entries.filter((e) => e.auto?.edited && e.auto.src.endsWith(':vat') && !isChartCode(e.debit.trim()) && !isChartCode(e.credit.trim())).map((e) => e.auto!.src),
+  );
   const empty = !d.entries.some((e) => !e.auto) && !d.opening.length;
+  /** Kept out by a hand edit or deletion, also one made under the previous source keys. */
+  const kept = (src: string) => {
+    if (skip.has(src) || edited.has(src)) return true;
+    const month = /^(vat:\d{4}-\d{2}):/.exec(src)?.[1];
+    if (month && (skip.has(month) || edited.has(month))) return true;
+    return src.endsWith(':vat-s') && oldInvoiceVat.has(src.slice(0, -2));
+  };
 
   const fresh: Entry[] = built.entries
-    .filter((e) => !skip.has(e.auto!.src) && !edited.has(e.auto!.src))
+    .filter((e) => !kept(e.auto!.src))
     .map(({ fx: _fx, fxDebit: _d, fxCredit: _c, ...entry }) => entry);
   d.entries = [...d.entries.filter((e) => !e.auto || e.auto.edited), ...fresh];
   for (const sub of built.added) if (!d.subaccounts.some((x) => x.code === sub.code)) d.subaccounts.push(sub);
@@ -50,6 +62,17 @@ export function removeEntry(d: Doc, id: string): void {
   if (e.auto) {
     const s = autoSettings(d);
     if (!s.skip.includes(e.auto.src)) d.auto = { ...s, skip: [...s.skip, e.auto.src] };
+  }
+}
+
+/** Deletes several entries at once (selected rows, or the whole journal); deleted auto entries stay deleted. */
+export function removeEntries(d: Doc, ids: Iterable<string>): void {
+  const gone = new Set(ids);
+  const autoSrcs = d.entries.filter((e) => gone.has(e.id) && e.auto).map((e) => e.auto!.src);
+  d.entries = d.entries.filter((e) => !gone.has(e.id));
+  if (autoSrcs.length) {
+    const s = autoSettings(d);
+    d.auto = { ...s, skip: [...new Set([...s.skip, ...autoSrcs])] };
   }
 }
 

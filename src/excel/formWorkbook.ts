@@ -170,7 +170,8 @@ function addFormSheet(wb: ExcelJS.Workbook, def: FormDef, values: FormValues, do
       }
       // the overdue annex puts the number first and the name second
       put(s.num, tr(s.label), s.id, true);
-      const rows = Object.keys(values)
+      // rows with numbers, and rows the filer only named so far
+      const rows = [...new Set([...Object.keys(values), ...Object.keys(names)])]
         .filter((k) => k.startsWith(`${s.id}.`))
         .sort((a, b) => Number(a.slice(s.id.length + 1)) - Number(b.slice(s.id.length + 1)));
       rows.forEach((key, k) => put(`${s.num}.${k + 1}`, names[key] ?? '', key, false));

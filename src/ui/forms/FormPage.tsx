@@ -6,7 +6,7 @@ import type { Doc } from '../../engine/types';
 import { FORMS, FORM_IDS } from '../../forms/defs';
 import { formSet } from '../../forms/sources';
 import type { FormDef, FormGroup, FormId } from '../../forms/types';
-import { formKey, formNames, isRateCell, manualValues, setFormName, setFormValue } from '../../forms/values';
+import { clearTyped, formNames, isRateCell, manualValues, setFormName, setFormValue } from '../../forms/values';
 import { useT } from '../../i18n/useT';
 import { actions, useApp } from '../../store/store';
 import { PageHead, toast } from '../components/common';
@@ -131,7 +131,11 @@ export function FormPage({ group }: { group: FormGroup }) {
   const def = FORMS[id];
   const unit: Unit = group === 'tax' ? 'som' : ui.unit;
 
-  const all = useMemo(() => formSet(doc, ui.quarter, report, ui.unit), [doc, ui.quarter, ui.unit, report]);
+  // the report already holds every form in so'm; only 1- and 2-shakl in ming so'm need their own (rounded) pass
+  const all = useMemo(
+    () => (group === 'tax' || ui.unit === 'som' ? report.forms : formSet(doc, ui.quarter, report, ui.unit, ids)),
+    [group, doc, ui.quarter, ui.unit, report, ids],
+  );
 
   const manual = manualValues(doc, id, ui.quarter);
   const names = formNames(doc, id, ui.quarter);
@@ -155,12 +159,14 @@ export function FormPage({ group }: { group: FormGroup }) {
       for (const c of def.columns) setFormValue(d, id, ui.quarter, row, c.id, null);
       setFormName(d, id, ui.quarter, row, '');
     });
-  const clearTyped = () => {
-    if (!confirm(t('Bu shaklga shu davr uchun qo‘lda kiritilgan barcha qiymatlar o‘chiriladi. Davom etasizmi?'))) return;
-    actions.update((d) => {
-      delete d.forms?.[formKey(id, ui.quarter)];
-      delete d.formNames?.[formKey(id, ui.quarter)];
-    });
+  const clearThisForm = () => {
+    if (!confirm(t('Bu shaklga shu davr uchun qo‘lda kiritilgan barcha qiymatlar o‘chiriladi. Ctrl+Z bilan qaytarish mumkin. Davom etasizmi?'))) return;
+    actions.update((d) => clearTyped(d, [id], ui.quarter));
+  };
+  const clearGroup = () => {
+    const n = ids.filter(typed).length;
+    if (!confirm(t(`${n} ta shakl va ilovaga shu davr uchun qo‘lda kiritilgan qiymatlar o‘chiriladi; hisobdan olingan avtomatik qiymatlar qaytadi. Ctrl+Z bilan qaytarish mumkin. Davom etasizmi?`))) return;
+    actions.update((d) => clearTyped(d, ids, ui.quarter));
   };
 
   const incomeIds = TAX_LINES.filter((l) => l.annex === 1).map((l) => l.id);
@@ -214,8 +220,13 @@ export function FormPage({ group }: { group: FormGroup }) {
       <div className="toolbar">
         <ExportButton kind={meta.excel} label={meta.excelLabel} />
         {typed(id) > 0 && (
-          <button className="btn" onClick={clearTyped}>
-            {t('Qo‘lda kiritilganlarni tozalash')}
+          <button className="btn" onClick={clearThisForm}>
+            {t('Shu shakldagi qo‘lda kiritilganlarni tozalash')}
+          </button>
+        )}
+        {ids.filter(typed).length > 1 && (
+          <button className="btn ghost danger" onClick={clearGroup}>
+            {t('Barcha ilovalardagi qo‘lda kiritilganlarni tozalash')}
           </button>
         )}
       </div>

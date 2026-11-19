@@ -53,6 +53,18 @@ export function OpeningPage({ onImport }: { onImport: () => void }) {
         <button className="btn" onClick={rollOver}>
           {t(`Yilni yopish va ${doc.year + 1}-yilga o‘tish`)}
         </button>
+        <button
+          className="btn ghost danger"
+          disabled={!doc.opening.length}
+          onClick={() => {
+            if (!confirm(t(`${doc.opening.length} ta qoldiq o‘chiriladi. Ctrl+Z bilan qaytarish mumkin. Davom etasizmi?`))) return;
+            actions.update((d) => {
+              d.opening = [];
+            });
+          }}
+        >
+          {t('Hammasini o‘chirish')}
+        </button>
         <span className="muted small">{t('Excel ustunlari: Hisobvaraq, Debet qoldiq, Kredit qoldiq')}</span>
       </div>
       <div className="card table-wrap">

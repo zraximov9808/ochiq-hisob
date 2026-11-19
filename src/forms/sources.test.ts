@@ -47,6 +47,25 @@ describe('automatic form values', () => {
     expect(v['400']).toBeUndefined();
   });
 
+  test('budget payments: a tax penalty paid straight from the bank is due and paid in 470', () => {
+    const doc = referenceDoc([
+      entry('2026-05-01', '9431.7', '5110', 0.3, 'Penya (INPS / soliqlar bo‘yicha) to‘landi'),
+      entry('2026-05-02', '9431.7', '5110', 0.4, 'Yetkazib beruvchiga shartnoma bo‘yicha jarima'),
+    ]);
+    expect(auto('f2-budget', doc)['470']).toEqual({ '3': m(0.3), '4': m(0.3) });
+  });
+
+  test('budget payments: turnover tax on 6430 is the single tax payment (370), not profit tax', () => {
+    const doc = referenceDoc([
+      entry('2026-03-31', '9820', '6430', 2, 'Aylanmadan olinadigan soliq hisoblandi'),
+      entry('2026-04-15', '6430', '5110', 2, 'Aylanmadan olinadigan soliq to‘landi'),
+      entry('2026-12-31', '9810', '6430', 5, 'Foyda solig‘i hisoblandi'),
+    ]);
+    const v = auto('f2-budget', doc);
+    expect(v['370']).toEqual({ '3': m(2), '4': m(2) });
+    expect(v['280']).toEqual({ '3': m(5) });
+  });
+
   test('annex 2 splits expenses into 0105, 0113, 0137', () => {
     const doc = referenceDoc([
       entry('2026-01-31', '9420', '6710', 10, 'Ish haqi'),

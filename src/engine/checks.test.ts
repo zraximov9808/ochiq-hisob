@@ -3,7 +3,7 @@ import { runChecks } from './checks';
 import { makeClosingEntries, rollToNextYear } from './closing';
 import { buildIncome } from './incomeStatement';
 import { buildReconciliation } from './reconciliation';
-import { nextSubCode } from './subaccounts';
+import { nextSubCode, unusedSubaccounts } from './subaccounts';
 import { M, entry, open, referenceDoc } from './testDoc';
 import { buildTrialBalance } from './trialBalance';
 
@@ -154,5 +154,18 @@ describe('checks follow the forms being filed', () => {
     expect(runChecks(doc, 4).checks.find((x) => x.id === 'form-bal')!.ok).toBe(true);
     doc.forms = { 'b1:4': { '010': { '4': 999 * M } } };
     expect(runChecks(doc, 4).checks.find((x) => x.id === 'form-bal')!.ok).toBe(false);
+  });
+});
+
+describe('subaccounts nobody uses', () => {
+  test('are the ones no entry or opening balance refers to', () => {
+    const doc = referenceDoc([entry('2026-01-05', '4010.01', '9020', 1)]);
+    doc.opening.push(open('6010.02', 0, 1));
+    doc.subaccounts = [
+      { code: '4010.01', parent: '4010', name: 'A' },
+      { code: '6010.02', parent: '6010', name: 'B' },
+      { code: '6010.03', parent: '6010', name: 'C' },
+    ];
+    expect(unusedSubaccounts(doc)).toEqual(['6010.03']);
   });
 });

@@ -307,3 +307,7 @@ table.oform { border-collapse: collapse; width: 100%; font-size: 12.5px; }
 .co-act:hover { background: var(--surface-2); color: var(--text); }
 .co-add { border: 1px dashed var(--line-strong); background: none; border-radius: 7px; padding: 7px 8px; margin-top: 4px; cursor: pointer; text-align: left; color: var(--brand-2); font-weight: 600; }
 .co-add:hover { background: var(--brand-soft); }
+
+/* ---- picking rows to delete together ---- */
+.grid th.pick, .grid td.pick { width: 34px; padding-left: 8px; padding-right: 4px; }
+.grid tr.picked td { background: #fff6e8; }

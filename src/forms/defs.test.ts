@@ -60,6 +60,13 @@ describe('form definitions', () => {
     expect(line('f2', '030').formula).toEqual({ '3': 'max0(010:3 - 020:4)', '4': 'max0(-(010:3 - 020:4))', '5': 'max0(010:5 - 020:6)', '6': 'max0(-(010:5 - 020:6))' });
   });
 
+  test('a form refers only to forms of its own group, so a group can be worked out alone', () => {
+    for (const id of FORM_IDS)
+      for (const l of FORMS[id].lines)
+        for (const f of typeof l.formula === 'string' ? [l.formula] : Object.values(l.formula ?? {}))
+          for (const [, other] of f.matchAll(/\{([^:}]+):/g)) expect(FORMS[other as keyof typeof FORMS].group, `${id} → ${other}`).toBe(FORMS[id].group);
+  });
+
   test('every cross-form reference names a form and line that exist', () => {
     const refs = Object.values(FORMS).flatMap((f) =>
       f.lines.flatMap((l) => (typeof l.formula === 'string' ? [l.formula] : Object.values(l.formula ?? {}))).flatMap((x) => [...x.matchAll(/\{([^:}]+):(\d+)(?::(\d+))?\}/g)]),

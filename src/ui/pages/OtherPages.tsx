@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { INCOME_LINES } from '../../engine/incomeStatement';
 import { sampleDoc } from '../../engine/sample';
-import { emptyDoc, type Company, type CompanyCodes } from '../../engine/types';
+import type { Company, CompanyCodes } from '../../engine/types';
 import { useT } from '../../i18n/useT';
-import { forgetFileHandle } from '../../store/fileIO';
+import { bankActions } from '../bank/bankStore';
 import { actions, useApp } from '../../store/store';
 import { AmountInput, PageHead, toast } from '../components/common';
 
@@ -135,12 +135,27 @@ export function SettingsPage() {
         <button
           className="btn danger"
           onClick={() => {
-            if (!confirm(t('Brauzerdagi joriy ma’lumotlar o‘chiriladi (saqlangan fayllaringizga tegmaydi). Davom etasizmi?'))) return;
-            forgetFileHandle();
-            actions.replaceDoc(emptyDoc(new Date().getFullYear()), null);
+            const name = doc.company.name || t('Nomsiz korxona');
+            if (
+              !confirm(
+                t(`«${name}» korxonasining provodkalari, qoldiqlari, subschyotlari, shakllarga qo‘lda kiritilganlari va yuklangan fayllari (vipiska, faktura, GTD) shu brauzerdan o‘chiriladi. Korxona rekvizitlari va boshqa korxonalar qoladi, saqlangan fayllaringizga tegmaydi. Davom etasizmi?`),
+              )
+            )
+              return;
+            actions.update((d) => {
+              d.entries = [];
+              d.opening = [];
+              d.subaccounts = [];
+              d.prevYear = {};
+              delete d.forms;
+              delete d.formNames;
+              delete d.auto;
+            });
+            bankActions.clearUploads();
+            toast('Korxona ma’lumotlari tozalandi (provodkalarni Ctrl+Z bilan qaytarish mumkin, yuklangan fayllarni esa qayta yuklang)');
           }}
         >
-          {t('Brauzerdagi ma’lumotlarni tozalash')}
+          {t('Shu korxona ma’lumotlarini tozalash')}
         </button>
       </div>
     </div>
@@ -151,10 +166,8 @@ export function HelpPage() {
   const t = useT();
   const { h } = useApp();
   const start = () => {
-    if (h.doc.entries.length === 0) {
-      const s = sampleDoc(h.doc.year);
-      actions.replaceDoc(s, null, false);
-    }
+    // with data of its own, the button only goes to the journal; the demo opens as a company of its own
+    if (!h.doc.entries.length) actions.openDoc(sampleDoc(h.doc.year), null);
     actions.setUi({ page: 'journal' });
   };
   return (

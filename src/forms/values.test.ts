@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { emptyDoc } from '../engine/types';
 import { parseDocFile, serializeDoc } from '../store/docFile';
 import { FORMS, FORM_IDS } from './defs';
-import { evaluate, evaluateAll, formKey, manualValues, parseFormula, roundToMing, setFormName, setFormValue } from './values';
+import { clearTyped, evaluate, evaluateAll, formKey, manualValues, parseFormula, roundToMing, setFormName, setFormValue } from './values';
 
 const SOM = 100;
 
@@ -101,6 +101,41 @@ describe('form values', () => {
     expect(both.tax['020']['3'].v).toBe(400 * SOM);
     const only2 = evaluateAll({ 'tax-2': { '020': { '3': 500 * SOM }, '030': { '4': 50 * SOM } } }, {});
     expect(only2.tax['020']['3'].v).toBe(450 * SOM);
+  });
+
+  test('bad formulas are refused with the formula in the message', () => {
+    expect(() => parseFormula('010 +')).toThrow(/010 \+/);
+    expect(() => parseFormula('foo(010)')).toThrow(/unknown function foo/);
+    expect(() => parseFormula('pct(010)')).toThrow(/pct takes 2/);
+    expect(() => parseFormula('(010 + 020')).toThrow(/expected "\)"/);
+    expect(() => parseFormula('010 ? 020')).toThrow(/cannot read/);
+  });
+
+  test('a formula loop is reported, not run forever', () => {
+    const def = { ...FORMS['tax-3'], lines: [{ code: '010', label: 'a', kind: 'line' as const, formula: '020', cells: { '3': 'calc' as const } }, { code: '020', label: 'b', kind: 'line' as const, formula: '010', cells: { '3': 'calc' as const } }] };
+    expect(() => evaluate(def, {}, {})).toThrow(/cycle/);
+  });
+
+  test('a file with broken typed values opens with only the numbers kept', () => {
+    const doc = emptyDoc(2026);
+    const raw = JSON.parse(serializeDoc(doc));
+    raw.forms = { 'tax:4': { '090': { '3': 5, '4': 'x' }, bad: 'y' }, 'b1:4': null };
+    raw.formNames = { 'b1-overdue:4': { 'd-in.1': 'Mijoz', 'd-in.2': 7 } };
+    const back = parseDocFile(JSON.stringify(raw));
+    expect(back.forms).toEqual({ 'tax:4': { '090': { '3': 5 } } });
+    expect(back.formNames).toEqual({ 'b1-overdue:4': { 'd-in.1': 'Mijoz' } });
+  });
+
+  test('typed values and names of several forms are cleared for one quarter only', () => {
+    const doc = emptyDoc(2026);
+    setFormValue(doc, 'tax-3', 4, '020', '3', 5 * SOM);
+    setFormValue(doc, 'tax', 4, '090', '3', 7 * SOM);
+    setFormValue(doc, 'tax', 2, '090', '3', 1 * SOM);
+    setFormValue(doc, 'b1', 4, '211', '4', 3 * SOM);
+    setFormName(doc, 'tax-6', 4, '051', 'Imtiyoz');
+    clearTyped(doc, ['tax', 'tax-3', 'tax-6'], 4);
+    expect(Object.keys(doc.forms!)).toEqual(['tax:2', 'b1:4']);
+    expect(doc.formNames).toEqual({});
   });
 
   test('a value for Q2 does not show in Q3', () => {

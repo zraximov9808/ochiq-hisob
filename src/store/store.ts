@@ -244,7 +244,7 @@ export function openTarget(doc: Doc): OpenTarget {
   const ref = state.co.list.find((c) => c.stir === stir);
   if (ref) return ref.id === state.co.currentId ? 'current' : 'other';
   const cur = state.h.doc;
-  const blank = !cur.company.stir.trim() && !cur.entries.length && !cur.opening.length;
+  const blank = !cur.company.stir.trim() && !cur.company.name.trim() && !cur.entries.length && !cur.opening.length;
   return blank ? 'current' : 'new';
 }
 

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { runChecks } from '../engine/checks';
 import { M, entry, referenceDoc } from '../engine/testDoc';
-import { setFormValue } from '../forms/values';
+import { setFormName, setFormValue } from '../forms/values';
 import { toCyrillic } from '../i18n/translit';
 import { buildFormsWorkbook } from './formWorkbook';
 import { parseJournalRows, parseOpeningRows } from './parse';
@@ -122,6 +122,15 @@ describe('buildFormsWorkbook', () => {
         expect(merges.filter((m) => { const [a, b] = m.split(':'); return !b || a === b; }), ws.name).toEqual([]);
       }
     }
+  });
+
+  test('overdue annex: a named row without amounts is still exported', async () => {
+    const doc = referenceDoc();
+    setFormName(doc, 'b1-overdue', 4, 'd-in.1', 'Mijoz MChJ');
+    const wb = await buildFormsWorkbook('balance', doc, 4, runChecks(doc, 4), (s) => s);
+    const names: unknown[] = [];
+    wb.worksheets[2].eachRow((row) => names.push(row.getCell(2).value));
+    expect(names).toContain('Mijoz MChJ');
   });
 
   test('closed cells print x, typed values show, Cyrillic sheet names', async () => {

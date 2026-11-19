@@ -1,5 +1,5 @@
 import { isChartCode } from './accounts';
-import type { SubAccount } from './types';
+import type { Doc, SubAccount } from './types';
 
 const suffix = (code: string) => code.split('.')[1] ?? '';
 
@@ -30,4 +30,12 @@ export function groupSubaccounts(subs: SubAccount[], merge: boolean) {
     groups.set(key, g);
   }
   return [...groups.values()];
+}
+
+/** Codes of subaccounts that no entry and no opening balance uses (safe to delete together). */
+export function unusedSubaccounts(doc: Doc): string[] {
+  const used = new Set<string>();
+  for (const e of doc.entries) used.add(e.debit.trim()).add(e.credit.trim());
+  for (const o of doc.opening) used.add(o.account.trim());
+  return doc.subaccounts.filter((s) => !used.has(s.code)).map((s) => s.code);
 }

@@ -3,6 +3,31 @@ import { emptyDoc, type Doc } from '../engine/types';
 
 export const FILE_EXT = '.ohisob';
 
+/** Typed form values as stored: "form:quarter" → line → column → number; anything else in the file is dropped. */
+function formValues(raw: unknown): Doc['forms'] {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const out: NonNullable<Doc['forms']> = {};
+  for (const [key, lines] of Object.entries(raw)) {
+    if (!lines || typeof lines !== 'object') continue;
+    for (const [line, cols] of Object.entries(lines)) {
+      if (!cols || typeof cols !== 'object') continue;
+      for (const [col, v] of Object.entries(cols))
+        if (typeof v === 'number' && Number.isFinite(v)) ((out[key] ??= {})[line] ??= {})[col] = Math.round(v);
+    }
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+function formNameValues(raw: unknown): Doc['formNames'] {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const out: NonNullable<Doc['formNames']> = {};
+  for (const [key, names] of Object.entries(raw)) {
+    if (!names || typeof names !== 'object') continue;
+    for (const [line, name] of Object.entries(names)) if (typeof name === 'string' && name.trim()) (out[key] ??= {})[line] = name;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 export function serializeDoc(doc: Doc): string {
   return JSON.stringify(doc, null, 1);
 }
@@ -30,6 +55,8 @@ export function parseDocFile(text: string): Doc {
     prevYear: r.prevYear ?? {},
     taxRate: typeof r.taxRate === 'number' ? r.taxRate : 15,
     auto: r.auto && typeof r.auto === 'object' ? { ...DEFAULT_AUTO, ...r.auto } : undefined,
+    forms: formValues(r.forms),
+    formNames: formNameValues(r.formNames),
     // a file without the mark was written on the previous chart
     chart: r.chart === '1c' ? '1c' : undefined,
   } as Doc;

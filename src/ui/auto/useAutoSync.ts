@@ -9,7 +9,7 @@ import { analyze, type Analysis } from '../../bank/analyze';
 import { synthetic } from '../../engine/accounts';
 import type { Doc } from '../../engine/types';
 import { actions, getState, useApp } from '../../store/store';
-import { bankActions, beginUpload, loadBank, rulesOf, useBank, type BankState } from '../bank/bankStore';
+import { bankActions, bankTarget, beginUpload, loadBank, rulesOf, useBank, type BankState } from '../bank/bankStore';
 
 const analysisOf = (bank: BankState): Analysis | null =>
   bank.statements.length ? analyze(bank.statements, rulesOf(bank), bank.overrides, bank.settings) : null;
@@ -73,14 +73,17 @@ const attempted = new Set<string>();
 /** Asks cbu.uz once for each missing rate; the answers go to the rate cache and trigger a rebuild. */
 export async function fetchMissingRates(needs: RateNeed[], force = false): Promise<number> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) return 0;
-  const fresh = needs.filter((n) => force || !attempted.has(`${n.ccy}:${n.date}`));
-  fresh.forEach((n) => attempted.add(`${n.ccy}:${n.date}`));
+  // each company keeps its own rate cache, so it asks for what it lacks even if another company already asked
+  const target = bankTarget();
+  const key = (n: RateNeed) => `${target}|${n.ccy}:${n.date}`;
+  const fresh = needs.filter((n) => force || !attempted.has(key(n)));
+  fresh.forEach((n) => attempted.add(key(n)));
   if (!fresh.length) return 0;
   const stillHere = beginUpload();
   const book = await fetchCbuRates(fresh);
   if (!(await stillHere())) {
     // fetched for a company that is no longer open: let the open one ask again
-    fresh.forEach((n) => attempted.delete(`${n.ccy}:${n.date}`));
+    fresh.forEach((n) => attempted.delete(key(n)));
     return 0;
   }
   if (Object.keys(book).length) bankActions.addRates(book);

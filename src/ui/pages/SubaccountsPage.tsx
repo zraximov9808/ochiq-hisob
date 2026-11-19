@@ -4,7 +4,7 @@ import { buildLedger } from '../../engine/ledger';
 import { formatAmount } from '../../engine/money';
 import { formatDate, periodRange } from '../../engine/period';
 import { buildReconciliation } from '../../engine/reconciliation';
-import { groupSubaccounts, nextSubCode } from '../../engine/subaccounts';
+import { groupSubaccounts, nextSubCode, unusedSubaccounts } from '../../engine/subaccounts';
 import { useT } from '../../i18n/useT';
 import { actions, useApp } from '../../store/store';
 import { AccountInput, Modal, Num, PageHead, toast } from '../components/common';
@@ -171,6 +171,21 @@ export function SubaccountsPage() {
             </button>
           ))}
         </div>
+        <button
+          className="btn ghost danger"
+          onClick={() => {
+            const unused = unusedSubaccounts(doc);
+            if (!unused.length) return toast('Hamma subschyotlar provodka yoki qoldiqlarda ishlatilgan');
+            if (!confirm(t(`Provodka va qoldiqlarda ishlatilmagan ${unused.length} ta subschyot o‘chiriladi. Ishlatilganlari qoladi. Davom etasizmi?`))) return;
+            const gone = new Set(unused);
+            actions.update((d) => {
+              d.subaccounts = d.subaccounts.filter((s) => !gone.has(s.code));
+            });
+            toast(`${unused.length} ta subschyot o‘chirildi`);
+          }}
+        >
+          {t('Ishlatilmaganlarini o‘chirish')}
+        </button>
         <label className="small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
           <input type="checkbox" checked={merge} onChange={(e) => setMerge(e.target.checked)} />
           {t('Bir xil nomli yoki STIRli subschyotlarni birlashtirish')}

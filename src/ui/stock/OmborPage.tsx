@@ -11,6 +11,7 @@ import { Modal, toast } from '../components/common';
 import { bankActions, loadBank, useBank, beginUpload } from '../bank/bankStore';
 import { fmtDay } from '../bank/format';
 import { ProductFilter } from './ProductFilter';
+import { UploadedFiles } from '../components/UploadedFiles';
 
 const fmtQty = (v: number) => (v === 0 ? '–' : v.toLocaleString('ru-RU', { maximumFractionDigits: 3 }).replace(/ /g, ' '));
 
@@ -215,7 +216,6 @@ export default function OmborPage() {
 
 function Upload() {
   const t = useT();
-  const bank = useBank();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
@@ -260,10 +260,6 @@ function Upload() {
     toast(`${gtd.length} ta GTD qatori, ${invoices.length} ta faktura o‘qildi`);
   };
 
-  const files = [
-    ...bank.gtdFiles.map((f) => ({ ...f, what: f.ok ? (f.count ? `GTD: ${f.count} ta tovar` : 'GTD shabloni bo‘sh — tovar qatorlari yo‘q') : f.error ?? '' })),
-    ...bank.invoiceFiles.map((f) => ({ ...f, what: f.ok ? `${t('hisob-fakturalar')}: ${f.count}` : f.error ?? '' })),
-  ];
   return (
     <>
       <div
@@ -288,20 +284,7 @@ function Upload() {
         <div className="muted">{t('Fayl turi avtomatik aniqlanadi. Ekspres auditda yuklangan fakturalar shu yerda ham ishlatiladi. GTD hisobotingiz bo‘lmasa, “Excel shablon yuklab olish” orqali bo‘sh shablonni to‘ldiring.')}</div>
         <div className="dz-safe">🔒 {t('Fayllar faqat sizning brauzeringizda qayta ishlanadi — hech qayerga yuborilmaydi.')}</div>
       </div>
-      {files.length > 0 && (
-        <details className="card card-pad">
-          <summary>
-            {t('Yuklangan fayllar')} ({files.length})
-          </summary>
-          <ul className="small">
-            {files.map((f, i) => (
-              <li key={i} className={f.ok ? undefined : 'err-text'}>
-                {f.ok ? '✓' : '✗'} {f.file} — {t(f.what)}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <UploadedFiles kinds={['gtd', 'invoice']} />
     </>
   );
 }

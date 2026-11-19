@@ -11,9 +11,10 @@ import { importFiles } from '../../import/importFiles';
 import { downloadBlob } from '../../store/fileIO';
 import { actions, getState, useApp } from '../../store/store';
 import { toast } from '../components/common';
-import { bankActions, getBank, useBank } from '../bank/bankStore';
+import { getBank, useBank } from '../bank/bankStore';
 import { fmtDay, fmtMoney } from '../bank/format';
 import { autoInputOf, fetchMissingRates, rebuildNow, useAutoBuild } from './useAutoSync';
+import { UploadedFiles } from '../components/UploadedFiles';
 
 type Tab = 'types' | 'accounts' | 'services' | 'rates';
 
@@ -208,35 +209,7 @@ export default function AutoPage() {
         </ul>
       )}
 
-      {hasData && (
-        <details className="card card-pad">
-          <summary>
-            <b>{t('Yuklangan fayllar')}</b> <span className="muted small">({bank.files.length + bank.invoiceFiles.length + bank.gtdFiles.length})</span>
-          </summary>
-          <ul className="small" style={{ margin: '8px 0' }}>
-            {bank.files.map((f) => (
-              <li key={`s${f.file}`}>{f.ok ? '✓' : '✗'} {f.file} — {f.ok ? `${t('vipiska')}: ${f.accounts.map((a) => `${a.currency} …${a.number.slice(-6)} (${a.count})`).join(', ')}` : t(f.error ?? '')}</li>
-            ))}
-            {bank.invoiceFiles.map((f) => (
-              <li key={`i${f.file}`}>{f.ok ? '✓' : '✗'} {f.file} — {f.ok ? `${t('hisob-fakturalar')}: ${f.count}` : t(f.error ?? '')}</li>
-            ))}
-            {bank.gtdFiles.map((f) => (
-              <li key={`g${f.file}`}>{f.ok ? '✓' : '✗'} {f.file} — {f.ok ? `GTD: ${f.count}` : t(f.error ?? '')}</li>
-            ))}
-          </ul>
-          <div className="toolbar">
-            <button className="btn small" disabled={!bank.statements.length} onClick={() => confirm(t('Yuklangan vipiskalar o‘chirilsinmi?')) && bankActions.newAnalysis()}>
-              {t('Vipiskalarni tozalash')}
-            </button>
-            <button className="btn small" disabled={!bank.invoices.length} onClick={() => confirm(t('Yuklangan fakturalar o‘chirilsinmi?')) && bankActions.clearInvoices()}>
-              {t('Fakturalarni tozalash')}
-            </button>
-            <button className="btn small" disabled={!bank.gtd.length} onClick={() => confirm(t('Yuklangan GTD ma’lumotlari o‘chirilsinmi?')) && bankActions.clearGtd()}>
-              {t('GTD’larni tozalash')}
-            </button>
-          </div>
-        </details>
-      )}
+      <UploadedFiles kinds={['statement', 'invoice', 'gtd']} />
 
       <div className="kpi-grid">
         <div className="card kpi brand">

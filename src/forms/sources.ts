@@ -36,26 +36,31 @@ export function autoValues(id: FormId, doc: Doc, quarter: Quarter, report: Repor
   }
 }
 
-/** Every form's values from the books. */
-export function autoAll(doc: Doc, quarter: Quarter, report: Report): Partial<Record<FormId, Grid>> {
-  return Object.fromEntries(FORM_IDS.map((id) => [id, autoValues(id, doc, quarter, report)]));
+/** The books' values of the given forms (all by default); annexes 1 and 2 share one pass over the journal. */
+export function autoAll(doc: Doc, quarter: Quarter, report: Report, ids: FormId[] = FORM_IDS): Partial<Record<FormId, Grid>> {
+  let annexes: ReturnType<typeof taxAnnexValues> | undefined;
+  const annex = () => (annexes ??= taxAnnexValues(doc, quarter));
+  return Object.fromEntries(
+    ids.map((id) => [id, id === 'tax-1' ? annex().income : id === 'tax-2' ? annex().expenses : autoValues(id, doc, quarter, report)]),
+  );
 }
 
 /**
  * Every form as shown and filed: the books' values with what was typed in for the quarter. 1- and 2-shakl
  * in ming so'm round each line before the totals, as on the printed form; the tax forms stay in so'm.
  */
-export function formSet(doc: Doc, quarter: Quarter, report: Report, unit: 'som' | 'ming'): Record<FormId, FormValues> {
-  const auto = autoAll(doc, quarter, report);
+export function formSet(doc: Doc, quarter: Quarter, report: Report, unit: 'som' | 'ming', ids: FormId[] = FORM_IDS): Record<FormId, FormValues> {
+  // forms refer only to forms of their own group (balance, 2-shakl, profit tax), so a group can be worked out alone
+  const auto = autoAll(doc, quarter, report, ids);
   const manual: Partial<Record<FormId, Grid>> = {};
-  for (const f of FORM_IDS) {
+  for (const f of ids) {
     manual[f] = manualValues(doc, f, quarter);
     if (unit === 'ming' && FORMS[f].group !== 'tax') {
       auto[f] = roundToMing(f, auto[f] ?? {});
       manual[f] = roundToMing(f, manual[f]!);
     }
   }
-  return evaluateAll(auto, manual);
+  return evaluateAll(auto, manual, ids);
 }
 
 // ---- helpers ------------------------------------------------------------------------------------
@@ -85,6 +90,8 @@ function periodEntries(doc: Doc, quarter: Quarter): Entry[] {
 }
 
 const PENALTY = /jarima|penya|neustoyka|пеня|пени|штраф|неусто/i;
+/** A penalty owed to the state, not to a counterparty. */
+const TO_BUDGET = /soliq|byudjet|bojxona|inps|davlat|налог|бюджет|тамож/i;
 const CHARITY = /xayriya|homiylik|благотвор|спонсор/i;
 const GIFT = /sovg|подар/i;
 
@@ -140,8 +147,9 @@ function offBalanceValues(doc: Doc, quarter: Quarter): Grid {
 // ---- budget payments (2-shakl annex, lines 280–480) ---------------------------------------------
 
 /** Budget lines of a tax or fund account; INPS is part of personal income tax (290) and shown on its own in 291. */
-function budgetLines(code: string): string[] {
-  if (under(code, '6430')) return ['280'];
+function budgetLines(code: string, text: string): string[] {
+  // turnover tax shares 6430 with profit tax; on the form it is the single tax payment
+  if (under(code, '6430')) return /aylanma|оборот/i.test(text) ? ['370'] : ['280'];
   if (under(code, '6530.1')) return ['290', '291'];
   if (under(code, '6420')) return ['290'];
   if (under(code, '6410')) return ['310'];
@@ -171,11 +179,17 @@ function budgetValues(doc: Doc, quarter: Quarter): Grid {
     const paidFrom = isCash(e.credit) || isAdvance(e.credit);
     if (PENALTY.test(e.text)) {
       if (isExpense(e.debit) && isBudget(e.credit)) add(g, '470', '3', e.amount);
+      // a tax penalty paid straight from the bank is due and paid at once
+      if (isExpense(e.debit) && isCash(e.credit) && TO_BUDGET.test(e.text)) {
+        add(g, '470', '3', e.amount);
+        add(g, '470', '4', e.amount);
+        continue;
+      }
       if (isBudget(e.debit) && paidFrom) add(g, '470', '4', e.amount);
       if (isBudget(e.debit) || isBudget(e.credit)) continue;
     }
-    for (const line of budgetLines(e.credit)) add(g, line, '3', e.amount);
-    for (const line of budgetLines(e.debit)) add(g, line, paidFrom ? '4' : '3', paidFrom ? e.amount : -e.amount);
+    for (const line of budgetLines(e.credit, e.text)) add(g, line, '3', e.amount);
+    for (const line of budgetLines(e.debit, e.text)) add(g, line, paidFrom ? '4' : '3', paidFrom ? e.amount : -e.amount);
     // customs duty: charged from the customs advance into the goods' cost; paid from the bank to customs
     if (under(e.credit, '4490') && synthetic(e.debit) !== '4410' && !isCash(e.debit)) customsDue += e.amount;
     if (under(e.debit, '4490') && isCash(e.credit)) customsPaid += e.amount;

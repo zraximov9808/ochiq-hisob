@@ -63,6 +63,15 @@ export function setFormName(d: Doc, id: FormId, quarter: Quarter, line: string, 
   (d.formNames[key] ??= {})[line] = text;
 }
 
+/** Clears what was typed into the given forms (values and row names) for one quarter. */
+export function clearTyped(d: Doc, ids: FormId[], quarter: Quarter): void {
+  for (const id of ids) {
+    const key = formKey(id, quarter);
+    if (d.forms) delete d.forms[key];
+    if (d.formNames) delete d.formNames[key];
+  }
+}
+
 // ---- formula language (see LineDef) -------------------------------------------------------------
 
 export type Node =
@@ -181,14 +190,21 @@ export function evaluateAll(
   auto: Partial<Record<FormId, Grid>>,
   manual: Partial<Record<FormId, Grid>>,
   ids: FormId[] = FORM_IDS,
+  defs: Record<FormId, FormDef> = FORMS,
 ): Record<FormId, FormValues> {
   const memo = new Map<string, Cell>();
+  const index = new Map<FormId, Map<string, LineDef>>();
+  const lineIn = (id: FormId, code: string) => {
+    let idx = index.get(id);
+    if (!idx) index.set(id, (idx = new Map(defs[id].lines.filter((l) => l.code).map((l) => [l.code!, l]))));
+    return idx.get(code);
+  };
   const busy = new Set<string>();
 
   const rowsOf = (id: FormId, section: string) => Object.keys(manual[id] ?? {}).filter((k) => k.startsWith(`${section}.`));
 
   const sectionCell = (id: FormId, line: string, col: string): Cell | undefined => {
-    const def = FORMS[id];
+    const def = defs[id];
     if (!def.sections) return undefined;
     const sec = def.sections.find((s) => s.id === line);
     if (sec) {
@@ -217,11 +233,11 @@ export function evaluateAll(
   };
 
   const compute = (id: FormId, line: string, col: string): Cell => {
-    const def = FORMS[id];
+    const def = defs[id];
     if (!def) return EMPTY;
     const sc = sectionCell(id, line, col);
     if (sc) return sc;
-    const l = lineOf(id, line);
+    const l = lineIn(id, line);
     const kind = l?.cells?.[col];
     if (!l || !kind) return EMPTY;
     if (kind === 'x') return { v: null, auto: false, closed: true };
@@ -242,8 +258,8 @@ export function evaluateAll(
         return n.v;
       case 'ref': {
         const form = (n.form ?? id) as FormId;
-        if (!FORMS[form]) throw new Error(`Unknown form ${n.form}`);
-        return num(form, n.line, n.col ?? (n.form ? FORMS[form].columns[0].id : col));
+        if (!defs[form]) throw new Error(`Unknown form ${n.form}`);
+        return num(form, n.line, n.col ?? (n.form ? defs[form].columns[0].id : col));
       }
       case 'neg':
         return -run(n.a, id, col);
@@ -271,7 +287,7 @@ export function evaluateAll(
 
   const out = {} as Record<FormId, FormValues>;
   for (const id of ids) {
-    const def = FORMS[id];
+    const def = defs[id];
     const values: FormValues = {};
     const lines = [
       ...def.lines.filter((l) => l.code).map((l) => l.code!),
@@ -306,5 +322,5 @@ export function roundToMing(id: FormId, grid: Grid): Grid {
 
 /** One form on its own; references to other forms read them with no values. */
 export function evaluate(def: FormDef, auto: Grid, manual: Grid): FormValues {
-  return evaluateAll({ [def.id]: auto }, { [def.id]: manual }, [def.id])[def.id];
+  return evaluateAll({ [def.id]: auto }, { [def.id]: manual }, [def.id], { ...FORMS, [def.id]: def })[def.id];
 }

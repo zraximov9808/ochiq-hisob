@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { editedEntry, removeEntry } from '../../auto/apply';
+import { editedEntry, removeEntries, removeEntry } from '../../auto/apply';
 import { AUTO_KIND_LABEL, autoKind } from '../../auto/labels';
 import { findAccount, isChartCode, isKnownAccount, synthetic } from '../../engine/accounts';
 import { balanceLineFor } from '../../engine/balanceSheet';
@@ -9,7 +9,7 @@ import { formatDate, parseDate } from '../../engine/period';
 import { sampleDoc } from '../../engine/sample';
 import { TAX_LINES, TAX_LINE_BY_ID } from '../../engine/taxLines';
 import { effectiveTax, suggestTax } from '../../engine/taxSuggest';
-import type { Entry, TaxTag } from '../../engine/types';
+import type { Entry, SubAccount, TaxTag } from '../../engine/types';
 import { uid } from '../../engine/uid';
 import { useT } from '../../i18n/useT';
 import { actions, getState, useApp } from '../../store/store';
@@ -53,6 +53,8 @@ export function JournalPage() {
   const [query, setQuery] = useState('');
   const [source, setSource] = useState<'all' | 'auto' | 'manual'>('all');
   const [limit, setLimit] = useState(300);
+  /** Rows ticked for deleting together. */
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   const [showTemplates, setShowTemplates] = useState(false);
   const [dateText, setDateText] = useState(formatDate(draft.date));
   const firstInput = useRef<HTMLInputElement>(null);
@@ -145,22 +147,28 @@ export function JournalPage() {
     });
 
   const loadSample = () => {
-    if (doc.entries.length && !confirm(t('Joriy ma’lumotlar namunaviy ma’lumotlar bilan almashtiriladi. Davom etasizmi?'))) return;
-    const sample = sampleDoc(doc.year);
-    actions.update((d) => {
-      d.company = sample.company;
-      d.opening = sample.opening;
-      d.entries = sample.entries;
-      d.subaccounts = sample.subaccounts;
-      d.templates = sample.templates;
-    });
-    toast('Namuna ma’lumotlar yuklandi');
+    // the demo is a company of its own (by its STIR): it never overwrites this company's data
+    const where = actions.openDoc(sampleDoc(doc.year), null);
+    toast(where === 'current' ? 'Namuna ma’lumotlar yuklandi' : 'Namuna ma’lumotlar alohida korxona sifatida ochildi');
   };
   const clearJournal = () => {
     if (!doc.entries.length || !confirm(t(`Jurnaldagi ${doc.entries.length} ta provodka o‘chiriladi. Ctrl+Z bilan qaytarish mumkin. Davom etasizmi?`))) return;
-    actions.update((d) => {
-      d.entries = [];
-    });
+    // deleted auto entries are remembered, so a later rebuild does not bring them back
+    actions.update((d) => removeEntries(d, d.entries.map((e) => e.id)));
+    setPicked(new Set());
+  };
+  const pickedNow = doc.entries.filter((e) => picked.has(e.id));
+  const deletePicked = () => {
+    if (!pickedNow.length || !confirm(t(`Tanlangan ${pickedNow.length} ta provodka o‘chiriladi. Ctrl+Z bilan qaytarish mumkin. Davom etasizmi?`))) return;
+    actions.update((d) => removeEntries(d, pickedNow.map((e) => e.id)));
+    toast(`${pickedNow.length} ta provodka o‘chirildi`);
+    setPicked(new Set());
+  };
+  const togglePick = (id: string) => {
+    const next = new Set(picked);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setPicked(next);
   };
 
   return (
@@ -280,6 +288,16 @@ export function JournalPage() {
         <button className="btn" onClick={loadSample}>
           {t('Namuna ma’lumotlar')}
         </button>
+        {pickedNow.length > 0 && (
+          <>
+            <button className="btn danger" onClick={deletePicked}>
+              {t(`Tanlanganlarni o‘chirish (${pickedNow.length})`)}
+            </button>
+            <button className="btn ghost" onClick={() => setPicked(new Set())}>
+              {t('Tanlovni bekor qilish')}
+            </button>
+          </>
+        )}
         <button className="btn ghost danger" onClick={clearJournal}>
           {t('Jurnalni tozalash')}
         </button>
@@ -301,6 +319,15 @@ export function JournalPage() {
           <table className="grid">
             <thead>
               <tr>
+                <th className="c pick">
+                  <input
+                    type="checkbox"
+                    aria-label={t('Ko‘rsatilganlarning hammasini tanlash')}
+                    title={t('Ko‘rsatilganlarning hammasini tanlash')}
+                    checked={rows.length > 0 && rows.every((e) => picked.has(e.id))}
+                    onChange={(ev) => setPicked(ev.target.checked ? new Set([...picked, ...rows.map((e) => e.id)]) : new Set([...picked].filter((id) => !rows.some((e) => e.id === id))))}
+                  />
+                </th>
                 <th>{t('Sana')}</th>
                 <th>{t('Mazmun')}</th>
                 <th>{t('Debet')}</th>
@@ -312,7 +339,17 @@ export function JournalPage() {
             </thead>
             <tbody>
               {rows.slice(0, limit).map((e) => (
-                <JournalRow key={e.id} e={e} editing={editing === e.id} year={doc.year} onEdit={() => startEdit(e)} onTax={(tag) => setTax(e.id, tag)} />
+                <JournalRow
+                  key={e.id}
+                  e={e}
+                  subs={doc.subaccounts}
+                  picked={picked.has(e.id)}
+                  onPick={() => togglePick(e.id)}
+                  editing={editing === e.id}
+                  year={doc.year}
+                  onEdit={() => startEdit(e)}
+                  onTax={(tag) => setTax(e.id, tag)}
+                />
               ))}
             </tbody>
           </table>
@@ -330,9 +367,18 @@ export function JournalPage() {
   );
 }
 
-function JournalRow({ e, editing, year, onEdit, onTax }: { e: Entry; editing: boolean; year: number; onEdit: () => void; onTax: (tag: TaxTag | undefined) => void }) {
+function JournalRow(p: {
+  e: Entry;
+  subs: SubAccount[];
+  picked: boolean;
+  onPick: () => void;
+  editing: boolean;
+  year: number;
+  onEdit: () => void;
+  onTax: (tag: TaxTag | undefined) => void;
+}) {
+  const { e, subs, editing, year, onEdit, onTax } = p;
   const t = useT();
-  const subs = useApp().h.doc.subaccounts;
   const tag = effectiveTax(e);
   const def = tag.line ? TAX_LINE_BY_ID.get(tag.line) : undefined;
   const outside = !e.date.startsWith(String(year));
@@ -346,7 +392,10 @@ function JournalRow({ e, editing, year, onEdit, onTax }: { e: Entry; editing: bo
         : 'moliyaviy natijaga ta’sir qilmaydi';
   const stop = (ev: React.SyntheticEvent) => ev.stopPropagation();
   return (
-    <tr className={`clickable ${editing ? 'editing' : ''}`} onClick={onEdit} title={t('Tahrirlash uchun bosing')}>
+    <tr className={`clickable ${editing ? 'editing' : ''} ${p.picked ? 'picked' : ''}`} onClick={onEdit} title={t('Tahrirlash uchun bosing')}>
+      <td className="c pick" onClick={stop}>
+        <input type="checkbox" aria-label={t('Tanlash')} checked={p.picked} onChange={p.onPick} />
+      </td>
       <td className={outside ? 'err-text' : 'muted'}>{formatDate(e.date)}</td>
       <td>
         {e.text}

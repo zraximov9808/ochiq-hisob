@@ -56,3 +56,26 @@ describe('uploads and companies', () => {
     expect(seen).toEqual([true]);
   });
 });
+
+describe('deleting uploads', () => {
+  const gtdLine = (id: string, file: string) => normalizeGtd({ id, date: '2026-07-06', gtdNo: '1', itemNo: '1', regime: 'ИМ 40', sender: '', name: 'X', hsCode: '', ikpu: '', unit: '', qty: 1, places: null, file } as never);
+
+  test('one file at a time: its invoices or GTD lines go with it, the rest stay', () => {
+    bankActions.addInvoices([inv({ id: 'a', file: 'a.xlsx' }), inv({ id: 'b', file: 'b.xlsx' })], [...files('a.xlsx'), ...files('b.xlsx')]);
+    bankActions.addGtd([gtdLine('g1', 'g.xlsx'), gtdLine('g2', 'h.xlsx')], [...files('g.xlsx'), ...files('h.xlsx')]);
+    bankActions.setStockQty('g1', 5);
+    bankActions.removeFile('invoice', 'a.xlsx');
+    bankActions.removeFile('gtd', 'g.xlsx');
+    expect(getBank().invoices.map((i) => i.id)).toEqual(['b']);
+    expect(getBank().invoiceFiles.map((f) => f.file)).toEqual(['b.xlsx']);
+    expect(getBank().gtd.map((g) => g.id)).toEqual(['g2']);
+    expect(getBank().stockQty).toEqual({});
+  });
+
+  test('all uploads at once; rules and settings stay', () => {
+    bankActions.addInvoices([inv({})], files('a.xlsx'));
+    bankActions.setRules([]);
+    bankActions.clearUploads();
+    expect(getBank()).toMatchObject({ statements: [], files: [], invoices: [], invoiceFiles: [], gtd: [], gtdFiles: [], stockQty: {}, rules: [] });
+  });
+});

@@ -205,3 +205,17 @@ describe('store: review fixes', () => {
     expect(unsavedWork(fresh)).toBeNull();
   });
 });
+
+test('a named company with no entries is not taken over by an opened file of another STIR', async () => {
+  (globalThis as { localStorage?: KV }).localStorage = memoryKV();
+  vi.resetModules();
+  const { actions, getState, openTarget } = await import('./store');
+  actions.update((d) => {
+    d.company.name = 'Mening MChJ';
+  });
+  const doc = emptyDoc(2026);
+  doc.company = { ...doc.company, name: 'Boshqa MChJ', stir: '305555555' };
+  expect(openTarget(doc)).toBe('new');
+  expect(getState().co.list).toHaveLength(1);
+  delete (globalThis as { localStorage?: KV }).localStorage;
+});

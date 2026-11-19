@@ -11,6 +11,7 @@ import { downloadBlob } from '../../store/fileIO';
 import { Modal, toast } from '../components/common';
 import { bankActions, loadBank, rulesOf, useBank, type FileResult, beginUpload } from '../bank/bankStore';
 import { Money, fmtDay } from '../bank/format';
+import { UploadedFiles } from '../components/UploadedFiles';
 
 type Filter = 'all' | 'debitor' | 'kreditor' | 'yopiq' | 'NO_INVOICE' | 'NO_PAYMENT';
 const XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -294,7 +295,6 @@ export default function AuditPage() {
 
 function Upload() {
   const t = useT();
-  const bank = useBank();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
@@ -336,10 +336,6 @@ function Upload() {
     toast(`${statements.length} ta vipiska, ${invoices.length} ta faktura o‘qildi`);
   };
 
-  const files = [
-    ...bank.files.map((f) => ({ file: f.file, ok: f.ok, what: f.ok ? `${t('bank vipiska')}: ${f.accounts.map((a) => `${a.currency} ${a.number.slice(0, 8)}…`).join(', ')}` : f.error ?? '' })),
-    ...bank.invoiceFiles.map((f) => ({ file: f.file, ok: f.ok, what: f.ok ? `${t('hisob-fakturalar')}: ${f.count}` : f.error ?? '' })),
-  ];
 
   return (
     <>
@@ -365,20 +361,7 @@ function Upload() {
         <div className="muted">{t('Fayl turi avtomatik aniqlanadi. Fakturalar my.soliq / Didox reyestridan .xlsx ko‘rinishida.')}</div>
         <div className="dz-safe">🔒 {t('Fayllar faqat sizning brauzeringizda qayta ishlanadi — hech qayerga yuborilmaydi.')}</div>
       </div>
-      {files.length > 0 && (
-        <details className="card card-pad">
-          <summary>
-            {t('Yuklangan fayllar')} ({files.length})
-          </summary>
-          <ul className="small">
-            {files.map((f, i) => (
-              <li key={i} className={f.ok ? undefined : 'err-text'}>
-                {f.ok ? '✓' : '✗'} {f.file} — {t(f.what)}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <UploadedFiles kinds={['statement', 'invoice']} />
     </>
   );
 }
