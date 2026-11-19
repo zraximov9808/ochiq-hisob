@@ -36,7 +36,10 @@ export interface BankState {
   rates: RateBook;
 }
 
-const db = typeof indexedDB === 'undefined' ? undefined : createStore('ochiq-hisob-bank', 'kv');
+const openDb = (name: string) => (typeof indexedDB === 'undefined' ? undefined : createStore(name, 'kv'));
+/** Each company has its own database of uploads; the first one keeps the original name. */
+let dbName = 'ochiq-hisob-bank';
+let db = openDb(dbName);
 const KEYS = ['statements', 'files', 'rules', 'overrides', 'reviewed', 'settings', 'invoices', 'invoiceFiles', 'gtd', 'gtdFiles', 'stockQty', 'rates'] as const;
 
 const EMPTY: Omit<BankState, 'loaded'> = { statements: [], files: [], rules: null, overrides: {}, reviewed: [], settings: DEFAULT_SETTINGS, invoices: [], invoiceFiles: [], gtd: [], gtdFiles: [], stockQty: {}, rates: {} };
@@ -69,7 +72,10 @@ export function loadBank(): Promise<void> {
     if (!state.loaded) emit({ ...state, loaded: true });
     return Promise.resolve();
   }
-  loading ??= Promise.all(KEYS.map((k) => get(k, db))).then((vals) => {
+  const from = db;
+  loading ??= Promise.all(KEYS.map((k) => get(k, from))).then((vals) => {
+    // the company was switched while this was loading: its data belongs to the other company
+    if (from !== db) return;
     const v = Object.fromEntries(KEYS.map((k, i) => [k, vals[i]]));
     emit({
       loaded: true,
@@ -151,6 +157,22 @@ export const bankActions = {
     emit({ loaded: true, ...EMPTY });
   },
 };
+
+/** Switches to another company's uploads: the current ones are dropped from memory and the other database is read. */
+export function switchBankDb(name: string): void {
+  if (name === dbName) return;
+  const wasLoaded = state.loaded || loading !== null;
+  dbName = name;
+  db = openDb(name);
+  loading = null;
+  emit({ loaded: false, ...EMPTY });
+  if (wasLoaded) void loadBank();
+}
+
+/** Deletes a removed company's uploads database. */
+export function deleteBankDb(name: string): void {
+  if (typeof indexedDB !== 'undefined' && name !== dbName) indexedDB.deleteDatabase(name);
+}
 
 export const rulesOf = (s: BankState): Rule[] => s.rules ?? DEFAULT_RULES;
 
