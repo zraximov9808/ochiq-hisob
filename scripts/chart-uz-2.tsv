@@ -1,0 +1,190 @@
+2810	Ombordagi tayyor mahsulot
+2820	Ko'rgazmadagi tayyor mahsulot
+2830	Jo'natilgan va topshirilgan tayyor mahsulot
+2830.1	Komissiyaga jo'natilgan tayyor mahsulot
+2830.2	Mas'ul saqlashga topshirilgan tayyor mahsulot
+2890	Mahsulot (ish, xizmat) chiqarish
+2900	Tovarlar
+2910	Ombordagi tovarlar
+2920	Chakana savdodagi tovarlar
+2920.1	Chakana savdodagi tovarlar (xarid qiymatida)
+2920.2	Chakana savdodagi tovarlar (avtomatlashtirilgan savdo nuqtalarida sotish qiymatida)
+2920.3	Chakana savdodagi tovarlar (avtomatlashtirilmagan savdo nuqtalarida sotish qiymatida)
+2930	Ko'rgazmadagi tovarlar
+2940	Prokat buyumlari
+2950	Tovar ostidagi va bo'sh idishlar
+2960	Jo'natilgan tovarlar
+2960.1	Komissiyaga berilgan tovarlar
+2960.2	Mas'ul saqlashga berilgan tovarlar
+2970	Yo'ldagi tovarlar
+2970.1	Yo'ldagi tovarlar (respublika ichida)
+2970.2	Yo'ldagi tovarlar (respublikadan tashqarida)
+2980	Savdo ustamasi
+2980.2	Avtomatlashtirilgan savdo nuqtalaridagi savdo ustamasi
+2980.3	Avtomatlashtirilmagan savdo nuqtalaridagi savdo ustamasi
+2990	Boshqa tovarlar
+2991	Tovarlar qadrsizlanishidan zararlar uchun baholash rezervi
+2992	Tovarlarni qaytarish huquqi bo'yicha aktiv
+3000	Sotish uchun mo'ljallangan uzoq muddatli aktivlar
+3010	Sotish uchun mo'ljallangan uzoq muddatli aktivlar
+3020	Sotish uchun mo'ljallangan chiqib ketuvchi guruhlar
+3030	Sotish uchun mo'ljallangan uzoq muddatli aktivlar (chiqib ketuvchi guruhlar) qadrsizlanishidan zararlar uchun baholash rezervi
+3040	Sotish uchun mo'ljallangan chiqib ketuvchi guruhlar qadrsizlanishidan zararlar uchun baholash rezervi
+3100	Kelgusi davr xarajatlari
+3110	Oldindan to'langan ijara haqi
+3120	Oldindan to'langan xizmatlar
+3190	Boshqa kelgusi davr xarajatlari
+3200	Kechiktirilgan xarajatlar
+3210	Vaqtinchalik farqlar bo'yicha kechiktirilgan daromad solig'i
+3220	Diskontlar (chegirmalar) bo'yicha kechiktirilgan xarajatlar
+3230	Uzoq muddatli valyuta shartnomalari bo'yicha kechiktirilgan kurs farqi
+3290	Boshqa kechiktirilgan xarajatlar
+4000	Xaridor va buyurtmachilar bilan hisob-kitoblar
+4010	Xaridor va buyurtmachilar bilan hisob-kitoblar
+4015	Xaridor va buyurtmachilar bilan hisob-kitoblar (valyutada)
+4016	Xaridor va buyurtmachilar bilan hisob-kitoblar (shartli birlikda)
+4020	Olingan veksellar
+4090	Chakana xaridorlar bilan hisob-kitoblar
+4095	Chakana xaridorlar bilan hisob-kitoblar (valyutada)
+4100	Berilgan xo'jalik ichidagi hisob-kitoblar
+4110	Ajratilgan bo'linmalardan olinadigan schyotlar
+4120	Sho'ba va qaram xo'jalik jamiyatlaridan olinadigan schyotlar
+4130	Joriy operatsiyalar bo'yicha hisob-kitoblar
+4140	Assotsiatsiyalangan va qo'shma tashkilotlarning qisqa muddatli debitorlik qarzlari
+4200	Xodimlarga berilgan bo'naklar
+4210	Xodimlarga mehnat haqi bo'yicha berilgan bo'naklar
+4220	Xodimlarga xizmat safarlari uchun berilgan bo'naklar
+4225	Xodimlarga xizmat safarlari uchun berilgan bo'naklar (valyutada)
+4230	Umumxo'jalik xarajatlari uchun berilgan bo'naklar
+4235	Umumxo'jalik xarajatlari uchun berilgan bo'naklar (valyutada)
+4290	Xodimlarga berilgan boshqa bo'naklar
+4295	Xodimlarga berilgan boshqa bo'naklar (valyutada)
+4300	Mol yetkazib beruvchilar va pudratchilarga berilgan bo'naklar
+4310	Berilgan bo'naklar bo'yicha hisob-kitoblar
+4315	Berilgan bo'naklar bo'yicha hisob-kitoblar (valyutada)
+4316	Berilgan bo'naklar bo'yicha hisob-kitoblar (shartli birlikda)
+4320	Uzoq muddatli aktivlar uchun berilgan bo'naklar bo'yicha hisob-kitoblar
+4325	Uzoq muddatli aktivlar uchun berilgan bo'naklar bo'yicha hisob-kitoblar (valyutada)
+4330	Berilgan boshqa bo'naklar bo'yicha hisob-kitoblar
+4335	Berilgan boshqa bo'naklar bo'yicha hisob-kitoblar (valyutada)
+4336	Berilgan boshqa bo'naklar bo'yicha hisob-kitoblar (shartli birlikda)
+4400	Byudjetga soliq va yig'imlar bo'yicha bo'nak to'lovlari
+4410	Sotib olingan qiymatliklar bo'yicha QQS
+4410.1	Asosiy vositalar xarid qilishda QQS
+4410.2	Sotib olingan nomoddiy aktivlar bo'yicha QQS
+4410.3	Sotib olingan tovar-moddiy zaxiralar bo'yicha QQS
+4410.4	Sotib olingan xizmatlar bo'yicha QQS
+4410.5	O'zbekiston Respublikasi hududiga tovar olib kirishda to'langan QQS
+4410.7	0% stavkada sotilgan tovarlar (eksport) bo'yicha QQS
+4410.8	Asosiy vositalar qurilishida QQS
+4410.9	Sotish qiymatining kamayishi bo'yicha QQS
+4410.10	QQS bo'yicha bo'nak to'lovlari
+4420	JShDS bo'yicha bo'nak to'lovlari
+4420.1	JShDS bo'yicha bo'nak to'lovlari (mehnat haqi bo'yicha)
+4420.2	JShDS bo'yicha bo'nak to'lovlari (dividendlar va foizlar)
+4420.3	JShDS bo'yicha bo'nak to'lovlari (boshqalar)
+4430	Foyda solig'i (soddalashtirilgan tizimda yagona soliq to'lovi) bo'yicha bo'nak to'lovlari
+4440	To'langan moddiy qiymatliklar bo'yicha aksizlar
+4450	Mol-mulk solig'i bo'yicha bo'nak to'lovlari
+4460	Yer solig'i bo'yicha bo'nak to'lovlari
+4490	Boshqa soliqlar va byudjetga to'lovlar bo'yicha bo'naklar
+4500	Ijtimoiy sug'urta va davlat maqsadli jamg'armalariga to'lovlar bo'yicha bo'naklar
+4510	Ijtimoiy sug'urta bo'yicha bo'naklar
+4510.1	Yagona ijtimoiy to'lov bo'yicha bo'naklar
+4510.2	Fuqarolarning Pensiya jamg'armasiga badallari bo'yicha bo'naklar
+4520	Davlat maqsadli jamg'armalari bo'yicha bo'naklar
+4530	Pensiya ta'minoti bo'yicha bo'naklar
+4530.1	INPS bo'yicha bo'naklar (majburiy qism)
+4530.2	INPS bo'yicha bo'naklar (ixtiyoriy qism)
+4540	IJOT jamg'armasiga bo'naklar
+4590	Boshqa davlat maqsadli jamg'armalariga bo'naklar
+4600	Ta'sischilarning qarzi
+4610	Ustav (ulush) kapitaliga hissalar bo'yicha hisob-kitoblar
+4700	Xodimlar bilan boshqa operatsiyalar bo'yicha hisob-kitoblar
+4710	Kreditga berilgan tovarlar bo'yicha hisob-kitoblar
+4720	Berilgan qarzlar bo'yicha hisob-kitoblar
+4730	Moddiy zararni qoplash bo'yicha hisob-kitoblar
+4790	Boshqa operatsiyalar bo'yicha hisob-kitoblar
+4800	Turli debitorlar bilan hisob-kitoblar
+4810	Moliyaviy ijara bo'yicha qarz — joriy qismi
+4815	Moliyaviy ijara bo'yicha qarz — joriy qismi (valyutada)
+4816	Moliyaviy ijara bo'yicha qarz — joriy qismi (shartli birlikda)
+4820	Operativ ijara bo'yicha qarz
+4825	Operativ ijara bo'yicha qarz (valyutada)
+4826	Operativ ijara bo'yicha qarz (shartli birlikda)
+4830	Olinadigan foizlar bo'yicha hisob-kitoblar
+4840	Olinadigan dividendlar bo'yicha hisob-kitoblar
+4850	Olinadigan royaltilar bo'yicha hisob-kitoblar
+4855	Olinadigan royaltilar bo'yicha hisob-kitoblar (valyutada)
+4860	Da'volar bo'yicha hisob-kitoblar
+4865	Da'volar bo'yicha hisob-kitoblar (valyutada)
+4866	Da'volar bo'yicha hisob-kitoblar (shartli birlikda)
+4870	Shartnomalar bo'yicha qisqa muddatli aktivlar
+4871	Shartnomalar bo'yicha qisqa muddatli aktivlar qadrsizlanishidan zararlar uchun baholash rezervi
+4872	Boshqa qisqa muddatli aktivlar
+4873	Boshqa qisqa muddatli aktivlar qadrsizlanishi rezervi
+4890	Boshqa debitorlarning qarzi
+4895	Boshqa debitorlarning qarzi (valyutada)
+4896	Boshqa debitorlarning qarzi (shartli birlikda)
+4900	Shubhali qarzlar bo'yicha rezervlar
+4901	Qisqa muddatli debitorlik qarzlari qadrsizlanishidan zararlar uchun baholash rezervi
+4901.1	Qisqa muddatli debitorlik qarzlari qadrsizlanishidan zararlar uchun baholash rezervi
+4910	Shubhali qarzlar bo'yicha rezervlar
+5000	Kassa
+5010	Tashkilotning asosiy kassasi
+5020	Tashkilotning asosiy kassasi (valyutada)
+5050	Operatsion kassa (NKM, savdo kassasi)
+5100	Hisob-kitob schyotlari
+5110	Hisob-kitob hisobvarag'i
+5200	Valyuta schyotlari
+5210	Respublika ichidagi valyuta schyotlari
+5220	Chet eldagi valyuta schyotlari
+5300	Boshqa pul mablag'lari
+5310	Foydalanishi cheklangan pul mablag'lari
+5320	Elektron pul mablag'lari hisobi
+5330	Boshqa pul mablag'lari
+5340	Pul mablag'lari qadrsizlanishidan zararlar uchun baholash rezervi
+5500	Banklardagi maxsus schyotlar
+5510	Akkreditivlar
+5515	Akkreditivlar (valyutada)
+5520	Chek daftarchalari
+5530	Boshqa maxsus schyotlar
+5535	Boshqa maxsus schyotlar (valyutada)
+5600	Pul ekvivalentlari
+5610	Pul hujjatlari
+5615	Pul hujjatlari (valyutada)
+5700	Yo'ldagi pul mablag'lari (o'tkazmalar)
+5710	Yo'ldagi o'tkazmalar
+5715	Yo'ldagi o'tkazmalar (valyutada)
+5720	To'lov kartalari bo'yicha savdo
+5725	To'lov kartalari bo'yicha savdo (valyutada)
+5730	Chet el valyutasini sotib olish
+5740	Chet el valyutasini sotish
+5800	Qisqa muddatli investitsiyalar
+5810	Qimmatli qog'ozlar
+5810.1	Qimmatli qog'ozlar (aksiyalar)
+5810.2	Qarz qimmatli qog'ozlari
+5820	Berilgan qisqa muddatli qarzlar
+5830	Boshqa joriy investitsiyalar
+5840	Qisqa muddatli moliyaviy aktivlar
+5840.1	Amortizatsiyalangan qiymatda baholanadigan qisqa muddatli moliyaviy aktivlar
+5840.2	Boshqa umumlashgan daromad orqali adolatli qiymatda baholanadigan qisqa muddatli moliyaviy aktivlar
+5840.3	Foyda yoki zarar orqali adolatli qiymatda baholanadigan qisqa muddatli moliyaviy aktivlar
+5840.4	Olinadigan qisqa muddatli mukofotlar
+5840.5	Qisqa muddatli moliyaviy aktivlar qadrsizlanishidan zararlar uchun baholash rezervi
+5850	Hosila moliyaviy instrumentlar
+5900	Boshqa aktivlar
+5910	Kamomadlar va qiymatliklar buzilishidan yo'qotishlar
+5920	Boshqa joriy aktivlar
+6000	Mol yetkazib beruvchilar va pudratchilar bilan hisob-kitoblar
+6010	Mol yetkazib beruvchilar va pudratchilar bilan hisob-kitoblar
+6015	Mol yetkazib beruvchilar va pudratchilar bilan hisob-kitoblar (valyutada)
+6016	Mol yetkazib beruvchilar va pudratchilar bilan hisob-kitoblar (shartli birlikda)
+6020	Berilgan veksellar
+6030	To'lanadigan boshqa schyotlar
+6040	Sotish uchun mo'ljallangan chiqib ketuvchi guruh majburiyatlari
+6050	Shartnomalar bo'yicha qisqa muddatli majburiyatlar
+6060	Qisqa muddatli aralash moliyaviy instrumentning qarz komponenti
+6070	Boshqa qisqa muddatli majburiyatlar
+6100	Xo'jalik ichidagi hisob-kitoblar
+6110	Ajratilgan bo'linmalarga to'lanadigan schyotlar

@@ -1,0 +1,188 @@
+8720	Jamg'arilgan foyda (qoplanmagan zarar)
+8730	MHXSga o'tishdagi foyda va zararlar
+8800	Maqsadli tushumlar
+8810	Grantlar
+8820	Subsidiyalar (byudjetdan maqsadli moliyalashtirish)
+8830	A'zolik badallari
+8840	Maqsadli foydalaniladigan soliq imtiyozlari
+8890	Boshqa maqsadli moliyalashtirish va tushumlar
+8900	Kelgusi xarajatlar va to'lovlar rezervlari
+8910	Xodimlarga mukofotlar bo'yicha baholash majburiyatlari
+8910.1	Mukofotlar bo'yicha baholash majburiyatlari
+8910.2	Sug'urta badallari bo'yicha baholash majburiyatlari
+8990	Boshqa kelgusi xarajatlar rezervlari
+9000	Asosiy (operatsion) faoliyatdan daromadlar
+9001	Davr davomida tan olinadigan tushum
+9002	Tushumni tuzatish (kamaytirish)
+9010	Tayyor mahsulot sotishdan daromadlar
+9010.1	Tayyor mahsulot sotishdan daromadlar (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9010.2	Tayyor mahsulot sotishdan daromadlar (maxsus soliq tizimidagi faoliyat bo'yicha)
+9020	Tovarlar sotishdan daromadlar
+9020.1	Tovarlar sotishdan daromadlar (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9020.2	Tovarlar sotishdan daromadlar (maxsus soliq tizimidagi faoliyat bo'yicha)
+9030	Ish bajarish va xizmat ko'rsatishdan daromadlar
+9030.1	Ish bajarish va xizmat ko'rsatishdan daromadlar (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9030.2	Ish bajarish va xizmat ko'rsatishdan daromadlar (maxsus soliq tizimidagi faoliyat bo'yicha)
+9040	Sotilgan tovarlarning qaytarilishi
+9040.1	Sotilgan tovarlarning qaytarilishi (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9040.2	Sotilgan tovarlarning qaytarilishi (maxsus soliq tizimidagi faoliyat bo'yicha)
+9050	Xaridor va buyurtmachilarga berilgan chegirmalar
+9050.1	Xaridor va buyurtmachilarga berilgan chegirmalar (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9050.2	Xaridor va buyurtmachilarga berilgan chegirmalar (maxsus soliq tizimidagi faoliyat bo'yicha)
+9100	Sotish tannarxi
+9101	Davr davomida tan olinadigan tannarx
+9102	Tannarxni tuzatish (kamaytirish)
+9110	Sotilgan tayyor mahsulot tannarxi
+9110.1	Sotilgan tayyor mahsulot tannarxi (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9110.2	Sotilgan tayyor mahsulot tannarxi (maxsus soliq tizimidagi faoliyat bo'yicha)
+9120	Sotilgan tovarlar tannarxi
+9120.1	Sotilgan tovarlar tannarxi (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9120.2	Sotilgan tovarlar tannarxi (maxsus soliq tizimidagi faoliyat bo'yicha)
+9130	Bajarilgan ishlar va ko'rsatilgan xizmatlar tannarxi
+9130.1	Bajarilgan ishlar va ko'rsatilgan xizmatlar tannarxi (umumbelgilangan soliq tizimidagi faoliyat bo'yicha)
+9130.2	Bajarilgan ishlar va ko'rsatilgan xizmatlar tannarxi (maxsus soliq tizimidagi faoliyat bo'yicha)
+9140	Davriy hisobda TMZ xarid qilish
+9150	Davriy hisobda TMZ bo'yicha tuzatishlar
+9200	Aktivlarning chiqib ketishi
+9210	Asosiy vositalarning chiqib ketishi
+9220	Boshqa aktivlarning chiqib ketishi
+9300	Asosiy faoliyatning boshqa daromadlari
+9310	Asosiy vositalarning chiqib ketishidan foyda
+9320	Boshqa aktivlarning chiqib ketishidan foyda
+9330	Undirilgan penya, jarima va neustoykalar
+9340	Joriy davrda aniqlangan o'tgan yillar foydasi
+9350	Operativ ijaradan daromadlar
+9360	Kreditorlik qarzlarini hisobdan chiqarishdan daromadlar
+9370	Xizmat ko'rsatuvchi xo'jaliklar daromadlari
+9380	Qaytarilmaydigan moliyaviy yordam
+9381	Davlat subsidiyalaridan daromadlar
+9382	Tekin olingan aktivlardan daromadlar
+9390	Boshqa operatsion daromadlar
+9391	Nomoliyaviy aktivlar qadrsizlanishidan zararni tiklashdan daromadlar
+9392	Biologik aktivlarning adolatli qiymati o'zgarishidan daromadlar
+9393	Moliyaviy aktivlar qadrsizlanishidan zararni tiklashdan daromadlar
+9394	Aktivlarning adolatli qiymati o'zgarishidan foyda
+9400	Davr xarajatlari
+9410	Sotish xarajatlari
+9420	Ma'muriy xarajatlar
+9430	Boshqa operatsion xarajatlar
+9431	Boshqa xarajatlar
+9431.1	Aktivlarning chiqib ketishi bo'yicha xarajatlar
+9431.2	Nomoliyaviy aktivlar qadrsizlanishidan xarajatlar
+9431.3	Debitorlik qarzlarining qadrsizlanishi bo'yicha xarajatlar
+9431.4	Operativ ijara bo'yicha xarajatlar
+9431.5	Biologik aktivlarning adolatli qiymati o'zgarishidan xarajatlar
+9431.6	Moliyaviy instrumentlar qadrsizlanishidan xarajatlar
+9431.7	Boshqa xarajatlar
+9500	Moliyaviy faoliyatdan daromadlar
+9501	To'xtatilayotgan faoliyat bilan bog'liq daromadlar
+9501.1	To'xtatilayotgan faoliyat bilan bog'liq daromadlar
+9502	Ulushli ishtirok usulida hisobga olinadigan tashkilotlar foydasidagi ulush
+9502.1	Assotsiatsiyalangan tashkilotlar foydasidagi ulush
+9502.2	Qo'shma tashkilotlar foydasidagi ulush
+9510	Royalti ko'rinishidagi daromadlar
+9520	Dividendlar ko'rinishidagi daromadlar
+9530	Foizlar ko'rinishidagi daromadlar
+9540	Valyuta kursi farqidan daromadlar
+9541	Bo'naklar bo'yicha valyuta kursi farqidan daromadlar
+9550	Moliyaviy ijaradan daromadlar
+9560	Qimmatli qog'ozlarni qayta baholashdan daromadlar
+9570	Mukofotlar bo'yicha daromadlar
+9580	Ko'chmas mulkka investitsiyalar bilan operatsiyalardan daromadlar
+9581	Moliyaviy instrumentlarning adolatli qiymati o'zgarishidan daromadlar
+9590	Moliyaviy faoliyatdan boshqa daromadlar
+9600	Moliyaviy faoliyat bo'yicha xarajatlar
+9601	To'xtatilayotgan faoliyat bilan bog'liq xarajatlar
+9601.1	To'xtatilayotgan faoliyat bilan bog'liq xarajatlar
+9602	Ulushli ishtirok usulida hisobga olinadigan tashkilotlar zararidagi ulush
+9602.1	Ulushli ishtirok usulida hisobga olinadigan tashkilotlar zararidagi ulush
+9602.2	Qo'shma tashkilotlar zararidagi ulush
+9610	Foizlar ko'rinishidagi xarajatlar
+9620	Valyuta kursi farqidan zararlar
+9621	Bo'naklar bo'yicha valyuta kursi farqidan zararlar
+9630	Qimmatli qog'ozlarni chiqarish va tarqatish xarajatlari
+9640	Mukofotlar bo'yicha xarajatlar
+9650	Moliyaviy ijara bo'yicha foizlar to'lash xarajatlari
+9670	Moliyaviy instrumentlarning adolatli qiymati o'zgarishidan xarajatlar
+9690	Moliyaviy faoliyat bo'yicha boshqa xarajatlar
+9700	Favqulodda foyda va zararlar
+9710	Favqulodda foyda
+9720	Favqulodda zararlar
+9800	Foydani soliqlar va boshqa majburiyatlarni to'lashga ishlatish
+9810	Foyda solig'i (yagona soliq to'lovi)
+9820	Foydadan boshqa soliqlar va majburiy to'lovlar bo'yicha xarajatlar
+9900	Yakuniy moliyaviy natija
+9901	Foyda solig'i chegirilgan boshqa umumlashgan daromad
+9901.1	Keyinchalik foyda yoki zararga qayta tasniflanmaydigan moddalar (foyda solig'i chegirilgan holda)
+9901.2	Keyinchalik foyda yoki zararga qayta tasniflanadigan moddalar (foyda solig'i chegirilgan holda)
+9902	Davr uchun umumlashgan daromad
+9902.1	Davr uchun umumlashgan daromad — bosh tashkilot egalariga tegishli
+9902.2	Davr uchun umumlashgan daromad — nazorat qilmaydigan ulushlarga tegishli
+9910	Umumbelgilangan soliq tizimidagi faoliyat bo'yicha moliyaviy natija
+9920	Maxsus soliq tizimidagi faoliyat bo'yicha moliyaviy natija
+9930	Davr foydasi yoki zarari — bosh tashkilot egalariga tegishli
+9940	Davr foydasi yoki zarari — nazorat qilmaydigan ulushlarga tegishli
+001	Operativ ijaraga olingan asosiy vositalar
+002	Mas'ul saqlashga qabul qilingan tovar-moddiy qiymatliklar
+003	Qayta ishlashga qabul qilingan materiallar
+003.1	Ombordagi materiallar
+003.2	Ishlab chiqarishga berilgan materiallar
+003.3	Subpudratchilarga berilgan materiallar
+003.4	Buyurtmachi materiallaridan qaytariladigan chiqindilar
+003.10	Ombordagi materiallar (partiyali)
+003.20	Ishlab chiqarishga berilgan materiallar (partiyali)
+003.30	Subpudratchilarga berilgan materiallar (partiyali)
+003.40	Buyurtmachi materiallaridan qaytariladigan chiqindilar (partiyali)
+004	Komissiyaga qabul qilingan tovarlar
+004.01	Ombordagi tovarlar
+004.02	Komissiyaga berilgan tovarlar
+005	Montaj uchun qabul qilingan asbob-uskunalar
+005.1	Ombordagi asbob-uskunalar
+005.2	Ishlab chiqarishga montajga berilgan asbob-uskunalar
+005.3	Montaj uchun subpudratchilarga berilgan asbob-uskunalar
+006	Qat'iy hisobdagi blankalar
+007	To'lovga qobiliyatsiz debitorlarning zararga hisobdan chiqarilgan qarzi
+008	Olingan majburiyat va to'lovlar ta'minoti
+009	Berilgan majburiyat va to'lovlar ta'minoti
+010	Moliyaviy ijara shartnomasi bo'yicha berilgan asosiy vositalar
+011	Ssuda shartnomasi bo'yicha olingan mol-mulk
+012	Kelgusi davrlarda soliq solinadigan bazadan chiqariladigan xarajatlar
+013	Vaqtinchalik soliq imtiyozlari
+014	Foydalanishdagi moddiy qiymatliklar
+014.1	Foydalanishdagi maxsus kiyim
+014.2	Foydalanishdagi maxsus jihozlar
+014.3	Foydalanishdagi inventar va xo'jalik jihozlari
+015	Oddiy shirkat (birgalikdagi faoliyat) shartnomasi bo'yicha olingan mol-mulk
+016	Foydalanish huquqi bo'yicha olingan nomoddiy aktivlar
+017	Shartli aktivlar va majburiyatlar
+ГТД	Import tovarlar hisobi (GTD raqamlari bo'yicha)
+КВ	Amortizatsiya mukofoti
+НЕ	Soliq solish maqsadida hisobga olinmaydigan daromad va xarajatlar
+НЕ.01	Soliq kodeksining 1–48-bandlari asosida hisobga olinmagan xarajatlar
+НЕ.02	Soliq kodeksining 49-bandi asosida hisobga olinmagan xarajatlar
+НЕ.01.1	Jismoniy shaxslar foydasiga to'lovlar
+НЕ.01.9	Boshqa to'lovlar
+НЕ.02.1	Jismoniy shaxslar foydasiga to'lovlar
+НЕ.02.9	Boshqa to'lovlar
+НЕ.03	Soliq solish maqsadida hisobga olinmaydigan sotishdan tashqari xarajatlar
+НЕ.04	Soliq solish maqsadida hisobga olinmaydigan daromadlar
+ОТ	Mulk huquqi o'tmasdan jo'natilgan tovarlar (shartli birlikda) bo'yicha QQS hisob-kitoblari
+РВ	Chakana tushum
+РВ.1	Taqsimlanmagan naqd chakana tushum
+РВ.2	Taqsimlanmagan naqd chakana tushumdagi QQS
+РВ.3	Taqsimlanmagan naqdsiz chakana tushum
+РВ.4	Taqsimlanmagan naqdsiz chakana tushumdagi QQS
+С000	Xizmat schyotlari (ro'yxatda ko'rsatilmaydi)
+УСН	Soddalashtirilgan soliq tizimi bo'yicha yordamchi schyotlar
+УСН.01	Yagona hisoblangan daromad solig'i faoliyati bo'yicha xaridorlar bilan hisob-kitoblar
+УСН.02	Komitent tovarlari uchun xaridorlar bilan hisob-kitoblar
+УСН.03	Patent asosidagi faoliyat bo'yicha xaridorlar bilan hisob-kitoblar
+УСН.04	Savdo yig'imi asosidagi faoliyat bo'yicha xaridorlar bilan hisob-kitoblar
+УСН.21	Yagona hisoblangan daromad solig'i faoliyati bo'yicha xaridorlar bilan valyutadagi hisob-kitoblar
+УСН.22	Komitent tovarlari uchun xaridorlar bilan valyutadagi hisob-kitoblar
+УСН.23	Patent asosidagi faoliyat bo'yicha xaridorlar bilan valyutadagi hisob-kitoblar
+УСН.24	Savdo yig'imi asosidagi faoliyat bo'yicha xaridorlar bilan valyutadagi hisob-kitoblar
+Я96.01	Ishlatilmaydi
+Я69.06.5	(ishlatilmaydi) Tadbirkorning majburiy pensiya sug'urtasi
+Я01.К	Ishlatilmaydi
+Я96	Ishlatilmaydi

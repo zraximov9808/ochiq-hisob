@@ -1,0 +1,190 @@
+6120	Sho'ba va qaram xo'jalik jamiyatlariga to'lanadigan schyotlar
+6130	Joriy operatsiyalar bo'yicha hisob-kitoblar
+6140	Assotsiatsiyalangan va qo'shma tashkilotlarga qisqa muddatli kreditorlik qarzlari
+6150	Filiallar va tarkibiy bo'linmalarga qisqa muddatli kreditorlik qarzlari
+6200	Kelgusi davr daromadlari
+6210	Diskont (chegirma) ko'rinishidagi kechiktirilgan daromadlar
+6220	Mukofot (ustama) ko'rinishidagi kechiktirilgan daromadlar
+6230	Kelgusi davrlar hisobiga olingan boshqa daromadlar
+6240	Kechiktirilgan soliq majburiyatlari
+6250	Kechiktirilgan foyda solig'i bo'yicha majburiyatlar
+6290	Boshqa kechiktirilgan majburiyatlar
+6300	Xaridor va buyurtmachilardan olingan bo'naklar
+6310	Olingan bo'naklar bo'yicha hisob-kitoblar
+6315	Olingan bo'naklar bo'yicha hisob-kitoblar (valyutada)
+6316	Olingan bo'naklar bo'yicha hisob-kitoblar (shartli birlikda)
+6317	Jo'natish hisobiga olingan bo'naklar bo'yicha hisob-kitoblar (shartli birlikda)
+6320	Aksiyalarga obuna bo'lganlardan olingan bo'naklar
+6330	Olingan boshqa bo'naklar
+6400	Soliq va yig'imlar bo'yicha hisob-kitoblar
+6410	Qo'shilgan qiymat solig'i
+6410.1	Sotishda hisoblangan qo'shilgan qiymat solig'i
+6410.2	Soliq agenti majburiyatini bajarishda QQS
+6420	Jismoniy shaxslardan olinadigan daromad solig'i
+6420.1	JShDS (mehnat haqi)
+6420.2	JShDS (dividendlar va foizlar)
+6420.3	JShDS (boshqalar)
+6420.4	JShDS (yakka tartibdagi tadbirkor)
+6430	Foyda solig'i (soddalashtirilgan tizimda yagona soliq to'lovi)
+6440	Aksizlar
+6450	Mol-mulk solig'i
+6460	Yer solig'i
+6490	Boshqa soliq va yig'imlar
+6500	Ijtimoiy sug'urta va davlat maqsadli jamg'armalariga to'lovlar bo'yicha hisob-kitoblar
+6510	Ijtimoiy sug'urta bo'yicha hisob-kitoblar
+6510.1	Yagona ijtimoiy to'lov bo'yicha hisob-kitoblar
+6510.2	Fuqarolarning Pensiya jamg'armasiga badallari bo'yicha hisob-kitoblar
+6520	Davlat maqsadli jamg'armalari bilan hisob-kitoblar
+6530	Pensiya ta'minoti bo'yicha hisob-kitoblar
+6530.1	INPS (majburiy qism)
+6530.2	INPS (ixtiyoriy qism)
+6540	IJOT jamg'armasi bilan hisob-kitoblar
+6590	Boshqa davlat maqsadli jamg'armalari bilan hisob-kitoblar
+6600	Ta'sischilarga qarzlar
+6610	Daromad (dividend) to'lash bo'yicha hisob-kitoblar
+6620	Chiqib ketayotgan ta'sischilarga ularning ulushi bo'yicha qarz
+6630	Ustav kapitalini oshirish bo'yicha ta'sischilarning hissalari
+6700	Xodimlar bilan hisob-kitoblar
+6710	Xodimlar bilan mehnat haqi bo'yicha hisob-kitoblar
+6715	Xodimlar bilan mehnat haqi bo'yicha hisob-kitoblar (valyutada)
+6720	Deponentlangan summalar bo'yicha hisob-kitoblar
+6800	Qisqa muddatli kreditlar va qarzlar bo'yicha hisob-kitoblar
+6801	Qisqa muddatli moliyaviy majburiyatlar
+6801.1	Amortizatsiyalangan qiymatda baholanadigan qisqa muddatli moliyaviy majburiyatlar
+6801.2	Foyda yoki zarar orqali adolatli qiymatda baholanadigan qisqa muddatli moliyaviy majburiyatlar
+6801.3	Dividendlar va ishtirokchilar daromadlari bo'yicha qisqa muddatli kreditorlik qarzi
+6801.4	To'lanadigan qisqa muddatli mukofotlar
+6801.5	Amortizatsiyalangan qiymatdagi uzoq muddatli moliyaviy majburiyatlarning joriy qismi
+6801.6	Foyda yoki zarar orqali adolatli qiymatdagi uzoq muddatli moliyaviy majburiyatlarning joriy qismi
+6801.7	Hosila moliyaviy instrumentlar
+6810	Qisqa muddatli bank kreditlari
+6815	Qisqa muddatli bank kreditlari (valyutada)
+6820	Qisqa muddatli qarzlar
+6825	Qisqa muddatli qarzlar (valyutada)
+6830	Qisqa muddatli qarz qimmatli qog'ozlari
+6835	Qisqa muddatli qarz qimmatli qog'ozlari (valyutada)
+6840	To'lanadigan veksellar
+6890	Boshqa kreditlar va qarzlar
+6895	Boshqa kreditlar va qarzlar (valyutada)
+6900	Turli kreditorlar bilan hisob-kitoblar
+6901	Qisqa muddatli baholash majburiyatlari
+6901.1	Qisqa muddatli kafolat majburiyatlari
+6901.2	Yuridik da'volar bo'yicha qisqa muddatli baholash majburiyatlari
+6901.3	Xodimlarga mukofotlar bo'yicha qisqa muddatli baholash majburiyatlari (rezervlar)
+6901.4	Boshqa qisqa muddatli baholash majburiyatlari
+6901.5	Zararli shartnomalar bo'yicha qisqa muddatli baholash majburiyatlari
+6901.6	Obyektlarni foydalanishdan chiqarish va atrof-muhitni tiklash bo'yicha qisqa muddatli baholash majburiyatlari
+6901.7	Qayta tashkil etish xarajatlari bo'yicha qisqa muddatli baholash majburiyatlari
+6910	Operativ ijara bo'yicha hisoblashlar
+6915	Operativ ijara bo'yicha hisoblashlar (valyutada)
+6916	Operativ ijara bo'yicha hisoblashlar (shartli birlikda)
+6920	Kreditlar va qarzlar bo'yicha hisoblangan foizlar
+6925	Kreditlar va qarzlar bo'yicha hisoblangan foizlar (valyutada)
+6930	Gonorarlar va royaltilar bo'yicha qarz
+6940	Kafolatlar bo'yicha qarz
+6950	Moliyaviy ijara bo'yicha qarz — joriy qismi
+6955	Moliyaviy ijara bo'yicha qarz — joriy qismi (valyutada)
+6960	Da'volar bo'yicha to'lanadigan schyotlar
+6970	Hisobdor shaxslar bilan hisob-kitoblar
+6975	Hisobdor shaxslar bilan hisob-kitoblar (valyutada)
+6980	Jismoniy shaxslar bilan boshqa hisob-kitoblar
+6980.1	Xodimlarning ijro hujjatlari bo'yicha hisob-kitoblar
+6980.2	Jismoniy shaxslar bilan boshqa hisob-kitoblar
+6990	Boshqa majburiyatlar
+6995	Boshqa majburiyatlar (valyutada)
+6996	Boshqa majburiyatlar (shartli birlikda)
+7000	Mol yetkazib beruvchilar va pudratchilar bilan uzoq muddatli hisob-kitoblar
+7010	Mol yetkazib beruvchilar va pudratchilar bilan uzoq muddatli hisob-kitoblar
+7015	Mol yetkazib beruvchilar va pudratchilar bilan uzoq muddatli hisob-kitoblar (valyutada)
+7020	Berilgan uzoq muddatli veksellar
+7030	Shartnomalar bo'yicha uzoq muddatli majburiyatlar
+7040	Uzoq muddatli aralash moliyaviy instrumentning qarz komponenti
+7050	Boshqa uzoq muddatli majburiyatlar
+7100	Uzoq muddatli xo'jalik ichidagi hisob-kitoblar
+7110	Olingan ajratilgan mol-mulk bo'yicha uzoq muddatli hisob-kitoblar
+7120	Joriy operatsiyalar bo'yicha uzoq muddatli hisob-kitoblar
+7130	Mol-mulkni ishonchli boshqarish shartnomasi bo'yicha uzoq muddatli hisob-kitoblar
+7200	Uzoq muddatli kechiktirilgan majburiyatlar
+7210	Diskont (chegirma) ko'rinishidagi uzoq muddatli kechiktirilgan daromadlar
+7220	Mukofot (ustama) ko'rinishidagi uzoq muddatli kechiktirilgan daromadlar
+7230	Kelgusi davrlar hisobiga olingan boshqa uzoq muddatli kechiktirilgan daromadlar
+7240	Uzoq muddatli kechiktirilgan soliq majburiyatlari
+7250	Uzoq muddatli kechiktirilgan foyda solig'i bo'yicha majburiyatlar
+7290	Boshqa uzoq muddatli kechiktirilgan majburiyatlar
+7300	Xaridor va buyurtmachilardan olingan uzoq muddatli bo'naklar
+7310	Xaridor va buyurtmachilardan olingan uzoq muddatli bo'naklar
+7800	Uzoq muddatli kreditlar va qarzlar bo'yicha hisob-kitoblar
+7801	Uzoq muddatli moliyaviy majburiyatlar
+7801.1	Amortizatsiyalangan qiymatda baholanadigan uzoq muddatli moliyaviy majburiyatlar
+7801.2	Foyda yoki zarar orqali adolatli qiymatda baholanadigan uzoq muddatli moliyaviy majburiyatlar
+7801.3	Dividendlar va ishtirokchilar daromadlari bo'yicha uzoq muddatli qarz
+7801.4	To'lanadigan uzoq muddatli mukofotlar
+7801.5	Hosila moliyaviy instrumentlar
+7801.6	Boshqa umumlashgan daromad orqali adolatli qiymatda baholanadigan uzoq muddatli moliyaviy majburiyatlar
+7810	Uzoq muddatli kreditlar
+7815	Uzoq muddatli kreditlar (valyutada)
+7820	Uzoq muddatli qarzlar
+7825	Uzoq muddatli qarzlar (valyutada)
+7830	Uzoq muddatli qarz qimmatli qog'ozlari
+7835	Uzoq muddatli qarz qimmatli qog'ozlari (valyutada)
+7840	To'lanadigan veksellar
+7900	Turli kreditorlarga uzoq muddatli qarzlar
+7901	Uzoq muddatli baholash majburiyatlari
+7901.1	Uzoq muddatli kafolat majburiyatlari
+7901.2	Yuridik da'volar bo'yicha uzoq muddatli baholash majburiyatlari
+7901.3	Xodimlarga mukofotlar bo'yicha uzoq muddatli baholash majburiyatlari (rezervlar)
+7901.4	Boshqa uzoq muddatli baholash majburiyatlari
+7901.5	Zararli shartnomalar bo'yicha uzoq muddatli baholash majburiyatlari
+7901.6	Obyektlarni foydalanishdan chiqarish va atrof-muhitni tiklash bo'yicha uzoq muddatli baholash majburiyatlari
+7901.7	Qayta tashkil etish xarajatlari bo'yicha uzoq muddatli baholash majburiyatlari
+7910	To'lanadigan moliyaviy ijara
+7915	To'lanadigan moliyaviy ijara (valyutada)
+7920	Turli kreditorlarga boshqa qarzlar
+7921	Ijro varaqalari bo'yicha qarz
+7925	Turli kreditorlarga boshqa qarzlar (valyutada)
+7930	Sho'ba tashkilotlarga uzoq muddatli kreditorlik qarzi
+7940	Assotsiatsiyalangan va qo'shma tashkilotlarga uzoq muddatli kreditorlik qarzi
+7950	Filiallar va tarkibiy bo'linmalarga uzoq muddatli kreditorlik qarzi
+8300	Ustav kapitali
+8301	To'lanmagan kapital
+8301.1	To'lanmagan kapital
+8302	Sotib olingan o'z ulush instrumentlari
+8302.1	Sotib olingan o'z ulush instrumentlari
+8310	Oddiy aksiyalar
+8320	Imtiyozli aksiyalar
+8330	Paylar va ulushlar
+8400	Qo'shilgan kapital
+8401	Qo'shimcha to'langan kapital
+8401.1	Asosiy tashkilot bilan tekin operatsiyalar bo'yicha qo'shimcha to'langan kapital
+8401.2	Boshqa operatsiyalar bo'yicha qo'shimcha to'langan kapital
+8410	Emissiya daromadi
+8410.1	Oddiy aksiyalar chiqarishdan emissiya daromadi
+8410.2	Imtiyozli aksiyalar chiqarishdan emissiya daromadi
+8420	Ustav fondini shakllantirishdagi kurs farqi
+8430	Boshqa manbalar
+8500	Rezerv kapitali
+8510	Uzoq muddatli aktivlarni qayta baholashdan qiymat o'sishi
+8510.1	Asosiy vositalar qiymatining o'sishi
+8510.2	Nomoddiy aktivlar qiymatining o'sishi
+8510.3	Boshqa uzoq muddatli aktivlar qiymatining o'sishi
+8520	Tashkil etilgan rezervlar
+8520.1	Qonunchilikka muvofiq tashkil etilgan rezervlar
+8520.2	Ta'sis hujjatlariga muvofiq tashkil etilgan rezervlar
+8520.3	Boshqa umumlashgan daromad orqali adolatli qiymatdagi moliyaviy aktivlarni qayta baholash rezervi
+8520.4	Moliyaviy aktivlar bo'yicha zararlar rezervi
+8520.5	Xorijdagi faoliyat bo'yicha chet el valyutasini qayta hisoblash rezervi
+8520.6	Boshqa rezervlar
+8530	Tekin olingan mol-mulk
+8530.1	Tekin olingan asosiy vositalar
+8530.2	Tekin olingan nomoddiy aktivlar
+8530.3	Tekin olingan tovar-moddiy qiymatliklar
+8600	O'z aksiyalari (ulushlari)
+8610	Sotib olingan oddiy aksiyalar
+8620	Sotib olingan imtiyozli aksiyalar
+8630	Boshqa kapital
+8700	Taqsimlanmagan foyda (qoplanmagan zarar)
+8701	O'z kapitalining boshqa komponentlari
+8701.1	O'z kapitalining boshqa komponentlari
+8702	Nazorat qilmaydigan ulush
+8702.1	Nazorat qilmaydigan ulush
+8710	Hisobot davrining taqsimlanmagan foydasi (qoplanmagan zarari)

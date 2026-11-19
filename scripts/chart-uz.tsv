@@ -1,0 +1,190 @@
+0000	Yordamchi hisobvaraq
+0100	Asosiy vositalar
+0110	Yer
+0111	Yerni obodonlashtirish
+0112	Lizing shartnomasi bo'yicha olingan asosiy vositalarni obodonlashtirish
+0120	Binolar, inshootlar va uzatuvchi moslamalar
+0120.1	Binolar
+0120.2	Inshootlar
+0120.3	Uzatuvchi moslamalar
+0130	Mashina va asbob-uskunalar
+0130.1	Kuch mashinalari va asbob-uskunalari
+0130.2	Ishchi mashinalar va asbob-uskunalar
+0130.3	O'lchash va boshqarish vositalari
+0130.4	Boshqa mashina va asbob-uskunalar
+0140	Mebel va ofis jihozlari
+0150	Kompyuter jihozlari va hisoblash texnikasi
+0160	Transport vositalari
+0170	Ishchi va mahsuldor hayvonlar
+0180	Ko'p yillik daraxtlar
+0190	Tashkilotdagi boshqa asosiy vositalar
+0191	Asosiy vositalar qadrsizlanishidan zararlar uchun baholash rezervi
+0192	Asosiy vositadan foydalanish huquqi
+0193	Foydalanish huquqi qadrsizlanishidan zarar
+0194	Asosiy vositalar xarid qilish uchun berilgan bo'naklar
+0195	Asosiy vositalar xarid qilish uchun berilgan bo'naklar (valyutada)
+0199	Konservatsiya qilingan asosiy vositalar
+0200	Asosiy vositalarning eskirishi
+0202	Asosiy vositadan foydalanish huquqining amortizatsiyasi
+0211	Yerni obodonlashtirishning eskirishi
+0212	Lizing bo'yicha olingan asosiy vositalarni obodonlashtirishning eskirishi
+0220	Binolar, inshootlar va uzatuvchi moslamalarning eskirishi
+0220.1	Binolarning eskirishi
+0220.2	Inshootlarning eskirishi
+0220.3	Uzatuvchi moslamalarning eskirishi
+0230	Mashina va asbob-uskunalarning eskirishi
+0230.1	Kuch mashinalari va asbob-uskunalarining eskirishi
+0230.2	Ishchi mashinalar va asbob-uskunalarning eskirishi
+0230.3	O'lchash va boshqarish vositalarining eskirishi
+0230.4	Boshqa mashina va asbob-uskunalarning eskirishi
+0240	Mebel va ofis jihozlarining eskirishi
+0250	Kompyuter jihozlari va hisoblash texnikasining eskirishi
+0260	Transport vositalarining eskirishi
+0270	Ishchi va mahsuldor hayvonlarning eskirishi
+0280	Ko'p yillik daraxtlarning eskirishi
+0290	Boshqa asosiy vositalarning eskirishi
+0299	Moliyaviy ijara shartnomasi bo'yicha olingan asosiy vositalarning eskirishi
+0300	Moliyaviy ijara shartnomasi bo'yicha olingan asosiy vositalar
+0310	Moliyaviy ijara shartnomasi bo'yicha olingan asosiy vositalar
+0400	Nomoddiy aktivlar
+0410	Patentlar, litsenziyalar va nou-xau
+0420	Tovar belgilari, tovar markalari va sanoat namunalari
+0430	Dasturiy ta'minot
+0440	Yer va tabiiy resurslardan foydalanish huquqi
+0460	Franchayzing
+0470	Mualliflik huquqi
+0480	Gudvill
+0481	Gudvillning qadrsizlanishi
+0490	Boshqa nomoddiy aktivlar
+0491	Nomoddiy aktivlar qadrsizlanishidan zararlar uchun baholash rezervi
+0492	Nomoddiy aktivdan foydalanish huquqi
+0493	Nomoddiy aktivdan foydalanish huquqi qadrsizlanishidan zararlar uchun baholash rezervi
+0500	Nomoddiy aktivlarning amortizatsiyasi
+0510	Patentlar, litsenziyalar va nou-xau amortizatsiyasi
+0520	Tovar belgilari, tovar markalari va sanoat namunalari amortizatsiyasi
+0530	Dasturiy ta'minot amortizatsiyasi
+0540	Yer va tabiiy resurslardan foydalanish huquqi amortizatsiyasi
+0560	Franchayzing amortizatsiyasi
+0570	Mualliflik huquqi amortizatsiyasi
+0590	Boshqa nomoddiy aktivlar amortizatsiyasi
+0592	Nomoddiy aktivdan foydalanish huquqining amortizatsiyasi
+0600	Uzoq muddatli investitsiyalar
+0601	Investitsiya ko'chmas mulki
+0601.1	Investitsiya mulki
+0601.2	Investitsiya mulkining amortizatsiyasi
+0601.3	Investitsiya mulki qadrsizlanishidan zararlar uchun baholash rezervi
+0601.4	Aktivdan foydalanish huquqi
+0601.5	Aktivdan foydalanish huquqining amortizatsiyasi
+0601.6	Aktivdan foydalanish huquqi qadrsizlanishidan zararlar uchun baholash rezervi
+0601.7	Investitsiya ko'chmas mulkiga kapital qo'yilmalar
+0601.8	Investitsiya ko'chmas mulkiga kapital qo'yilmalar qadrsizlanishi rezervi
+0610	Qimmatli qog'ozlarga uzoq muddatli investitsiyalar
+0620	Sho'ba xo'jalik jamiyatlariga uzoq muddatli investitsiyalar
+0630	Qaram xo'jalik jamiyatlariga uzoq muddatli investitsiyalar
+0640	Chet el kapitali mavjud korxonalarga uzoq muddatli investitsiyalar
+0650	Ulushli ishtirok usulida hisobga olinadigan investitsiyalar
+0660	Boshlang'ich qiymatda hisobga olinadigan investitsiyalar
+0670	Ulushli ishtirok usulidagi investitsiyalar qadrsizlanishidan zararlar uchun baholash rezervi
+0680	Boshlang'ich qiymatdagi investitsiyalar qadrsizlanishidan zararlar uchun baholash rezervi
+0690	Boshqa uzoq muddatli investitsiyalar
+0700	O'rnatiladigan asbob-uskunalar
+0710	O'rnatiladigan asbob-uskunalar — mahalliy
+0720	O'rnatiladigan asbob-uskunalar — import
+0800	Kapital qo'yilmalar
+0810	Tugallanmagan qurilish
+0811	Asbob-uskunalarni montaj qilish
+0812	Asosiy vositalarni modernizatsiya qilish va kapital ta'mirlash
+0820	Asosiy vositalar obyektlarini xarid qilish
+0820.1	Asosiy vositalar komponentlarini xarid qilish
+0820.2	Asosiy vositalarni xarid qilish
+0820.3	Asosiy vositalarga kapital qo'yilmalar qadrsizlanishi rezervi
+0830	Nomoddiy aktivlarni xarid qilish
+0831	Nomoddiy aktivlarga kapital qo'yilmalar qadrsizlanishi rezervi
+0840	Asosiy podani shakllantirish
+0840.1	Yosh hayvonlarni asosiy podaga o'tkazish
+0840.2	Katta yoshdagi hayvonlarni xarid qilish
+0850	Yerni obodonlashtirishga kapital qo'yilmalar
+0850.1	Yer uchastkalarini xarid qilish
+0850.2	Tabiatdan foydalanish obyektlarini xarid qilish
+0860	Moliyaviy ijara bo'yicha olingan asosiy vositalarga kapital qo'yilmalar
+0890	Boshqa kapital qo'yilmalar
+0900	Uzoq muddatli debitorlik qarzlari va kechiktirilgan xarajatlar
+0901	Uzoq muddatli moliyaviy aktivlar
+0901.1	Amortizatsiyalangan qiymatda baholanadigan uzoq muddatli moliyaviy aktivlar
+0901.2	Boshqa umumlashgan daromad orqali adolatli qiymatda baholanadigan uzoq muddatli moliyaviy aktivlar
+0901.3	Foyda yoki zarar orqali adolatli qiymatda baholanadigan uzoq muddatli moliyaviy aktivlar
+0901.4	Hosila moliyaviy instrumentlar
+0901.5	Olinadigan uzoq muddatli mukofotlar
+0901.6	Ulushli instrumentlar
+0901.7	Boshqa uzoq muddatli moliyaviy aktivlar
+0901.8	Uzoq muddatli moliyaviy aktivlar qadrsizlanishidan zararlar uchun baholash rezervi
+0902	Uzoq muddatli biologik aktivlar
+0902.1	O'simliklar
+0902.2	Hayvonlar
+0902.3	Biologik aktivlarning amortizatsiyasi
+0902.4	Biologik aktivlar qadrsizlanishidan zararlar uchun baholash rezervi
+0902.5	Qishloq xo'jaligi mahsulotlari
+0903	Qidiruv va baholash aktivlari
+0903.1	Qidiruv va baholash aktivlari
+0903.2	Qidiruv va baholash aktivlarining amortizatsiyasi
+0903.3	Qidiruv va baholash aktivlari qadrsizlanishidan zararlar uchun baholash rezervi
+0904	Kechiktirilgan soliq aktivlari
+0904.1	Korporativ daromad solig'i bo'yicha kechiktirilgan soliq aktivlari
+0905	Boshqa uzoq muddatli aktivlar
+0905.1	Berilgan uzoq muddatli bo'naklar
+0905.2	Kelgusi davr xarajatlari
+0905.3	Shartnomalar bo'yicha uzoq muddatli aktivlar
+0905.4	Shartnomalar bo'yicha uzoq muddatli aktivlar qadrsizlanishidan zararlar uchun baholash rezervi
+0905.5	Shartnomalar bo'yicha xarajatlar
+0905.6	Shartnomalar bo'yicha xarajatlar amortizatsiyasi
+0905.7	Shartnomalar bo'yicha xarajatlar qadrsizlanishidan zararlar uchun baholash rezervi
+0905.8	Boshqa uzoq muddatli aktivlar
+0910	Olingan uzoq muddatli veksellar
+0920	Moliyaviy ijara bo'yicha olinadigan to'lovlar
+0930	Xodimlarning uzoq muddatli qarzlari
+0940	Boshqa uzoq muddatli debitorlik qarzlari
+0941	Da'volar bo'yicha qarzlar
+0942	Boshqa uzoq muddatli debitorlik qarzlari
+0950	Vaqtinchalik farqlar bo'yicha kechiktirilgan foyda solig'i
+0960	Diskontlar bo'yicha uzoq muddatli kechiktirilgan xarajatlar
+0970	Xaridor va buyurtmachilarning uzoq muddatli qarzlari
+0971	Sho'ba tashkilotlarning uzoq muddatli debitorlik qarzlari
+0972	Assotsiatsiyalangan va qo'shma tashkilotlarning uzoq muddatli debitorlik qarzlari
+0973	Filiallar va tarkibiy bo'linmalarning uzoq muddatli debitorlik qarzlari
+0974	Ijara bo'yicha uzoq muddatli debitorlik qarzlari
+0980	Uzoq muddatli debitorlik qarzlari qadrsizlanishidan zararlar uchun baholash rezervi
+0990	Boshqa uzoq muddatli kechiktirilgan xarajatlar
+1000	Materiallar
+1010	Xom ashyo va materiallar
+1020	Sotib olingan yarim tayyor mahsulotlar, butlovchi buyumlar, konstruksiyalar va detallar
+1030	Yoqilg'i
+1040	Ehtiyot qismlar
+1050	Qurilish materiallari
+1060	Idishlar va idishbop materiallar
+1070	Chetga qayta ishlashga berilgan materiallar
+1080	Inventar va xo'jalik jihozlari
+1090	Boshqa materiallar
+1100	O'stirishdagi va boqishdagi hayvonlar
+1110	O'stirishdagi hayvonlar
+1120	Boqishdagi hayvonlar
+1500	Moddiy qiymatliklarni tayyorlash va xarid qilish
+1510	Materiallarni tayyorlash va xarid qilish
+1520	Tovarlarni xarid qilish
+1600	Moddiy qiymatliklar qiymatidagi farqlar
+1610	Materiallar qiymatidagi farqlar
+1620	Tovarlar qiymatidagi farqlar
+2000	Asosiy ishlab chiqarish
+2001	Tugallanmagan ishlab chiqarish
+2010	Asosiy ishlab chiqarish
+2020	Buyurtmachi xom ashyosidan mahsulot ishlab chiqarish
+2100	O'zi ishlab chiqargan yarim tayyor mahsulotlar
+2110	O'zi ishlab chiqargan yarim tayyor mahsulotlar
+2300	Yordamchi ishlab chiqarish
+2310	Yordamchi ishlab chiqarish
+2500	Umumishlab chiqarish xarajatlari
+2510	Umumishlab chiqarish xarajatlari
+2600	Ishlab chiqarishdagi brak
+2610	Ishlab chiqarishdagi brak
+2700	Xizmat ko'rsatuvchi xo'jaliklar
+2710	Xizmat ko'rsatuvchi xo'jaliklar
+2800	Tayyor mahsulot
